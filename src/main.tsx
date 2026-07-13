@@ -2,13 +2,19 @@ import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 
 import "./index.css"
-import App from "./App.tsx"
-import { ThemeProvider } from "@/components/theme-provider.tsx"
+
+import { RouterProvider } from "react-router"
+import { Provider as ReduxProvider } from "react-redux"
+import { store } from "./redux/store"
+import { ThemeProvider } from "./providers/theme/theme-provider"
+import { router } from "./app/router"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <ReduxProvider store={store}>
+      <ThemeProvider>
+        <RouterProvider router={router} />
+      </ThemeProvider>
+    </ReduxProvider>
   </StrictMode>
 )
