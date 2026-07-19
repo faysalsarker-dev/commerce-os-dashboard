@@ -5,20 +5,22 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import AppLayout from "../layout/appLayout/AppLayout";
 import NotFoundPage from "../pages/error/NotFoundPage";
+import { AuthWrapper, GuestWrapper } from "./wrappers";
+import { generateRoutes } from "./generator/generateRoutes";
+import { routes } from "./config/routes.config";
+
 
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    Component: AppLayout,
+    Component:AuthWrapper(AppLayout),
     errorElement: createElement(NotFoundPage),
-    // children: [
-    
-    // ],
+    children: generateRoutes(routes),
   },
  {
   path: "/auth",
-  Component: AuthLayout,
+  Component: GuestWrapper(AuthLayout),
   children: [
     { index: true, Component: Login },
     { path: "login", Component: Login },
