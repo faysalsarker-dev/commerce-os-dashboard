@@ -3,3 +3,11 @@ export interface ApiResponse<T> {
   message: string;
   data: T;
 }
+
+export type ApiError = {
+  status: number;
+  data: {
+    status: "fail";
+    message: string;
+  };
+};

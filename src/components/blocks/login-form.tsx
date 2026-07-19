@@ -16,8 +16,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { loginSchema, type LoginSchema } from "@/types/validations/auth/auth";
+import { useLoginMutation } from "@/redux/features/auth/auth.api";
+import { toast } from "sonner";
+import { useNavigate } from "react-router";
+import type { ApiError } from "@/types/shared";
 
 export function LoginCard() {
+  const [login, { isLoading}] = useLoginMutation();
+  const navigate = useNavigate();
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -26,13 +32,25 @@ export function LoginCard() {
     },
   });
 
-  const isSubmitting = form.formState.isSubmitting;
+  const isSubmitting = form.formState.isSubmitting || isLoading;
 
-  async function onSubmit(values: LoginSchema) {
-    console.log(values);
+async function onSubmit(values: LoginSchema) {
+  try {
+    const res = await login(values).unwrap();
 
-    // await loginMutation(values)
+    toast.success("Login successful");
+
+    navigate("/dashboard"); 
+
+    console.log(res);
+  } catch (err) {
+
+    const error = err as ApiError;
+    toast.error(
+      error?.data?.message || "Invalid email or password"
+    );
   }
+}
 
   return (
     <Card className="w-full max-w-md border-border/60 shadow-sm">

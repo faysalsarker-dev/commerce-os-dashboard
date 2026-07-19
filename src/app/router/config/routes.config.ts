@@ -10,14 +10,14 @@ import {
 } from "lucide-react";
 
 
-import DashboardPage from "@/app/pages/dashboard/DashboardPage";
-import ProductListPage from "@/app/pages/products/ProductListPage";
-import ProductFormPage from "@/app/pages/products/ProductFormPage";
-import OrderListPage from "@/app/pages/orders/OrderListPage";
-import OrderDetailPage from "@/app/pages/orders/OrderDetailPage";
-import UserListPage from "@/app/pages/users/UserListPage";
-import ReportsPage from "@/app/pages/reports/ReportsPage";
-import SettingsPage from "@/app/pages/settings/SettingsPage";
+// import DashboardPage from "@/app/pages/dashboard/DashboardPage";
+// import ProductListPage from "@/app/pages/products/ProductListPage";
+// import ProductFormPage from "@/app/pages/products/ProductFormPage";
+// import OrderListPage from "@/app/pages/orders/OrderListPage";
+// import OrderDetailPage from "@/app/pages/orders/OrderDetailPage";
+// import UserListPage from "@/app/pages/users/UserListPage";
+// import ReportsPage from "@/app/pages/reports/ReportsPage";
+// import SettingsPage from "@/app/pages/settings/SettingsPage";
 import type { IRoute } from "@/types/routes/route.types";
 
 /**

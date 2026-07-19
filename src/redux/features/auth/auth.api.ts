@@ -4,7 +4,7 @@ import type { User } from "@/types/data-types/user/user.type";
 import type { ApiResponse } from "@/types/shared";
 
 
-const BASE_URL = "/user";
+const BASE_URL = "/auth";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -89,6 +89,15 @@ export const authApi = baseApi.injectEndpoints({
       keepUnusedDataFor: 60 * 60 * 3,
     }),
 
+    getMe: builder.query<ApiResponse<User>, void>({
+      query: () => ({
+        url: `${BASE_URL}/me`,
+        method: "GET",
+      }),
+      providesTags: [{ type: "USER", id: "CURRENT" }],
+      keepUnusedDataFor: 60 * 60 * 3,
+    }),
+
     /**
      * Update Profile
      */
@@ -132,4 +141,5 @@ export const {
   useLazyGetProfileQuery,
   useUpdateProfileMutation,
   useUpdatePasswordMutation,
+  useGetMeQuery,
 } = authApi;
