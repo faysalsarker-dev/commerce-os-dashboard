@@ -1,46 +1,33 @@
-// src/app/router/generateRoutes.ts
+import type { Page } from "@/types/permissions/permissions.types"
+import type { RouteObject } from "react-router"
 
-import { createElement } from "react";
-import type { RouteObject } from "react-router";
-import type { IRoute } from "@/types/routes/route.types";
-import { ProtectedRoute } from "./ProtectedRoute";
 
-/**
- * Converts the central `routes` config into react-router's RouteObject[].
- *
- * WHY THIS EXISTS:
- * routes.config.ts describes pages in terms of your domain (name, icon,
- * permission, visibility) — react-router doesn't need or want any of that.
- * This function is the ONLY place that translates "your" route shape into
- * "react-router's" route shape, so routes.config.ts never has to know
- * anything about createBrowserRouter internals.
- *
- * Runs recursively so nested `children` (e.g. products -> :id/edit) are
- * preserved at the correct depth automatically.
- */
-export function generateRoutes(routes: IRoute[]): RouteObject[] {
-  return routes.map((route) => {
-    const page = createElement(route.Component);
+export interface RouteConfig {
+  path?: string
+  index?: boolean
+  name: string
+  Component: React.ComponentType
+  icon?: React.ComponentType<{ className?: string }>
+  page?: Page 
+  isVisible?: boolean
+  children?: RouteConfig[]
+}
 
-    // If a route requires a permission, wrap it in ProtectedRoute.
-    // Routes with no `permission` are just auth-gated by the parent
-    // AuthWrapper already in your router tree — no extra wrapping needed.
-    const element = route.permission
-      ? createElement(
-          ProtectedRoute,
-          { permission: route.permission, requireAll: route.requireAll },
-          page
-        )
-      : page;
+function buildRoute(route: RouteConfig): RouteObject {
+  const handle = { page: route.page }
 
-    const routeObject: RouteObject = route.index
-      ? { index: true, element }
-      : { path: route.path, element };
+  if (route.index) {
+    return { index: true, Component: route.Component, handle }
+  }
 
-    if (route.children?.length) {
-      routeObject.children = generateRoutes(route.children);
-    }
+  return {
+    path: route.path,
+    Component: route.Component,
+    handle,
+    ...(route.children ? { children: route.children.map(buildRoute) } : {}),
+  }
+}
 
-    return routeObject;
-  });
+export function generateRoutes(routes: RouteConfig[]): RouteObject[] {
+  return routes.map(buildRoute)
 }

@@ -6,6 +6,7 @@ import { authApi, useGetMeQuery } from '@/redux/features/auth/auth.api'
 interface UseAuthResult {
   user: User | undefined
   isAuthenticated: boolean
+  role: string | undefined
   isLoading: boolean
   isFetching: boolean
   isError: boolean
@@ -21,7 +22,7 @@ export const useAuth = (): UseAuthResult => {
   })
 
   const user = userResponse?.data
-  const isAuthenticated = useMemo(() => isSuccess && !!user, [isSuccess, user])
+  const isAuthenticated = useMemo(() => isSuccess && !!user && !isLoading, [isSuccess, user, isLoading])
 
   const refetchMe = useCallback(() => {
     refetch()
@@ -34,6 +35,7 @@ export const useAuth = (): UseAuthResult => {
   return useMemo(
     () => ({
       user,
+      role: user?.role,
       isAuthenticated,
       isLoading,
       isFetching,

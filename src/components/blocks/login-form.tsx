@@ -40,7 +40,7 @@ async function onSubmit(values: LoginSchema) {
 
     toast.success("Login successful");
 
-    navigate("/dashboard"); 
+    navigate("/"); 
 
     console.log(res);
   } catch (err) {

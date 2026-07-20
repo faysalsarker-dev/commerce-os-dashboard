@@ -1,20 +1,14 @@
 // src/types/permissions.ts
+export type Role = "admin" | "seller" | "moderator"
 
-export type Role = "admin" | "seller" | "moderator";
+export type Page = "products" | "orders" | "inventory" | "users" | "reports" | "settings"
 
-export type Permission =
-  | "product:create"
-  | "product:edit"
-  | "product:delete"
-  | "product:view"
-  | "order:view"
-  | "order:create"
-  | "order:refund"
-  | "order:cancel"
-  | "inventory:view"
-  | "inventory:adjust"
-  | "user:manage"
-  | "user:view"
-  | "report:view"
-  | "report:export"
-  | "settings:manage";
+export type Resource = "product" | "order" | "inventory" | "user" | "report" | "settings"
+export type Action = "view" | "create" | "edit" | "delete" | "refund" | "cancel" | "adjust" | "manage" | "export"
+
+export interface RoleConfig {
+  pages: Page[]
+  actions: Partial<Record<Resource, Action[]>>
+}
+
+export type RolePermissions = Record<Role, RoleConfig>

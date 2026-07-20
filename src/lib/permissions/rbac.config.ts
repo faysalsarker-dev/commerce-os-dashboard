@@ -1,42 +1,37 @@
-// src/lib/permissions/rbac.config.ts
+import type { RolePermissions } from "@/types/permissions/permissions.types";
 
-import type { Role, Permission } from "@/types/permissions";
 
-/**
- * Single source of truth: which permissions each role has.
- * Add/remove permissions here only — never hardcode role checks elsewhere.
- */
-export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
-  admin: [
-    "product:create",
-    "product:edit",
-    "product:delete",
-    "product:view",
-    "order:view",
-    "order:create",
-    "order:refund",
-    "order:cancel",
-    "inventory:view",
-    "inventory:adjust",
-    "user:manage",
-    "user:view",
-    "report:view",
-    "report:export",
-    "settings:manage",
-  ],
-  seller: [
-    "product:view",
-    "product:edit",
-    "order:view",
-    "order:create",
-    "inventory:view",
-    "report:view",
-  ],
-  moderator: [
-    "product:view",
-    "order:view",
-    "order:refund",
-    "user:view",
-    "report:view",
-  ],
-};
+
+export const ROLE_PERMISSIONS: RolePermissions = {
+  admin: {
+    pages: ["products", "orders", "inventory", "users", "reports", "settings"],
+    actions: {
+      product: ["view", "create", "edit", "delete"],
+      order: ["view", "create", "refund", "cancel"],
+      inventory: ["view", "adjust"],
+      user: ["view", "manage"],
+      report: ["view", "export"],
+      settings: ["manage"],
+    },
+  },
+
+  seller: {
+    pages: ["products", "orders", "inventory", "reports"],
+    actions: {
+      product: ["view", "edit"],
+      order: ["view", "create"],
+      inventory: ["view"],
+      report: ["view"],
+    },
+  },
+
+  moderator: {
+    pages: ["products", "orders", "users", "reports"],
+    actions: {
+      product: ["view"],
+      order: ["view", "refund"],
+      user: ["view"],
+      report: ["view"],
+    },
+  },
+}
