@@ -29,4 +29,5 @@ export * from "./toggle";
 export * from "./toggle-group";
 export * from "./tooltip";
 export * from "./breadcrumb";
+export * from "./status-badge";
 
