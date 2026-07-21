@@ -34,66 +34,7 @@ export const routes: IRoute[] = [
     icon: LayoutDashboardIcon,
     index: true,
   },
-  {
-    path: "products",
-    name: "Products",
-    Component: ProductListPage,
-    icon: BoxIcon,
-    permission: "product:view",
-    children: [
-      {
-        path: "new",
-        name: "New Product",
-        Component: ProductFormPage,
-        permission: "product:create",
-        isVisible: false, // in the router, hidden from sidebar
-      },
-      {
-        path: ":id/edit",
-        name: "Edit Product",
-        Component: ProductFormPage,
-        permission: "product:edit",
-        isVisible: false, // dynamic route, no sidebar entry
-      },
-    ],
-  },
-  {
-    path: "orders",
-    name: "Orders",
-    Component: OrderListPage,
-    icon: ShoppingCartIcon,
-    permission: "order:view",
-    children: [
-      {
-        path: ":id",
-        name: "Order Detail",
-        Component: OrderDetailPage,
-        permission: "order:view",
-        isVisible: false,
-      },
-    ],
-  },
-  {
-    path: "users",
-    name: "Team",
-    Component: UserListPage,
-    icon: UsersIcon,
-    permission: "user:view",
-  },
-  {
-    path: "reports",
-    name: "Reports",
-    Component: ReportsPage,
-    icon: FileChartColumnIcon,
-    permission: "report:view",
-  },
-  {
-    path: "settings",
-    name: "Settings",
-    Component: SettingsPage,
-    icon: Settings2Icon,
-    permission: "settings:manage",
-  },
+
 ];
 
 

@@ -61,7 +61,7 @@ axiosInstance.interceptors.response.use(
 
       try {
         // Call refresh token endpoint (cookies sent automatically)
-        await axiosInstance.post("/user/refresh-token");
+        await axiosInstance.post("/auth/refresh-token");
 
         processQueue(null);
 
