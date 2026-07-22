@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/hooks/auth/useAuth";
-import { useLogout } from "@/hooks/auth/useLogout";
 import { LogoutDialog } from "./logout-dialog";
 import { useState } from "react";
 

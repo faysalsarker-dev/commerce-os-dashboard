@@ -1,6 +1,4 @@
-// DataTable.tsx
-"use client"
-
+/* eslint-disable react-hooks/incompatible-library */
 import type { ReactNode } from "react"
 import { useState } from "react"
 import {
@@ -25,8 +23,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
-import "@/types/table/table.types" // registers ColumnMeta<label, className>
+import "@/types/table/table.types" 
 import { DataTablePagination } from "./DataTablePagination"
+import { cn } from "@/lib/utils"
+
 
 const MotionRow = motion(TableRow)
 
@@ -87,6 +87,7 @@ export function DataTable<TData, TValue>({
   emptyState,
   onRowClick,
   className,
+  toolbar,
 }: DataTableProps<TData, TValue>) {
   // Uncontrolled fallbacks: the table works with zero wiring out of the box,
   // and upgrades to controlled the instant a page passes its own state + setter
@@ -132,16 +133,33 @@ export function DataTable<TData, TValue>({
   const columnCount = table.getVisibleLeafColumns().length
 
   return (
-    <div className={`space-y-3 ${className ?? ""} bg-background shadow border px-2`}>
+   <div className={cn("space-y-4", className)}>
    
-
-      <div className="rounded border">
+{toolbar && (
+  <div className="flex items-center justify-between gap-4">
+    {toolbar}
+  </div>
+)}
+      <div className="overflow-hidden rounded border bg-card">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-muted/30">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
+
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className={header.column.columnDef.meta?.className}>
+
+<TableHead
+  key={header.id}
+  className={cn(
+    "h-11 whitespace-nowrap px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground",
+    header.column.columnDef.meta?.className
+  )}
+>
+
+
+
+
+                  
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -153,18 +171,24 @@ export function DataTable<TData, TValue>({
 
           <TableBody>
             {isLoading ? (
-              Array.from({ length: paginationState.pageSize }).map((_, i) => (
+             Array.from({
+  length: Math.min(paginationState.pageSize, 10),
+}).map((_, i) => (
                 <TableRow key={`skeleton-${i}`}>
                   {columns.map((_, j) => (
                     <TableCell key={j}>
-                      <Skeleton className="h-4 w-full" />
+                      <Skeleton
+  className={`h-4 ${
+    ["w-2/3", "w-full", "w-3/4", "w-1/2"][j % 4]
+  }`}
+/>
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columnCount} className="h-32 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={columnCount} className="h-48 text-center text-muted-foreground">
                   {emptyState ?? "No results."}
                 </TableCell>
               </TableRow>
@@ -180,10 +204,21 @@ export function DataTable<TData, TValue>({
                     transition={{ duration: 0.15 }}
                     data-state={row.getIsSelected() ? "selected" : undefined}
                     onClick={() => onRowClick?.(row.original)}
-                    className={onRowClick ? "cursor-pointer" : undefined}
+                    className={cn(
+  "transition-colors hover:bg-muted/40",
+  onRowClick && "cursor-pointer"
+)}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className={cell.column.columnDef.meta?.className}>
+
+                      <TableCell
+  key={cell.id}
+  className={cn(
+    "px-4 py-3 font-medium",
+    cell.column.columnDef.meta?.className
+  )}
+>
+                      
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}

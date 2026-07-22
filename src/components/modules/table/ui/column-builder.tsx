@@ -364,6 +364,12 @@ function RowActionsMenu<T, TAction extends string, TResource extends string>({
 /* createColumns()                                                       */
 /* --------------------------------------------------------------------- */
 
+
+
+
+
+
+
 export function createColumns<T, TAction extends string = Action, TResource extends string = Resource>(
   config: CreateColumnsConfig<T, TAction, TResource>,
 ): ColumnDef<T>[] {
@@ -373,7 +379,11 @@ export function createColumns<T, TAction extends string = Action, TResource exte
     if (col.kind === "actions") {
       return {
         id: "actions",
-        header: "",
+        header: () => (
+  <div className="flex justify-center">
+    Actions
+  </div>
+),
         enableSorting: false,
         enableHiding: false,
         cell: ({ row }) => (
@@ -392,15 +402,35 @@ export function createColumns<T, TAction extends string = Action, TResource exte
     const sortable = options.sortable ?? true
     const hideable = options.hideable ?? true
     const align: Align = options.align ?? (type === "currency" || type === "number" ? "right" : "left")
-    const alignClass = align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left"
+    // const alignClass = align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left"
     const renderCell = renderers[type]
+
+const alignClass =
+  align === "right"
+    ? "text-right tabular-nums"
+    : align === "center"
+      ? "text-center"
+      : "text-left"
+
+const defaultWidth =
+  type === "actions"
+    ? 72
+    : type === "number"
+      ? 100
+      : type === "currency"
+        ? 130
+        : type === "status"
+          ? 140
+          : undefined
+
+
 
     return {
       id: key,
       accessorFn: (row) => getValueByPath(row, key),
       enableSorting: sortable,
       enableHiding: hideable,
-      size: options.width,
+      size: options.width ?? defaultWidth,
       header: ({ column: c }) =>
         sortable ? (
           <DataTableColumnHeader column={c} title={label} className={alignClass} />

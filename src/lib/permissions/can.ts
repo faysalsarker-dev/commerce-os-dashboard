@@ -1,25 +1,25 @@
+import type { Action, Page, Resource } from "@/types/permissions/permissions.types"
 import { ROLE_PERMISSIONS } from "./rbac.config"
-import type { Action, Page, Resource, Role } from "@/types/permissions/permissions.types"
+import type { Role } from "@/types/data-types/enums"
 
-// "Can this role do {action} on {resource}?"
-export function can(
-  roles: Role | Role[] | undefined,
-  action: Action,
-  resource: Resource
-): boolean {
-  if (!roles) return false
-  const roleList = Array.isArray(roles) ? roles : [roles]
-  return roleList.some((role) =>
-    ROLE_PERMISSIONS[role]?.actions[resource]?.includes(action)
-  )
+export function can(role: Role | undefined, action: Action, resource: Resource): boolean {
+  if (!role) return false
+  const config = ROLE_PERMISSIONS[role]
+  if (!config) return false
+
+  if (config.actions === "*") return true // full control, every resource
+
+  const resourceActions = config.actions[resource]
+  if (!resourceActions) return false
+
+  if (resourceActions === "*") return true // full control, THIS resource only
+  return resourceActions.includes(action)
 }
 
-// "Can this role access this page?"
-export function canAccessPage(
-  roles: Role | Role[] | undefined,
-  page: Page
-): boolean {
-  if (!roles) return false
-  const roleList = Array.isArray(roles) ? roles : [roles]
-  return roleList.some((role) => ROLE_PERMISSIONS[role]?.pages.includes(page))
+export function canAccessPage(role: Role | undefined, page: Page): boolean {
+  if (!role) return false
+  const config = ROLE_PERMISSIONS[role]
+  if (!config) return false
+  if (config.pages === "*") return true
+  return config.pages.includes(page)
 }

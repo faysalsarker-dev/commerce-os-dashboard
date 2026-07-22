@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/auth/useAuth"
 import { canAccessPage } from "@/lib/permissions/can"
-import type { Page, Role } from "@/types/permissions/permissions.types"
+import type { Role } from "@/types/data-types/enums"
+import type { Page } from "@/types/permissions/permissions.types"
 import getComponentName from "@/utils/get-component"
 import React, { useEffect } from "react"
 import { useLocation, useMatches, useNavigate } from "react-router"
@@ -23,11 +24,13 @@ export const AuthWrapper = <P extends object>(
       !currentPage || canAccessPage(role as Role, currentPage)
 
     useEffect(() => {
-      if (!isAuthenticated && !isLoading) {
+      if (isLoading) return
+
+      if (!isAuthenticated) {
         navigate("/auth/login")
         return
       }
-      if (isAuthenticated && !hasPermission) {
+      if (!hasPermission) {
         navigate("/unauthorized", {
           state: { from: location.pathname },
           replace: true,
@@ -35,11 +38,9 @@ export const AuthWrapper = <P extends object>(
       }
     }, [isAuthenticated, isLoading, hasPermission, location.pathname, navigate])
 
-    if (!isAuthenticated && !isLoading) {
-      navigate("/auth/login")
-    }
-
+    if (isLoading) return null 
     if (!isAuthenticated || !hasPermission) return null
+
     return React.createElement(WrappedComponent, props)
   }
 

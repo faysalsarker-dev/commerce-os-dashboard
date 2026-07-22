@@ -161,7 +161,7 @@ const productColumns = createColumns<Product>({
       }),
 
       action.delete({
-        // permission: "delete",
+        permission: "delete",
         onClick: deleteProduct,
       }),
     ]),

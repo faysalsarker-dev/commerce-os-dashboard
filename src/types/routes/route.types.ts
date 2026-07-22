@@ -1,18 +1,14 @@
 
 
-import type { ComponentType } from "react";
-import type { LucideIcon } from "lucide-react";
-import type { Role } from "../data-types/enums";
 
-export interface IRoute {
-  
-  path?: string;
-  name: string;
-  Component: ComponentType;
-  icon?: LucideIcon;
-  index?: boolean;
-  isVisible?: boolean;
-  permission?: Role | Role[];
-  requireAll?: boolean;
-  children?: IRoute[];
+import type { Page } from "../permissions/permissions.types";
+export interface RouteConfig {
+  path?: string
+  index?: boolean
+  name: string
+  Component: React.ComponentType
+  icon?: React.ComponentType<{ className?: string }>
+  page?: Page // maps this route to a permission "page" — omit for auth-only routes
+  isVisible?: boolean // false = registered route, hidden from sidebar
+  children?: RouteConfig[]
 }

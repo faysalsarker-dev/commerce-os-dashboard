@@ -1,4 +1,3 @@
-"use client"
 
 import * as React from "react"
 import { mergeProps } from "@base-ui/react/merge-props"
@@ -25,12 +24,15 @@ import {
 } from "@/components/ui/tooltip"
 import { PanelLeftIcon } from "lucide-react"
 
-const SIDEBAR_COOKIE_NAME = "sidebar_state"
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+
 const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
+
+
+const SIDEBAR_STORAGE_KEY = "sidebar_state"
+
 
 type SidebarContextProps = {
   state: "expanded" | "collapsed"
@@ -66,26 +68,38 @@ function SidebarProvider({
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }) {
+
+
+
   const isMobile = useIsMobile()
   const [openMobile, setOpenMobile] = React.useState(false)
 
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(defaultOpen)
-  const open = openProp ?? _open
-  const setOpen = React.useCallback(
-    (value: boolean | ((value: boolean) => boolean)) => {
-      const openState = typeof value === "function" ? value(open) : value
-      if (setOpenProp) {
-        setOpenProp(openState)
-      } else {
-        _setOpen(openState)
-      }
+  const [_open, _setOpen] = React.useState(() => {
+  if (typeof window === "undefined") return defaultOpen
 
-      // This sets the cookie to keep the sidebar state.
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
-    },
-    [setOpenProp, open]
+  const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY)
+  return stored !== null ? JSON.parse(stored) : defaultOpen
+})
+
+
+const open = openProp ?? _open
+
+const setOpen = React.useCallback(
+  (value: boolean | ((value: boolean) => boolean)) => {
+    const openState = typeof value === "function" ? value(open) : value
+
+    if (setOpenProp) {
+      setOpenProp(openState)
+    } else {
+      _setOpen(openState)
+    }
+
+    // Persist to localStorage
+    localStorage.setItem(SIDEBAR_STORAGE_KEY, JSON.stringify(openState))
+  },
+  [setOpenProp, open]
   )
 
   // Helper to toggle the sidebar.

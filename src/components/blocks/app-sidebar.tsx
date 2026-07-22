@@ -1,7 +1,5 @@
 import * as React from "react"
 
-
-import { NavUser } from "@/components/blocks/nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -10,37 +8,24 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { useAuth } from "@/hooks/auth/useAuth"
+} from "@/components/ui"
 import { NavGroup } from "./nav-group"
-import { CommandIcon, DatabaseIcon, FileChartColumnIcon, FileIcon } from "lucide-react"
-
-
-
-
-const mockNavDocuments = [
-  { title: "Data Library", url: "/", icon: <DatabaseIcon /> },
-  { title: "Reports", url: "/reports", icon: <FileChartColumnIcon /> },
-  { title: "Invoices", url: "/invoices", icon: <FileIcon /> },
-]
-
-
-
-
-
-
-
+import { CommandIcon } from "lucide-react"
+import { useAuth } from "@/hooks/auth/useAuth"
+import { generateSidebarNav } from "@/app/router/generator/generateSidebarNav"
+import { routeGroups } from "@/app/router/config/routes.config"
+import type { Role } from "@/types/data-types/enums"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { role } = useAuth()
 
-const {user} = useAuth()
+  const navGroups = React.useMemo(
+    () => generateSidebarNav(routeGroups, role as Role),
+    [role]
+  )
 
   return (
-    <Sidebar collapsible="icon" {...props}   
-    
-    
-
-    >
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -55,13 +40,11 @@ const {user} = useAuth()
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-     
-        <NavGroup title="Documents" items={mockNavDocuments} />
-    
+        {navGroups.map((group) => (
+          <NavGroup key={group.label} title={group.label} items={group.items} />
+        ))}
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={user} />
-      </SidebarFooter>
+      <SidebarFooter></SidebarFooter>
     </Sidebar>
   )
 }

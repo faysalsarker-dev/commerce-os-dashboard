@@ -24,7 +24,7 @@ export function PageHeader({
         ease: "easeOut",
       }}
       className={cn(
-        "flex flex-col gap-4 md:flex-row md:items-center md:justify-between  p-4 rounded border shadow",
+        "flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-card p-4 rounded border shadow",
         className
       )}
     >

@@ -1,23 +1,15 @@
-import type { Page } from "@/types/permissions/permissions.types"
+import type { RouteConfig } from "@/types/routes/route.types"
 import type { RouteObject } from "react-router"
-
-
-export interface RouteConfig {
-  path?: string
-  index?: boolean
-  name: string
-  Component: React.ComponentType
-  icon?: React.ComponentType<{ className?: string }>
-  page?: Page 
-  isVisible?: boolean
-  children?: RouteConfig[]
-}
 
 function buildRoute(route: RouteConfig): RouteObject {
   const handle = { page: route.page }
 
   if (route.index) {
-    return { index: true, Component: route.Component, handle }
+    return {
+      index: true,
+      Component: route.Component,
+      handle,
+    }
   }
 
   return {

@@ -1,40 +1,87 @@
+// src/config/routes.config.t
+import { BoxIcon, ListIcon, WarehouseIcon, UsersIcon, FileChartColumnIcon, Settings2Icon } from "lucide-react"
+
+import type { RouteConfig } from "@/types/routes/route.types"
+import Page from "@/app/pages/test/Page"
 
 
-import {
-  LayoutDashboardIcon,
-  BoxIcon,
-  ShoppingCartIcon,
-  UsersIcon,
-  FileChartColumnIcon,
-  Settings2Icon,
-} from "lucide-react";
 
+export interface RouteGroup {
+  label: string
+  items: RouteConfig[]
+}
 
-// import DashboardPage from "@/app/pages/dashboard/DashboardPage";
-// import ProductListPage from "@/app/pages/products/ProductListPage";
-// import ProductFormPage from "@/app/pages/products/ProductFormPage";
-// import OrderListPage from "@/app/pages/orders/OrderListPage";
-// import OrderDetailPage from "@/app/pages/orders/OrderDetailPage";
-// import UserListPage from "@/app/pages/users/UserListPage";
-// import ReportsPage from "@/app/pages/reports/ReportsPage";
-// import SettingsPage from "@/app/pages/settings/SettingsPage";
-import type { IRoute } from "@/types/routes/route.types";
-
-/**
- * SINGLE SOURCE OF TRUTH.
- * Every page in the app is registered here exactly once.
- * generateRoutes() reads this to build the browser router.
- * generateSidebarNav() reads this to build the sidebar.
- */
-export const routes: IRoute[] = [
+export const routeGroups: RouteGroup[] = [
   {
-    path: "/",
-    name: "Dashboard",
-    Component: DashboardPage,
-    icon: LayoutDashboardIcon,
-    index: true,
+    label: "Data Library",
+    items: [
+      {
+        path: "products",
+        name: "Products",
+        Component: Page,
+        icon: BoxIcon,
+        index: true,
+        page: "products",
+        children: [
+          {
+            path: "new",
+            name: "New Product",
+            Component: Page,
+            page: "products",
+            isVisible: false,
+          },
+          {
+            path: ":id/edit",
+            name: "Edit Product",
+            Component: Page,
+            page: "products",
+            isVisible: false,
+          },
+        ],
+      },
+      {
+        path: "orders",
+        name: "Orders",
+        Component: Page,
+        icon: ListIcon,
+        page: "orders",
+      },
+      {
+        path: "inventory",
+        name: "Inventory",
+        Component: Page,
+        icon: WarehouseIcon,
+        page: "inventory",
+      },
+    ],
   },
+  {
+    label: "Management",
+    items: [
+      {
+        path: "users",
+        name: "Users",
+        Component: Page,
+        icon: UsersIcon,
+        page: "users",
+      },
+      {
+        path: "reports",
+        name: "Reports",
+        Component: Page,
+        icon: FileChartColumnIcon,
+        page: "reports",
+      },
+      {
+        path: "settings",
+        name: "Settings",
+        Component: Page,
+        icon: Settings2Icon,
+        page: "settings",
+      },
+    ],
+  },
+]
 
-];
-
-
+// Flat list — routing doesn't care about sidebar grouping, only items do
+export const routes: RouteConfig[] = routeGroups.flatMap((group) => group.items)
