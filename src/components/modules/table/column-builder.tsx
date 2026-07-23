@@ -27,7 +27,7 @@
 import * as React from "react"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { LucideIcon } from "lucide-react"
-import { MoreHorizontal, Pencil, Trash2, Eye, Copy, Archive,  } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, Eye, Copy, Archive, ImageOff,  } from "lucide-react"
 import type {
     Action,
     Resource,
@@ -41,8 +41,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 import { DataTableColumnHeader } from "./DataTableColumnHeader"
-import { StatusBadge } from "@/components/ui"
+import { Avatar, AvatarFallback, AvatarImage, StatusBadge } from "@/components/ui"
 import { Can } from "@/components/shared/permissions/Can"
+import { cn } from "@/lib/utils"
 
 
 // Import YOUR app's real CASL union types here. Defaulting the generics to
@@ -114,14 +115,24 @@ interface CurrencyColumnOptions<T> extends BaseColumnOptions<T> {
   currency?: string
 }
 
+interface ImageColumnOptions<T> extends BaseColumnOptions<T> {
+  size?: number;
+  rounded?: "none" | "sm" | "md" | "lg" | "full";
+  fallback?: string;
+}
+
+
 // Add new column types here as you extend the builder (e.g. "avatar" | "badge").
-type ColumnType = "text" | "currency" | "number" | "date" | "status"
+type ColumnType = "text" | "currency" | "number" | "date" | "status" | "image"
 
 interface DataColumnConfig<T> {
   kind: "data"
   type: ColumnType
   key: keyof T & string
-  options: BaseColumnOptions<T> | CurrencyColumnOptions<T>
+  options:
+  | BaseColumnOptions<T>
+  | CurrencyColumnOptions<T>
+  | ImageColumnOptions<T>;
 }
 
 interface ActionsColumnConfig<T, TAction extends string> {
@@ -182,8 +193,24 @@ interface CreateColumnsConfig<T, TAction extends string = Action, TResource exte
 /* column() + variants                                                   */
 /* --------------------------------------------------------------------- */
 
-function makeDataColumn<T>(type: ColumnType) {
-  return (key: keyof T & string, options: BaseColumnOptions<T> = {}): DataColumnConfig<T> => ({
+// function makeDataColumn<T>(type: ColumnType) {
+//   return (key: keyof T & string, options: BaseColumnOptions<T> = {}): DataColumnConfig<T> => ({
+//     kind: "data",
+//     type,
+//     key,
+//     options,
+//   })
+// }
+
+
+function makeDataColumn<
+  T,
+  TOptions extends BaseColumnOptions<T> = BaseColumnOptions<T>,
+>(type: ColumnType) {
+  return (
+    key: keyof T & string,
+    options: TOptions = {} as TOptions,
+  ): DataColumnConfig<T> => ({
     kind: "data",
     type,
     key,
@@ -201,12 +228,41 @@ function actionsColumn<T, TAction extends string = Action>(
   return { kind: "actions", actions }
 }
 
+// export const column = Object.assign(baseColumn, {
+//   currency: <T,>(key: keyof T & string, options?: CurrencyColumnOptions<T>) =>
+//     makeDataColumn<T>("currency")(key, options),
+//   number: <T,>(key: keyof T & string, options?: BaseColumnOptions<T>) => makeDataColumn<T>("number")(key, options),
+//   date: <T,>(key: keyof T & string, options?: BaseColumnOptions<T>) => makeDataColumn<T>("date")(key, options),
+//   status: <T,>(key: keyof T & string, options?: BaseColumnOptions<T>) => makeDataColumn<T>("status")(key, options),
+//   actions: actionsColumn,
+// })
+
 export const column = Object.assign(baseColumn, {
-  currency: <T,>(key: keyof T & string, options?: CurrencyColumnOptions<T>) =>
-    makeDataColumn<T>("currency")(key, options),
-  number: <T,>(key: keyof T & string, options?: BaseColumnOptions<T>) => makeDataColumn<T>("number")(key, options),
-  date: <T,>(key: keyof T & string, options?: BaseColumnOptions<T>) => makeDataColumn<T>("date")(key, options),
-  status: <T,>(key: keyof T & string, options?: BaseColumnOptions<T>) => makeDataColumn<T>("status")(key, options),
+  currency: <T,>(
+    key: keyof T & string,
+    options?: CurrencyColumnOptions<T>,
+  ) => makeDataColumn<T, CurrencyColumnOptions<T>>("currency")(key, options),
+
+  number: <T,>(
+    key: keyof T & string,
+    options?: BaseColumnOptions<T>,
+  ) => makeDataColumn<T, BaseColumnOptions<T>>("number")(key, options),
+
+  date: <T,>(
+    key: keyof T & string,
+    options?: BaseColumnOptions<T>,
+  ) => makeDataColumn<T, BaseColumnOptions<T>>("date")(key, options),
+
+  status: <T,>(
+    key: keyof T & string,
+    options?: BaseColumnOptions<T>,
+  ) => makeDataColumn<T, BaseColumnOptions<T>>("status")(key, options),
+
+  image: <T,>(
+    key: keyof T & string,
+    options?: ImageColumnOptions<T>,
+  ) => makeDataColumn<T, ImageColumnOptions<T>>("image")(key, options),
+
   actions: actionsColumn,
 })
 
@@ -279,18 +335,75 @@ export const action = {
 /* --------------------------------------------------------------------- */
 
 interface RendererContext<T> {
-  value: unknown
-  row: T
-  options: BaseColumnOptions<T> | CurrencyColumnOptions<T>
+  value: unknown;
+  row: T;
+  options:
+    | BaseColumnOptions<T>
+    | CurrencyColumnOptions<T>
+    | ImageColumnOptions<T>;
 }
 
-const renderers: Record<ColumnType, (ctx: RendererContext<unknown>) => React.ReactNode> = {
-  text: ({ value }) => <>{value == null || value === "" ? "-" : String(value)}</>,
-  currency: ({ value, options }) => <>{formatCurrency(value, (options as CurrencyColumnOptions<unknown>).currency)}</>,
+const renderers: Record<
+  ColumnType,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (ctx: RendererContext<any>) => React.ReactNode
+> = {
+  text: ({ value }) => (
+    <>{value == null || value === "" ? "-" : String(value)}</>
+  ),
+
+  currency: ({ value, options }) => (
+    <>
+      {formatCurrency(
+        value,
+        (options as CurrencyColumnOptions<unknown>).currency
+      )}
+    </>
+  ),
+
   number: ({ value }) => <>{formatNumber(value)}</>,
+
   date: ({ value }) => <>{formatDate(value)}</>,
+
   status: ({ value }) => <StatusBadge value={value as string} />,
-}
+
+  image: ({ value, options }) => {
+    const imageOptions = options as ImageColumnOptions<unknown>;
+
+    const size = imageOptions.size ?? 40;
+
+    const rounded = {
+      none: "",
+      sm: "rounded-sm",
+      md: "rounded-md",
+      lg: "rounded-lg",
+      full: "rounded-full",
+    };
+
+    const src =
+      typeof value === "string" && value.length > 0
+        ? value
+        : imageOptions.fallback;
+
+    return (
+      <Avatar
+        className={cn(
+          rounded[imageOptions.rounded ?? "none"],
+          "border"
+        )}
+        style={{
+          width: size,
+          height: size,
+        }}
+      >
+        <AvatarImage src={src} />
+        <AvatarFallback>
+  <ImageOff className="h-4 w-4" />
+</AvatarFallback>
+      </Avatar>
+    );
+  },
+};
 
 /* --------------------------------------------------------------------- */
 /* Internal: RowActionsMenu (not exported)                               */
@@ -322,9 +435,9 @@ function RowActionsMenu<T, TAction extends string, TResource extends string>({
 
   return (
     <DropdownMenu>
-<DropdownMenuTrigger render={<Button variant="ghost" className="h-8 w-8 p-0" />}>
+<DropdownMenuTrigger render={<Button variant="ghost" className="h-8 w-8 p-0 flex  justify-end" />}>
     <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
+          <MoreHorizontal className="h-4 w-4 " />
   </DropdownMenuTrigger>
 
 
@@ -350,7 +463,7 @@ function RowActionsMenu<T, TAction extends string, TResource extends string>({
           if (!resource) return item // no resource configured -> can't scope permission, render as-is
 
           return (
-            <Can I={act.can} a={resource} key={index}>
+            <Can I={act.can as Action} a={resource as Resource} key={index}>
               {item}
             </Can>
           )
@@ -399,30 +512,11 @@ export function createColumns<T, TAction extends string = Action, TResource exte
 
     const { key, type, options } = col
     const label = options.label ?? humanize(key)
-    const sortable = options.sortable ?? true
+    const sortable = options.sortable ?? false
     const hideable = options.hideable ?? true
     const align: Align = options.align ?? (type === "currency" || type === "number" ? "right" : "left")
-    // const alignClass = align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left"
+    const alignClass = align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left"
     const renderCell = renderers[type]
-
-const alignClass =
-  align === "right"
-    ? "text-right tabular-nums"
-    : align === "center"
-      ? "text-center"
-      : "text-left"
-
-const defaultWidth =
-  type === "actions"
-    ? 72
-    : type === "number"
-      ? 100
-      : type === "currency"
-        ? 130
-        : type === "status"
-          ? 140
-          : undefined
-
 
 
     return {
@@ -430,22 +524,44 @@ const defaultWidth =
       accessorFn: (row) => getValueByPath(row, key),
       enableSorting: sortable,
       enableHiding: hideable,
-      size: options.width ?? defaultWidth,
+      size: options.width ,
       header: ({ column: c }) =>
         sortable ? (
           <DataTableColumnHeader column={c} title={label} className={alignClass} />
         ) : (
           <div className={alignClass}>{label}</div>
         ),
-      cell: ({ row, getValue }) => {
-        const value = getValue()
-        const original = row.original
+    cell: ({ row, getValue }) => {
+  const original = row.original;
 
-        if (options.render) return <div className={alignClass}>{options.render(original)}</div>
-        if (options.formatter) return <div className={alignClass}>{options.formatter(value, original)}</div>
+  let value = getValue();
 
-        return <div className={alignClass}>{renderCell({ value, row: original, options })}</div>
-      },
+  // Transform the value first
+  if (options.formatter) {
+    value = options.formatter(value, original);
+  }
+
+  // Full custom render always wins
+  if (options.render) {
+    return (
+      <div className={alignClass}>
+        {options.render(original)}
+      </div>
+    );
+  }
+
+  // Default renderer receives the transformed value
+  return (
+    <div className={alignClass}>
+      {renderCell({
+        value,
+        row: original,
+        options,
+      })}
+    </div>
+  );
+},
     }
   })
 }
+

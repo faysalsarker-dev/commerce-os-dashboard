@@ -6,9 +6,9 @@ import Register from "../pages/auth/Register";
 import AppLayout from "../layout/appLayout/AppLayout";
 import NotFoundPage from "../pages/error/NotFoundPage";
 import { AuthWrapper, GuestWrapper } from "./wrappers";
-import Page from "../pages/test/Page";
-// import { generateRoutes } from "./generator/generateRoutes";
-// import { routes } from "./config/routes.config";
+import { generateRoutes } from "./generator/generateRoutes";
+import { routes } from "./config/routes.config";
+
 
 
 
@@ -17,12 +17,7 @@ export const router = createBrowserRouter([
     path: "/",
     Component:AuthWrapper(AppLayout),
     errorElement: createElement(NotFoundPage),
-    children: [
-      {
-      index: true,
-       Component: Page
-       },
-    ]
+    children: generateRoutes(routes)
   },
  {
   path: "/auth",

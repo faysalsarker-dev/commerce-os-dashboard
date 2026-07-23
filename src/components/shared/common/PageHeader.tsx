@@ -1,12 +1,15 @@
 import type { ReactNode } from "react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui"
+import { Plus } from "lucide-react"
 
 interface PageHeaderProps {
   title: string
   description?: string
   actions?: ReactNode
   className?: string
+  onClick?: () => void;
 }
 
 export function PageHeader({
@@ -14,6 +17,7 @@ export function PageHeader({
   description,
   actions,
   className,
+  onClick
 }: PageHeaderProps) {
   return (
     <motion.header
@@ -45,6 +49,24 @@ export function PageHeader({
           {actions}
         </div>
       )}
+
+   {!actions && (
+  <div className="flex flex-wrap items-center gap-2">
+    <Button
+      onClick={onClick}
+      disabled={!onClick}
+    >
+      <Plus className="size-4" />
+      Add {title}
+    </Button>
+  </div>
+)}
+
+
+
+
+
+
     </motion.header>
   )
 }

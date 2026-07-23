@@ -1,4 +1,3 @@
-// DataTableColumnHeader.tsx
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react"
 import type { Column } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"

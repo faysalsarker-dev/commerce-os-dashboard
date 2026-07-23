@@ -31,4 +31,5 @@ export * from "./tooltip";
 export * from "./breadcrumb";
 export * from "./status-badge";
 export * from "./collapsible"
+export * from "./pagination"
 

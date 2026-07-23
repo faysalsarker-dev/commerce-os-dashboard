@@ -1,4 +1,3 @@
-"use client"
 
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
@@ -9,16 +8,14 @@ import {
   PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-} from "@/components/ui/pagination"
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-
+} from "@/components/ui"
 import { getPaginationRange } from "./getPaginationRange"
+
 
 interface DataTablePaginationProps {
   page: number
