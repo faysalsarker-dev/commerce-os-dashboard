@@ -6,7 +6,7 @@ export type FilterType = "search" | "select" | "multiSelect" | "dateRange" | "nu
 
 export interface Option {
   label: string
-  value: string
+  value: string | boolean
   /** Mark this option as the default/pre-selected one for its filter. */
   default?: boolean
 }

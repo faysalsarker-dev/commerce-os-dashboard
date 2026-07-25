@@ -20,7 +20,18 @@ const filterRegistry: Record<string, ComponentType<any>> = {
 // Chips need type-aware formatting — numberRange/dateRange values are objects
 // ({ min, max } / { from, to }), and String(obj) is where "[object Object]" came from.
 function formatChipValue(config: FilterConfig | undefined, rawValue: any): string {
-  if (Array.isArray(rawValue)) return rawValue.join(", ")
+  if (Array.isArray(rawValue)) {
+    if (config?.type === "multiSelect") {
+      return rawValue
+        .map((value) => config.options.find((option) => option.value === value)?.label ?? value)
+        .join(", ")
+    }
+    return rawValue.join(", ")
+  }
+
+  if (config?.type === "select") {
+    return config.options.find((option) => option.value === rawValue)?.label ?? String(rawValue)
+  }
 
   if (rawValue && typeof rawValue === "object") {
     if (config?.type === "numberRange") {

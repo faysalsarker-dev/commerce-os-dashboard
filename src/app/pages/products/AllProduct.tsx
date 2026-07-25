@@ -2,8 +2,11 @@ import { getDefaultValues, search, select, useFilter } from "@/components/module
 import { DataTable } from "@/components/modules/table";
 import { action, column, createColumns } from "@/components/modules/table/column-builder";
 import { FilterBar, PageContainer, PageHeader } from "@/components/shared/common";
+import { usePagination } from "@/hooks/usePagination";
+import { useGetProductsQuery } from "@/redux/features/product/product.api";
 import type { Product } from "@/types/data-types/product/product.types";
 import { useNavigate } from "react-router";
+import { useMemo } from "react";
 
 
 const statusOptions = [
@@ -213,8 +216,25 @@ const navigatge =useNavigate()
     // Filters, sort, and page all survive refresh and back-navigation.
     syncToUrl: true,
     pageSize: 10,
-    defaultSort: sortOptions[0].value,
   })
+  const pagination = usePagination({ pageSize: 10, syncToUrl: true })
+
+  const queryParams = useMemo(() => {
+    const { sort, ...filters } = filter.queryParams
+    const selectedSort = sort ?? sortOptions[0].value
+    const status = filter.debouncedValues.status
+    const isDescending = selectedSort.startsWith("-")
+
+    return {
+      ...filters,
+      ...(status ? { status } : {}),
+      ...pagination.paginationParams,
+      sortBy: isDescending ? selectedSort.slice(1) : selectedSort,
+      sortOrder: isDescending ? "desc" as const : "asc" as const,
+    }
+  }, [filter.debouncedValues.status, filter.queryParams, pagination.paginationParams])
+
+  const { data: response, isLoading } = useGetProductsQuery(queryParams)
 
 
 
@@ -230,7 +250,14 @@ const navigatge =useNavigate()
           filter={filter}
           filters={productFilters}
         />
-<DataTable columns={productColumns} data={fakeProducts}  />
+<DataTable
+  columns={productColumns}
+  data={response?.data ?? []}
+  isLoading={isLoading}
+  pagination={pagination.tableState}
+  onPaginationChange={pagination.onTableStateChange}
+  meta={response?.meta}
+/>
 
     </PageContainer>
   )

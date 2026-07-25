@@ -54,32 +54,6 @@ function formatBytes(bytes: number) {
 // FormData helper — build a multipart payload straight from the result
 // ============================================================================
 
-export function imagesToFormData(
-  result: ImageUploaderResult,
-  options?: {
-    /** field name for new files. Default: "images" */
-    fileField?: string;
-    /** field name for kept existing urls. Default: "existingImages" */
-    existingField?: string;
-    /** field name for removed existing urls. Default: "removedImages" */
-    removedField?: string;
-    extra?: Record<string, string | Blob>;
-  }
-): FormData {
-  const {
-    fileField = "images",
-    existingField = "existingImages",
-    removedField = "removedImages",
-    extra,
-  } = options ?? {};
-
-  const fd = new FormData();
-  result.files.forEach((file) => fd.append(fileField, file));
-  result.existingUrls.forEach((url) => fd.append(existingField, url));
-  result.removedUrls.forEach((url) => fd.append(removedField, url));
-  if (extra) Object.entries(extra).forEach(([k, v]) => fd.append(k, v));
-  return fd;
-}
 
 // ============================================================================
 // Component
@@ -236,7 +210,7 @@ export function ImageUploader({
           onDrop={handleDrop}
           onClick={openBrowser}
           className={cn(
-            "group relative flex h-40 w-40 cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed bg-muted/30 transition-colors",
+            "group relative flex p-4 cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed bg-muted/30 transition-colors",
             isDragging && "border-primary bg-primary/5",
             disabled && "cursor-not-allowed opacity-60",
             !items.length && !disabled && "hover:border-primary/50 hover:bg-muted/50"

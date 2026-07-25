@@ -27,7 +27,7 @@
 import * as React from "react"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { LucideIcon } from "lucide-react"
-import { MoreHorizontal, Pencil, Trash2, Eye, Copy, Archive, ImageOff,  } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, Eye, Copy, Archive, ImageOff, TriangleAlert } from "lucide-react"
 import type {
     Action,
     Resource,
@@ -39,6 +39,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 import { DataTableColumnHeader } from "./DataTableColumnHeader"
 import { Avatar, AvatarFallback, AvatarImage, StatusBadge } from "@/components/ui"
@@ -170,16 +180,6 @@ type ConfirmHandler<T, TAction extends string> = (params: {
   action: ActionConfig<T, TAction>
   row: T
 }) => boolean | Promise<boolean>
-
-const defaultConfirmHandler = <T, TAction extends string>(): ConfirmHandler<T, TAction> => {
-  return ({ action: act }) => {
-    if (typeof window === "undefined") return true
-    return window.confirm(act.confirmTitle ?? `Are you sure you want to ${act.label.toLowerCase()}?`)
-  }
-}
-
-
-
 
 interface CreateColumnsConfig<T, TAction extends string = Action, TResource extends string = Resource> {
   /** Omit for pages with no permission-gated actions. */
@@ -419,14 +419,20 @@ function RowActionsMenu<T, TAction extends string, TResource extends string>({
   row: T
   actions: ActionConfig<T, TAction>[]
   resource?: TResource
-  confirmHandler: ConfirmHandler<T, TAction>
+  confirmHandler?: ConfirmHandler<T, TAction>
 }) {
+  const [pendingAction, setPendingAction] = React.useState<ActionConfig<T, TAction> | null>(null)
   const visibleActions = actions.filter((act) => !resolveFlag(act.hidden, row))
 
   const trigger = async (act: ActionConfig<T, TAction>) => {
     if (act.confirm) {
-      const confirmed = await confirmHandler({ action: act, row })
-      if (!confirmed) return
+      if (confirmHandler) {
+        const confirmed = await confirmHandler({ action: act, row })
+        if (!confirmed) return
+      } else {
+        setPendingAction(act)
+        return
+      }
     }
     act.onClick(row)
   }
@@ -434,6 +440,7 @@ function RowActionsMenu<T, TAction extends string, TResource extends string>({
   if (visibleActions.length === 0) return null
 
   return (
+    <>
     <DropdownMenu>
 <DropdownMenuTrigger render={<Button variant="ghost" className="h-8 w-8 p-0 flex  justify-end" />}>
     <span className="sr-only">Open menu</span>
@@ -470,6 +477,36 @@ function RowActionsMenu<T, TAction extends string, TResource extends string>({
         })}
       </DropdownMenuContent>
     </DropdownMenu>
+      <AlertDialog open={pendingAction !== null} onOpenChange={(open) => !open && setPendingAction(null)}>
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader className="items-center text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-500">
+              <TriangleAlert className="h-6 w-6" />
+            </div>
+            <AlertDialogTitle>
+              {pendingAction?.confirmTitle ?? "Delete this item?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingAction?.confirmDescription ?? "This action cannot be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              onClick={() => {
+                const actionToConfirm = pendingAction
+                setPendingAction(null)
+                actionToConfirm?.onClick(row)
+              }}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
 
@@ -486,7 +523,7 @@ function RowActionsMenu<T, TAction extends string, TResource extends string>({
 export function createColumns<T, TAction extends string = Action, TResource extends string = Resource>(
   config: CreateColumnsConfig<T, TAction, TResource>,
 ): ColumnDef<T>[] {
-  const { resource, columns, confirm = defaultConfirmHandler<T, TAction>() } = config
+  const { resource, columns, confirm } = config
 
   return columns.map((col): ColumnDef<T> => {
     if (col.kind === "actions") {

@@ -19,12 +19,21 @@ interface Props {
 }
 
 export function SelectFilter({ config, value, onChange }: Props) {
+  // Base UI Select displays the raw value unless it receives an item label map.
+  // Keeping the value as the API-friendly identifier while passing `items` makes
+  // the trigger display the human-readable option label.
+  const items = [
+    { value: CLEAR_VALUE, label: config.placeholder ?? config.label ?? "All" },
+    ...config.options.map(({ value, label }) => ({ value, label })),
+  ]
+
   return (
     <Select
       value={value || CLEAR_VALUE}
+      items={items}
       onValueChange={(next) => onChange(next === CLEAR_VALUE  ? "" : next)}
     >
-      <SelectTrigger className={`h-10 min-w-[160px] ${config.className ?? ""}`}>
+      <SelectTrigger className={`h-10 min-w-40 ${config.className ?? ""}`}>
         <SelectValue placeholder={config.placeholder ?? config.label ?? "All"} />
       </SelectTrigger>
       <SelectContent>

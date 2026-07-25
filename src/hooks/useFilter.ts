@@ -57,6 +57,24 @@ function serializeValues<T extends FilterValues>(values: T, defaultValues: T): R
       continue
     }
 
+
+if (key === "sort") {
+  if (isEmptyValue(current) || current === fallback) continue;
+
+  const value = current as string;
+
+  out.sortBy = value.startsWith("-")
+    ? value.slice(1)
+    : value;
+
+  out.sortOrder = value.startsWith("-")
+    ? "desc"
+    : "asc";
+
+  continue;
+}
+
+
     if (current && typeof current === "object") {
       // numberRange { min, max } or dateRange { from, to } -> flat keys.
       const entries = Object.entries(current).filter(([, v]) => !isEmptyValue(v))
@@ -185,7 +203,7 @@ export function useFilter<T extends FilterValues>(
   const hasFilters = activeFilterKeys.length > 0
 
   // Only non-empty, non-default, API-shaped params — nothing "unset" leaks in.
-  const filterParams = useMemo(
+  const queryParams = useMemo(
     () => ({ ...serializeValues(debouncedValues, defaultValues), ...(sort ? { sort } : {}) }),
     [debouncedValues, defaultValues, sort]
   )
@@ -201,6 +219,6 @@ export function useFilter<T extends FilterValues>(
     activeFilterKeys,
     sort,
     setSort,
-    filterParams,
+    queryParams,
   }
 }

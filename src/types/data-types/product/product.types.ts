@@ -111,6 +111,7 @@ export interface ProductQueryParams {
   page?: number;
   limit?: number;
   search?: string;
+  status?: "active" | "draft" | "archived";
   categoryId?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";

@@ -5,9 +5,62 @@ import { action, column, createColumns  } from "@/components/modules/table/colum
 import { FilterBar, PageContainer, PageHeader } from "@/components/shared/common";
 import { useFilter } from "@/hooks/useFilter";
 import { usePagination } from "@/hooks/usePagination";
-import { useGetCategoriesQuery } from "@/redux/features/category/category.api";
-import type { Category } from "@/types/data-types/product/product.types";
+import { useDeleteCategoryMutation, useGetCategoriesQuery } from "@/redux/features/category/category.api";
+import type { Category } from "@/types/data-types/category/category.types";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
+
+
+
+
+
+
+
+
+
+const statusOptions = [
+  { label: "Active", value: true, }, 
+  { label: "inActive", value: false },
+]
+ 
+const sortOptions = [
+  { label: "Newest", value: "-createdAt" },
+  { label: "Oldest", value: "createdAt" },
+    { label: "Display Order (Low → High)", value: "displayOrder" },
+  { label: "Display Order (High → Low)", value: "-displayOrder" },
+
+]
+ 
+
+
+
+const productFilters = [
+  search({ name: "searchTerm", label: "Search", placeholder: "Search by name" }),
+  select({ name: "isActive", label: "Status", placeholder: "Status", options: statusOptions }),
+  select({ name: "sort", label: "Sort", placeholder: "Sort", options: sortOptions }),
+
+]
+
+
+export default function AllCategory() {
+const [open,setOpen] = useState<boolean>(false)
+  const filter = useFilter({
+    defaultValues: getDefaultValues(productFilters),
+    debounceMs: { search: 300 },
+    syncToUrl: true,
+   
+  })
+  const pagination = usePagination({ pageSize: 10, syncToUrl: true })
+
+  const queryParams = useMemo(
+    () => ({ ...filter.queryParams , ...pagination.paginationParams }),
+    [filter.queryParams, pagination.paginationParams]
+  )
+
+  const { data: response, isLoading } = useGetCategoriesQuery(queryParams)
+const [deleteCategory]=useDeleteCategoryMutation()
+
+
 
 
 
@@ -27,20 +80,19 @@ const categoryColumns = createColumns<Category>({
 
 
     column("description", {
-      formatter: (value:string) => {
-        if (!value) return "-";
-
-        const words = String(value).split(" ");
-
-        return words.length > 5
-          ? `${words.slice(0, 5).join(" ")}...`
-          : value;
-      },
+  formatter: (value) => {
+  const name = value as string;
+  return name.toUpperCase();
+}
     }),
 
     column.status("isActive", {
       label: "Status",
-      formatter: (value:boolean) => (value ? "active" : "inactive"),
+      formatter: (value) => {
+  const isActive = value as boolean;
+
+  return isActive ? "Active" : "Inactive";
+}
     }),
 
     column.number("displayOrder", {
@@ -72,60 +124,13 @@ const categoryColumns = createColumns<Category>({
           "This category will be permanently deleted.",
         onClick: (category) => {
           console.log("Delete", category.id);
+          deleteCategory(category.id).unwrap()
+          toast.success("Category deleted")
         },
       }),
     ]),
   ],
 });
-
-
-
-
-
-const statusOptions = [
-  { label: "Active", value: "active", }, 
-  { label: "Draft", value: "draft" },
-  { label: "Archived", value: "archived" },
-]
- 
-
-const sortOptions = [
-  { label: "Newest first", value: "-createdAt" },
-  { label: "Oldest first", value: "createdAt" },
-  { label: "Price: low to high", value: "price" },
-  { label: "Price: high to low", value: "-price" },
-  { label: "Stock: low to high", value: "stock" },
-]
- 
-
-
-
-const productFilters = [
-  search({ name: "search", label: "Search", placeholder: "Search by name or SKU..." }),
-  select({ name: "status", label: "Status", placeholder: "Status", options: statusOptions }),
-  select({ name: "sort", label: "Sort", placeholder: "Sort", options: sortOptions }),
-
-]
-
-
-export default function AllCategory() {
-const [open,setOpen] = useState<boolean>(false)
-  const filter = useFilter({
-    defaultValues: getDefaultValues(productFilters),
-    debounceMs: { search: 300 },
-    syncToUrl: false,
-   
-  })
-  const pagination = usePagination({ pageSize: 10, syncToUrl: false })
-
-  const queryParams = useMemo(
-    () => ({ ...filter.queryParams, ...pagination.paginationParams }),
-    [filter.queryParams, pagination.paginationParams]
-  )
-
-  const { data: response, isLoading } = useGetCategoriesQuery(queryParams)
-
-
 
 
     const onEdit=()=>{
@@ -136,7 +141,7 @@ const [open,setOpen] = useState<boolean>(false)
  
 
 
-  console.log(pagination,'params')
+  
   return (
     <PageContainer>
          <PageHeader
