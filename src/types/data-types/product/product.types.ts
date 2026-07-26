@@ -1,106 +1,103 @@
-// ---- Enums ----
-export type StockMovementType = "IN" | "OUT" | "ADJUSTMENT" | "RETURN" | "DAMAGE";
+import type { Category } from "../category/category.types"
 
-// ---- DB-aligned types (mirror Prisma models) ----
-export interface Category {
-  id: string;
-  name: string;
-}
+// ---- Enums ----
+export type StockMovementType =
+  "IN" | "OUT" | "ADJUSTMENT" | "RETURN" | "DAMAGE"
+
+
 
 export interface Product {
-  id: string;
-  name: string;
-  description: string | null;
-  categoryId: string | null;
-  category?: Category | null;
-  costPrice: number;
-  sellingPrice: number;
-  colors: ProductColor[];
-  createdAt: string;
-  updatedAt: string;
+  id: string
+  name: string
+  description: string | null
+  categoryId: string | null
+  category?: Category | null
+  costPrice: number
+  sellingPrice: number
+  colors: ProductColor[]
+  createdAt: string
+  updatedAt: string
 }
 
 export interface ProductColor {
-  id: string;
-  productId: string;
-  colorName: string;
-  colorHex: string | null;
-  images: string[];
-  variants: ProductVariant[];
-  createdAt: string;
+  id: string
+  productId: string
+  colorName: string
+  colorHex: string | null
+  images: string[]
+  variants: ProductVariant[]
+  createdAt: string
 }
 
 export interface ProductVariant {
-  id: string;
-  productColorId: string;
-  size: string;
-  sku: string;
-  stockQty: number;
-  costPriceOverride: number | null;
-  sellingPriceOverride: number | null;
-  qrCode: string;
-  createdAt: string;
-  updatedAt: string;
+  id: string
+  productColorId: string
+  size: string
+  sku: string
+  stockQty: number
+  costPriceOverride: number | null
+  sellingPriceOverride: number | null
+  qrCode: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface StockMovement {
-  id: string;
-  variantId: string;
-  type: StockMovementType;
-  quantity: number;
-  reason: string | null;
-  createdAt: string;
+  id: string
+  variantId: string
+  type: StockMovementType
+  quantity: number
+  reason: string | null
+  createdAt: string
 }
 
 // ---- Form-only (draft) types, before submission ----
 export interface VariantDraft {
-  localId: string;
-  size: string;
-  sku: string;
-  stockQty: number;
-  costPriceOverride: number | null;
-  sellingPriceOverride: number | null;
+  localId: string
+  size: string
+  sku: string
+  stockQty: number
+  costPriceOverride: number | null
+  sellingPriceOverride: number | null
 }
 
 export interface ColorDraft {
-  localId: string;
-  colorName: string;
-  colorHex: string;
-  images: string[];        // object URLs, local preview only
-  variants: VariantDraft[];
+  localId: string
+  colorName: string
+  colorHex: string
+  images: string[] // object URLs, local preview only
+  variants: VariantDraft[]
 }
 
 export interface ProductFormState {
-  name: string;
-  description: string;
-  categoryId: string;
-  costPrice: string;        // string while typing, parsed to number on submit
-  sellingPrice: string;
-  colors: ColorDraft[];
+  name: string
+  description: string
+  categoryId: string
+  costPrice: string // string while typing, parsed to number on submit
+  sellingPrice: string
+  colors: ColorDraft[]
 }
 
-
-
 export interface CreateProductPayload {
-  name: string;
-  description?: string;
-  categoryId?: string | null;
-  costPrice: number;
-  sellingPrice: number;
+  name: string
+  description?: string
+  categoryId?: string | null
+  costPrice: number
+  sellingPrice: number
 
-  colors: {
-    colorName: string;
-    colorHex?: string | null;
-    images: string[];
+  colors?: {
+    colorName: string
+    colorHex?: string | null
+    images: string[]
 
     variants: {
-      size: string;
-      sku: string;
-      stockQty: number;
-      costPriceOverride?: number | null;
-      sellingPriceOverride?: number | null;
-    }[];
-  }[];
+      size: string
+      sku: string
+      stockQty: number
+      costPriceOverride?: number | null
+      sellingPriceOverride?: number | null
+    }[]
+  }[]
 }
 
 // =====================================
@@ -108,18 +105,17 @@ export interface CreateProductPayload {
 // =====================================
 
 export interface ProductQueryParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  status?: "active" | "draft" | "archived";
-  categoryId?: string;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
+  page?: number
+  limit?: number
+  search?: string
+  status?: "active" | "draft" | "archived"
+  categoryId?: string
+  sortBy?: string
+  sortOrder?: "asc" | "desc"
 }
 
-export type UpdateProductPayload = Partial<CreateProductPayload>;
-
+export type UpdateProductPayload = Partial<CreateProductPayload>
 
 export interface DeleteProductPayload {
-  id: string;
+  id: string
 }

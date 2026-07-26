@@ -1,6 +1,6 @@
 import type { Role } from "../data-types/enums"
 
-export type Page = "products" | "orders" | "inventory" | "users" | "reports" | "settings" | "category"
+export type Page = "products" | "orders" | "inventory" | "users" | "reports" | "settings" | "category" | "add_product"
 export type Resource = Page
 export type Action = "view" | "create" | "edit" | "delete" | "refund" | "cancel" | "adjust" | "manage" | "export"
 

@@ -3,7 +3,7 @@ import type { CreateProductPayload, Product, ProductQueryParams, UpdateProductPa
 
 import type { ApiResponse } from "@/types/shared";
 
-const BASE_URL = "/products";
+const BASE_URL = "/product";
 
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
