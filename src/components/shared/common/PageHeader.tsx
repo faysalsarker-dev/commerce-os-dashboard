@@ -9,6 +9,7 @@ interface PageHeaderProps {
   description?: string
   actions?: ReactNode
   className?: string
+  noAction?:boolean
   onClick?: () => void;
 }
 
@@ -17,7 +18,8 @@ export function PageHeader({
   description,
   actions,
   className,
-  onClick
+  onClick,
+  noAction=false
 }: PageHeaderProps) {
   return (
     <motion.header
@@ -50,7 +52,7 @@ export function PageHeader({
         </div>
       )}
 
-   {!actions && (
+   {(!actions && !noAction) && (
   <div className="flex flex-wrap items-center gap-2">
     <Button
       onClick={onClick}

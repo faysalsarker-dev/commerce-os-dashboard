@@ -137,125 +137,111 @@
    ============================================================ */
 
 :root {
-  --radius: 0.5rem; /* slightly tighter than 0.625 — reads more "console", less "app" */
+  --radius: 0.5rem;
 
-  /* Page background is a hair off pure white (Stripe/Linear trick) —
-     cards sit on it in true white, which is what creates the layered,
-     "expensive" depth instead of everything being flat white-on-white */
-  --background: oklch(0.984 0.003 247.858);
-  --foreground: oklch(0.208 0.042 265.755);
+  /* Base */
+  --background: oklch(0.988 0.003 286);
+  --foreground: oklch(0.22 0.02 285);
 
+  /* Surface */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.208 0.042 265.755);
+  --card-foreground: oklch(0.22 0.02 285);
 
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.22 0.02 285);
 
-  /* THE accent — deep blue, confident, used only for primary actions,
-     active nav, links, focus. Nowhere else. */
-  --primary: oklch(0.488 0.243 264.376);
-  --primary-foreground: oklch(0.985 0 0);
+  /* Brand */
+  --primary: oklch(0.55 0.24 300);
+  --primary-foreground: oklch(0.99 0 0);
 
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
+  --secondary: oklch(0.965 0.01 292);
+  --secondary-foreground: oklch(0.36 0.04 292);
 
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
+  --accent: oklch(0.955 0.03 300);
+  --accent-foreground: oklch(0.55 0.24 300);
 
-  /* Accent = light blue tint, distinct from secondary's neutral gray.
-     Use for hover rows, selected table rows, active filter chips. */
-  --accent: oklch(0.970 0.014 254.604);
-  --accent-foreground: oklch(0.488 0.243 264.376);
+  --muted: oklch(0.972 0.005 285);
+  --muted-foreground: oklch(0.56 0.02 285);
 
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.92 0.004 286);
+  --input: oklch(0.92 0.004 286);
+  --ring: oklch(0.55 0.24 300);
 
-  /* Extra semantic states — not in default shadcn, but essential for
-     stock status / order status badges in a POS system */
-  --success: oklch(0.696 0.17 162.48);
-  --success-foreground: oklch(0.985 0 0);
-  --warning: oklch(0.769 0.188 70.08);
-  --warning-foreground: oklch(0.208 0.042 265.755);
-  --info: oklch(0.623 0.214 259.815);
-  --info-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.62 0.23 28);
+  --destructive-foreground: white;
 
-  --border: oklch(0.928 0.006 264.531);
-  --input: oklch(0.928 0.006 264.531);
-  --ring: oklch(0.488 0.243 264.376);
+  --success: oklch(0.73 0.16 154);
+  --warning: oklch(0.82 0.17 82);
+  --info: oklch(0.69 0.15 250);
 
-  /* Charts: primary blue first, then green/amber/violet/red so revenue,
-     stock, and order-status charts never share a confusing color */
-  --chart-1: oklch(0.546 0.245 262.881);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.606 0.25 292.717);
-  --chart-5: oklch(0.577 0.245 27.325);
+  /* Charts */
+  --chart-1: oklch(0.55 0.24 300);
+  --chart-2: oklch(0.69 0.15 250);
+  --chart-3: oklch(0.73 0.16 154);
+  --chart-4: oklch(0.82 0.17 82);
+  --chart-5: oklch(0.70 0.18 15);
 
-  /* Sidebar: kept white, separated from the page only by a border —
-     this is the Stripe/Medusa pattern (light dashboards almost never
-     use a dark sidebar; that's more of a Linear/Vercel dark-mode tell) */
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.372 0.044 257.287);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.970 0.014 254.604);
-  --sidebar-accent-foreground: oklch(0.488 0.243 264.376);
-  --sidebar-border: oklch(0.928 0.006 264.531);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
+  /* Sidebar */
+  --sidebar: oklch(0.998 0 0);
+  --sidebar-foreground: oklch(0.3 0.02 285);
+
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: white;
+
+  --sidebar-accent: oklch(0.955 0.03 300);
+  --sidebar-accent-foreground: var(--primary);
+
+  --sidebar-border: oklch(0.92 0.004 286);
+  --sidebar-ring: var(--primary);
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
 
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
+  --background: oklch(0.17 0.02 286);
 
-  --popover: oklch(0.279 0.041 260.031);
-  --popover-foreground: oklch(0.984 0.003 247.858);
+  --foreground: oklch(0.97 0 0);
 
-  --primary: oklch(0.623 0.214 259.815);
-  --primary-foreground: oklch(0.985 0 0);
+  --card: oklch(0.21 0.02 286);
 
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --popover: oklch(0.23 0.02 286);
 
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
+  --primary: oklch(0.70 0.18 300);
 
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.707 0.165 254.624);
+  --primary-foreground: white;
 
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.28 0.02 286);
 
-  --success: oklch(0.696 0.17 162.48);
-  --success-foreground: oklch(0.145 0.02 260);
-  --warning: oklch(0.769 0.188 70.08);
-  --warning-foreground: oklch(0.145 0.02 260);
-  --info: oklch(0.707 0.165 254.624);
-  --info-foreground: oklch(0.145 0.02 260);
+  --secondary-foreground: white;
 
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.623 0.214 259.815);
+  --accent: oklch(0.30 0.03 295);
 
-  --chart-1: oklch(0.707 0.165 254.624);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.828 0.189 84.429);
-  --chart-4: oklch(0.702 0.183 293.541);
-  --chart-5: oklch(0.704 0.191 22.216);
+  --accent-foreground: white;
 
-  /* Dark sidebar is deliberately a touch darker than the dark card/bg —
-     grounds the nav as its own structural layer, matches Vercel/Linear */
-  --sidebar: oklch(0.11 0.03 262);
-  --sidebar-foreground: oklch(0.869 0.022 252.894);
-  --sidebar-primary: oklch(0.623 0.214 259.815);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.16 0.035 262);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.623 0.214 259.815);
+  --muted: oklch(0.25 0.02 286);
+
+  --muted-foreground: oklch(0.75 0.01 286);
+
+  --border: oklch(0.32 0.01 286);
+
+  --input: oklch(0.32 0.01 286);
+
+  --ring: var(--primary);
+
+  --sidebar: oklch(0.15 0.02 286);
+
+  --sidebar-foreground: white;
+
+  --sidebar-primary: var(--primary);
+
+  --sidebar-primary-foreground: white;
+
+  --sidebar-accent: oklch(0.24 0.03 295);
+
+  --sidebar-accent-foreground: white;
+
+  --sidebar-border: oklch(0.28 0.01 286);
+
+  --sidebar-ring: var(--primary);
 }
 
 
@@ -269,4 +255,22 @@
   html {
     @apply font-sans;
     }
+}
+
+
+.card {
+  box-shadow:
+    0 1px 2px rgba(15,23,42,.04),
+    0 12px 32px rgba(15,23,42,.04);
+}
+
+button {
+  transition: all .2s ease;
+}
+
+input,
+textarea,
+select {
+  transition: border-color .2s ease,
+              box-shadow .2s ease;
 }

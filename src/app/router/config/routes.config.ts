@@ -3,7 +3,8 @@ import { BoxIcon} from "lucide-react"
 import type { RouteConfig } from "@/types/routes/route.types"
 import AllProduct from "@/app/pages/products/AllProduct"
 import AllCategory from "@/app/pages/category/AllCategory"
-import AddProduct from "@/app/pages/products/AddProduts"
+import ProductDetailPage from "@/app/pages/products/ProductDetailPage"
+import SellCounter from "@/app/pages/sells/SellCounter"
 
 
 
@@ -20,9 +21,7 @@ export const routeGroups: RouteGroup[] = [
         name: "Products",
         Component: AllProduct,
         icon: BoxIcon,
-        index: true,
         page: "products",
-      
       },
       {
         path: "category",
@@ -31,14 +30,25 @@ export const routeGroups: RouteGroup[] = [
         icon: BoxIcon,
         page: "category",
       },
+      {
+        path: "products/:id",
+        name: "Product Details",
+        Component: ProductDetailPage,
+        page: "products",
+        isVisible: false,
+      },
 
-        {
-            path: "new",
-            name: "New Product",
-            Component: AddProduct,
-            page: "add_product",
-            icon: BoxIcon,
-          },
+    ]},
+ {label: "Sells",
+    items: [
+      {
+        path: "sell",
+        name: "Sell Counter",
+        Component: SellCounter,
+        icon: BoxIcon,
+        page: "sell",
+      }
+   
 
     ]}
   

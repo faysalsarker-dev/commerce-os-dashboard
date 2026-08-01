@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import type { OnChangeFn, PaginationState } from "@tanstack/react-table"
 // types.ts
 // Pure types — no Redux, no RTK Query, no page-specific knowledge.
 
-export type FilterType = "search" | "select" | "multiSelect" | "dateRange" | "numberRange"
+export type FilterType =
+  "search" | "select" | "multiSelect" | "dateRange" | "numberRange"
 
 export interface Option {
   label: string
@@ -88,13 +90,21 @@ export interface UseFilterReturn<T extends FilterValues> {
   page: number
   pageSize: number
   setPage: (page: number) => void
+  setPageSize: (size: number) => void
   nextPage: () => void
   prevPage: () => void
+  paginationParams: { page: number; limit: number }
+  tableState: PaginationState
+  onTableStateChange: OnChangeFn<PaginationState>
 
   // Sort — kept separate from `values` so it never shows up as an "active filter" chip.
   sort: string | undefined
   setSort: (value: string) => void
 
   /** debouncedValues + sort + page + pageSize in one object — pass straight to your RTK Query hook. */
-  queryParams: T & { sort?: string; page: number; pageSize: number }
+  queryParams: Record<string, any> & {
+    sort?: string
+    page: number
+    limit: number
+  }
 }

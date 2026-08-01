@@ -1,7 +1,12 @@
 // useFilter.ts
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import type { FilterValues, UseFilterOptions, UseFilterReturn } from "@/types/filter/filter.types"
+import type { OnChangeFn, PaginationState } from "@tanstack/react-table"
+import type {
+  FilterValues,
+  UseFilterOptions,
+  UseFilterReturn,
+} from "@/types/filter/filter.types"
 
 function readUrlValues<T extends FilterValues>(defaultValues: T): T {
   if (typeof window === "undefined") return defaultValues
@@ -18,14 +23,21 @@ function readUrlValues<T extends FilterValues>(defaultValues: T): T {
   return result
 }
 
-function writeUrlValues(values: FilterValues, defaultValues: FilterValues, extra: Record<string, any>) {
+function writeUrlValues(
+  values: FilterValues,
+  defaultValues: FilterValues,
+  extra: Record<string, any>
+) {
   if (typeof window === "undefined") return
   const params = new URLSearchParams(window.location.search)
   for (const key of Object.keys(values)) {
     const val = values[key]
     const isEmpty =
-      val === undefined || val === null || val === "" ||
-      (Array.isArray(val) && val.length === 0) || val === defaultValues[key]
+      val === undefined ||
+      val === null ||
+      val === "" ||
+      (Array.isArray(val) && val.length === 0) ||
+      val === defaultValues[key]
     if (isEmpty) params.delete(key)
     else params.set(key, Array.isArray(val) ? val.join(",") : String(val))
   }
@@ -34,7 +46,11 @@ function writeUrlValues(values: FilterValues, defaultValues: FilterValues, extra
     else params.set(key, String(val))
   }
   const query = params.toString()
-  window.history.replaceState({}, "", query ? `${window.location.pathname}?${query}` : window.location.pathname)
+  window.history.replaceState(
+    {},
+    "",
+    query ? `${window.location.pathname}?${query}` : window.location.pathname
+  )
 }
 
 function isEmptyValue(v: any) {
@@ -44,7 +60,10 @@ function isEmptyValue(v: any) {
 // The one place that knows how a filter *value* becomes API-shaped query
 // param(s). Skips anything still at its default (nothing selected), and
 // flattens ranges/arrays into the flat key=value pairs a real query string needs.
-function serializeValues<T extends FilterValues>(values: T, defaultValues: T): Record<string, any> {
+function serializeValues<T extends FilterValues>(
+  values: T,
+  defaultValues: T
+): Record<string, any> {
   const out: Record<string, any> = {}
 
   for (const key of Object.keys(values)) {
@@ -57,27 +76,23 @@ function serializeValues<T extends FilterValues>(values: T, defaultValues: T): R
       continue
     }
 
+    if (key === "sort") {
+      if (isEmptyValue(current) || current === fallback) continue
 
-if (key === "sort") {
-  if (isEmptyValue(current) || current === fallback) continue;
+      const value = current as string
 
-  const value = current as string;
+      out.sortBy = value.startsWith("-") ? value.slice(1) : value
 
-  out.sortBy = value.startsWith("-")
-    ? value.slice(1)
-    : value;
+      out.sortOrder = value.startsWith("-") ? "desc" : "asc"
 
-  out.sortOrder = value.startsWith("-")
-    ? "desc"
-    : "asc";
-
-  continue;
-}
-
+      continue
+    }
 
     if (current && typeof current === "object") {
       // numberRange { min, max } or dateRange { from, to } -> flat keys.
-      const entries = Object.entries(current).filter(([, v]) => !isEmptyValue(v))
+      const entries = Object.entries(current).filter(
+        ([, v]) => !isEmptyValue(v)
+      )
       for (const [subKey, subVal] of entries) {
         out[`${key}${subKey[0].toUpperCase()}${subKey.slice(1)}`] = subVal // priceMin, priceMax
       }
@@ -94,15 +109,40 @@ if (key === "sort") {
 export function useFilter<T extends FilterValues>(
   options: UseFilterOptions<T>
 ): UseFilterReturn<T> {
-  const { defaultValues, debounceMs = {}, syncToUrl = false, defaultSort } = options
+  const {
+    defaultValues,
+    debounceMs = {},
+    syncToUrl = false,
+    defaultSort,
+    pageSize: defaultPageSize = 10,
+  } = options
 
   const [values, setValuesState] = useState<T>(() =>
     syncToUrl ? readUrlValues(defaultValues) : defaultValues
   )
   const [debouncedValues, setDebouncedValues] = useState<T>(values)
   const [sort, setSortState] = useState<string | undefined>(defaultSort)
+  const [page, setPageState] = useState(() =>
+    syncToUrl && typeof window !== "undefined"
+      ? Math.max(
+          1,
+          Number(new URLSearchParams(window.location.search).get("page")) || 1
+        )
+      : 1
+  )
+  const [pageSize, setPageSizeState] = useState(() =>
+    syncToUrl && typeof window !== "undefined"
+      ? Math.max(
+          1,
+          Number(new URLSearchParams(window.location.search).get("limit")) ||
+            defaultPageSize
+        )
+      : defaultPageSize
+  )
 
-  const timers = useRef<Partial<Record<keyof T, ReturnType<typeof setTimeout>>>>({})
+  const timers = useRef<
+    Partial<Record<keyof T, ReturnType<typeof setTimeout>>>
+  >({})
 
   useEffect(() => {
     return () => {
@@ -127,18 +167,28 @@ export function useFilter<T extends FilterValues>(
   )
 
   const persistUrl = useCallback(
-    (nextValues: FilterValues, nextSort?: string) => {
+    (
+      nextValues: FilterValues,
+      nextSort = sort,
+      nextPage = page,
+      nextPageSize = pageSize
+    ) => {
       if (!syncToUrl) return
-      writeUrlValues(nextValues, defaultValues, { sort: nextSort })
+      writeUrlValues(nextValues, defaultValues, {
+        sort: nextSort,
+        page: nextPage === 1 ? undefined : nextPage,
+        limit: nextPageSize === defaultPageSize ? undefined : nextPageSize,
+      })
     },
-    [syncToUrl, defaultValues]
+    [syncToUrl, defaultValues, sort, page, pageSize, defaultPageSize]
   )
 
   const setValue = useCallback(
     <K extends keyof T>(name: K, value: T[K]) => {
       setValuesState((prev) => {
         const next = { ...prev, [name]: value }
-        persistUrl(next, sort)
+        setPageState(1)
+        persistUrl(next, sort, 1)
         return next
       })
       applyDebounced(name, value)
@@ -150,10 +200,13 @@ export function useFilter<T extends FilterValues>(
     (partial: Partial<T>) => {
       setValuesState((prev) => {
         const next = { ...prev, ...partial }
-        persistUrl(next, sort)
+        setPageState(1)
+        persistUrl(next, sort, 1)
         return next
       })
-      Object.entries(partial).forEach(([name, value]) => applyDebounced(name as keyof T, value))
+      Object.entries(partial).forEach(([name, value]) =>
+        applyDebounced(name as keyof T, value)
+      )
     },
     [applyDebounced, persistUrl, sort]
   )
@@ -162,8 +215,10 @@ export function useFilter<T extends FilterValues>(
     Object.values(timers.current).forEach((t) => t && clearTimeout(t))
     setValuesState(defaultValues)
     setDebouncedValues(defaultValues)
-    persistUrl(defaultValues, sort)
-  }, [defaultValues, persistUrl, sort])
+    setPageState(1)
+    setPageSizeState(defaultPageSize)
+    persistUrl(defaultValues, sort, 1, defaultPageSize)
+  }, [defaultValues, defaultPageSize, persistUrl, sort])
 
   const remove = useCallback(
     (name: keyof T) => setValue(name, defaultValues[name]),
@@ -173,9 +228,45 @@ export function useFilter<T extends FilterValues>(
   const setSort = useCallback(
     (value: string) => {
       setSortState(value)
-      persistUrl(values, value)
+      setPageState(1)
+      persistUrl(values, value, 1)
     },
     [persistUrl, values]
+  )
+
+  const setPage = useCallback(
+    (next: number) => {
+      const clamped = Math.max(1, next)
+      setPageState(clamped)
+      persistUrl(values, sort, clamped)
+    },
+    [persistUrl, sort, values]
+  )
+
+  const setPageSize = useCallback(
+    (next: number) => {
+      const size = Math.max(1, next)
+      setPageSizeState(size)
+      setPageState(1)
+      persistUrl(values, sort, 1, size)
+    },
+    [persistUrl, sort, values]
+  )
+
+  const nextPage = useCallback(() => setPage(page + 1), [page, setPage])
+  const prevPage = useCallback(() => setPage(page - 1), [page, setPage])
+  const tableState: PaginationState = useMemo(
+    () => ({ pageIndex: page - 1, pageSize }),
+    [page, pageSize]
+  )
+  const onTableStateChange: OnChangeFn<PaginationState> = useCallback(
+    (updater) => {
+      const next = typeof updater === "function" ? updater(tableState) : updater
+      if (next.pageSize !== tableState.pageSize) setPageSize(next.pageSize)
+      else if (next.pageIndex !== tableState.pageIndex)
+        setPage(next.pageIndex + 1)
+    },
+    [setPage, setPageSize, tableState]
   )
 
   const activeFilterKeys = useMemo(() => {
@@ -184,10 +275,14 @@ export function useFilter<T extends FilterValues>(
       const fallback = defaultValues[key]
       if (Array.isArray(current)) {
         const fb = Array.isArray(fallback) ? fallback : []
-        return current.length !== fb.length || current.some((v, i) => v !== fb[i])
+        return (
+          current.length !== fb.length || current.some((v, i) => v !== fb[i])
+        )
       }
       if (current && typeof current === "object") {
-        const fb = (fallback && typeof fallback === "object" ? fallback : {}) as Record<string, any>
+        const fb = (
+          fallback && typeof fallback === "object" ? fallback : {}
+        ) as Record<string, any>
         const keys = new Set([...Object.keys(current), ...Object.keys(fb)])
         return Array.from(keys).some((k) => {
           const cv = (current as any)[k]
@@ -204,8 +299,13 @@ export function useFilter<T extends FilterValues>(
 
   // Only non-empty, non-default, API-shaped params — nothing "unset" leaks in.
   const queryParams = useMemo(
-    () => ({ ...serializeValues(debouncedValues, defaultValues), ...(sort ? { sort } : {}) }),
-    [debouncedValues, defaultValues, sort]
+    () => ({
+      ...serializeValues(debouncedValues, defaultValues),
+      ...(sort ? { sort } : {}),
+      page,
+      limit: pageSize,
+    }),
+    [debouncedValues, defaultValues, sort, page, pageSize]
   )
 
   return {
@@ -217,6 +317,15 @@ export function useFilter<T extends FilterValues>(
     remove,
     hasFilters,
     activeFilterKeys,
+    page,
+    pageSize,
+    setPage,
+    setPageSize,
+    nextPage,
+    prevPage,
+    paginationParams: { page, limit: pageSize },
+    tableState,
+    onTableStateChange,
     sort,
     setSort,
     queryParams,

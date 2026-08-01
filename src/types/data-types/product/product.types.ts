@@ -1,4 +1,4 @@
-import type { Category } from "../category/category.types"
+import type { Category } from "@/types/data-types/category/category.types"
 
 // ---- Enums ----
 export type StockMovementType =
@@ -118,4 +118,28 @@ export type UpdateProductPayload = Partial<CreateProductPayload>
 
 export interface DeleteProductPayload {
   id: string
+}
+
+export interface CreateProductColorPayload {
+  colorName: string
+  colorHex?: string | null
+  images: (File | { url: string })[]
+}
+
+export type UpdateProductColorPayload = Partial<CreateProductColorPayload>
+
+export interface CreateProductVariantPayload {
+  size: string
+  sku: string
+  stockQty: number
+  costPriceOverride?: number | null
+  sellingPriceOverride?: number | null
+}
+
+export type UpdateProductVariantPayload = Partial<CreateProductVariantPayload>
+
+export interface CreateStockMovementPayload {
+  type: StockMovementType
+  quantity: number
+  reason?: string
 }

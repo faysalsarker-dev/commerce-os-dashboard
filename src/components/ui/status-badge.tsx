@@ -10,7 +10,7 @@ type StatusVariant =
   | "default";
 
 interface StatusBadgeProps {
-  value: string;
+  value: string | boolean;
   text?: string;
   variant?: StatusVariant;
   className?: string;
@@ -72,7 +72,13 @@ export function StatusBadge({
   variant,
   className,
 }: StatusBadgeProps) {
-  const normalized = value.toLowerCase();
+const normalized =
+  typeof value === "boolean"
+    ? value
+      ? "active"
+      : "inactive"
+    : value.toLowerCase();
+   
 
   const finalVariant =
     variant ?? STATUS_MAP[normalized] ?? "default";

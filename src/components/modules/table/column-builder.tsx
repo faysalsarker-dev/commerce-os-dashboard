@@ -319,7 +319,7 @@ export const action = {
     type: "custom",
     label: options.label,
     icon: options.icon,
-    variant: options.variant ?? "ghost",
+    variant: options.variant ?? "ghost", 
     onClick: options.onClick,
     can: options.can,
     confirm: options.confirm ?? false,
