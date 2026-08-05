@@ -9,6 +9,8 @@ interface UseAuthResult {
   role: string | undefined
   isLoading: boolean
   isFetching: boolean
+  isPending: boolean
+  isReady: boolean
   isError: boolean
   refetchMe: () => void
   clearAuth: () => void
@@ -22,7 +24,8 @@ export const useAuth = (): UseAuthResult => {
   })
 
   const user = userResponse?.data
-  const isAuthenticated = useMemo(() => isSuccess && !!user && !isLoading, [isSuccess, user, isLoading])
+  const isPending = isLoading || isFetching
+  const isAuthenticated = useMemo(() => isSuccess && !!user, [isSuccess, user])
 
   const refetchMe = useCallback(() => {
     refetch()
@@ -39,10 +42,12 @@ export const useAuth = (): UseAuthResult => {
       isAuthenticated,
       isLoading,
       isFetching,
+      isPending,
+      isReady: !isPending,
       isError,
       refetchMe,
       clearAuth,
     }),
-    [user, isAuthenticated, isLoading, isFetching, isError, refetchMe, clearAuth]
+    [user, isAuthenticated, isLoading, isFetching, isPending, isError, refetchMe, clearAuth]
   )
 }

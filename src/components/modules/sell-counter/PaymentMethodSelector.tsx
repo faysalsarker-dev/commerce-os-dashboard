@@ -35,7 +35,7 @@ export function PaymentMethodSelector({
       <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
         Payment method
       </p>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-2">
         {methods.map((method) => {
           const selected = method.id === selectedId;
           const Icon = FALLBACK_ICONS[method.id] ?? Wallet;
@@ -49,7 +49,7 @@ export function PaymentMethodSelector({
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
               aria-pressed={selected}
               className={cn(
-                "relative flex items-center gap-2 rounded-md border px-3 py-2.5 text-left transition-colors",
+                "relative flex items-center gap-2 rounded-md border px-4 py-4 text-left transition-colors",
                 selected
                   ? "border-primary bg-primary/5"
                   : "border-border hover:bg-muted/60",

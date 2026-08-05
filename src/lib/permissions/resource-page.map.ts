@@ -1,10 +1,13 @@
 import type { Page, Resource } from "@/types/permissions/permissions.types"
 
 export const RESOURCE_PAGE_MAP: Record<Resource, Page> = {
-  product: "products",
-  order: "orders",
+  product: "product",
   inventory: "inventory",
-  user: "users",
-  report: "reports",
+  orders: "orders",
+  users: "users",
+  reports: "reports",
+  category: "category",
   settings: "settings",
-}
+  sell: "sell",
+add_product: "product",
+};

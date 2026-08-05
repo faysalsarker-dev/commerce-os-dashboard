@@ -16,9 +16,9 @@ import type {
 
 import type { ApiResponse } from "@/types/shared"
 
-const PRODUCT_BASE = "/products"
-const COLOR_BASE = "/colors"
-const VARIANT_BASE = "/variants"
+const PRODUCT_BASE = "/product"
+const COLOR_BASE = "/product/color"
+const VARIANT_BASE = "/product/variant"
 
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -101,17 +101,21 @@ export const productApi = baseApi.injectEndpoints({
     createProductColor: builder.mutation<
       ApiResponse<ProductColor>,
       {
-        productId: string
-        data: FormData
-      }
+        productId?: string
+        data: FormData | Record<string, unknown>
+      } | FormData | Record<string, unknown>
     >({
-      query: ({ productId, data }) => ({
-        url: `${PRODUCT_BASE}/${productId}/colors`,
-        method: "POST",
-        data,
-      }),
-      invalidatesTags: (_, __, { productId }) => [
-        { type: "PRODUCT", id: productId },
+      query: (payload) => {
+        const data = "data" in (payload as any) ? (payload as any).data : payload
+        return {
+          url: COLOR_BASE,
+          method: "POST",
+          data,
+        }
+      },
+      invalidatesTags: (_, __, payload) => [
+        { type: "PRODUCT", id: (payload as any)?.productId || "LIST" },
+        { type: "PRODUCT", id: "LIST" },
       ],
     }),
 
@@ -119,8 +123,8 @@ export const productApi = baseApi.injectEndpoints({
       ApiResponse<ProductColor>,
       {
         id: string
-        productId: string
-        data: FormData
+        productId?: string
+        data: FormData | Record<string, unknown>
       }
     >({
       query: ({ id, data }) => ({
@@ -129,20 +133,22 @@ export const productApi = baseApi.injectEndpoints({
         data,
       }),
       invalidatesTags: (_, __, { productId }) => [
-        { type: "PRODUCT", id: productId },
+        { type: "PRODUCT", id: productId || "LIST" },
+        { type: "PRODUCT", id: "LIST" },
       ],
     }),
 
     deleteProductColor: builder.mutation<
       ApiResponse<null>,
-      { id: string; productId: string }
+      { id: string; productId?: string }
     >({
       query: ({ id }) => ({
         url: `${COLOR_BASE}/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: (_, __, { productId }) => [
-        { type: "PRODUCT", id: productId },
+        { type: "PRODUCT", id: productId || "LIST" },
+        { type: "PRODUCT", id: "LIST" },
       ],
     }),
 
@@ -153,18 +159,22 @@ export const productApi = baseApi.injectEndpoints({
     createProductVariant: builder.mutation<
       ApiResponse<ProductVariant>,
       {
-        productColorId: string
-        productId: string
+        productColorId?: string
+        productId?: string
         data: CreateProductVariantPayload
-      }
+      } | CreateProductVariantPayload
     >({
-      query: ({ productColorId, data }) => ({
-        url: `${COLOR_BASE}/${productColorId}/variants`,
-        method: "POST",
-        data,
-      }),
-      invalidatesTags: (_, __, { productId }) => [
-        { type: "PRODUCT", id: productId },
+      query: (payload) => {
+        const data = "data" in (payload as any) ? (payload as any).data : payload
+        return {
+          url: VARIANT_BASE,
+          method: "POST",
+          data,
+        }
+      },
+      invalidatesTags: (_, __, payload) => [
+        { type: "PRODUCT", id: (payload as any)?.productId || "LIST" },
+        { type: "PRODUCT", id: "LIST" },
       ],
     }),
 

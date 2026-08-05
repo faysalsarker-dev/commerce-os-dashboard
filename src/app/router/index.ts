@@ -14,7 +14,7 @@ import { routes } from "./config/routes.config";
 
 export const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/app",
     Component:AuthWrapper(AppLayout),
     errorElement: createElement(NotFoundPage),
     children: generateRoutes(routes)

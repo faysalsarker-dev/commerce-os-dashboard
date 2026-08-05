@@ -17,6 +17,18 @@ export interface SidebarNavGroup {
   items: SidebarNavItem[];
 }
 
+function buildRoutePath(basePath: string, routePath: string | undefined, isIndex?: boolean) {
+  if (isIndex) return basePath || "/"
+  if (!routePath) return basePath || "/"
+
+  const normalizedBase = basePath === "/" ? "" : basePath
+  const normalizedPath = routePath.startsWith("/")
+    ? routePath
+    : `${normalizedBase}/${routePath}`.replace(/\/+/, "/")
+
+  return normalizedPath || "/"
+}
+
 function buildNavItems(
   routes: RouteConfig[],
   role: Role | undefined | null,
@@ -29,9 +41,7 @@ function buildNavItems(
       return canAccessPage(role ?? undefined, route.page);
     })
     .map((route) => {
-      const fullPath = route.index
-        ? basePath || "/"
-        : `${basePath}/${route.path}`.replace(/\/+/g, "/");
+      const fullPath = buildRoutePath(basePath, route.path, route.index);
 
       const items = route.children
         ? buildNavItems(route.children, role, fullPath)
@@ -59,7 +69,7 @@ export function generateSidebarNav(
   return groups
     .map((group) => ({
       label: group.label,
-      items: buildNavItems(group.items, role),
+      items: buildNavItems(group.items, role, "/app"),
     }))
     .filter((group) => group.items.length > 0);
 }

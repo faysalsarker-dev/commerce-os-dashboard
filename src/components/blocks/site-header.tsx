@@ -8,7 +8,7 @@ import { ThemeToggle } from "./theme-toggle"
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 h-14 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 h-14 border-b border-border/60 bg-sidebar backdrop-blur-xl">
       <div className="flex h-full items-center justify-between px-4 lg:px-6">
         {/* Left */}
         <div className="flex items-center gap-3">

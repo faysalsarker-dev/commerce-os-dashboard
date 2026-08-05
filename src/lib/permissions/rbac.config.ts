@@ -8,21 +8,15 @@ export const ROLE_PERMISSIONS: RolePermissions = {
 
   [Role.ONLINE_SALESMAN]: createRole({
     product: ["view", "edit"],
-    order: "*", // full control of orders
     inventory: ["view"],
-    report: ["view"],
   }),
 
   [Role.OFFLINE_SALESMAN]: createRole({
     product: ["view"],
-    order: ["view", "create"],
     inventory: ["view"],
   }),
 
   [Role.MARKETER]: createRole({
     product: ["view"],
-    order: ["view", "refund"],
-    user: ["view"],
-    report: ["view"],
   }),
 }

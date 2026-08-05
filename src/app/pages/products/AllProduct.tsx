@@ -30,7 +30,7 @@ export default function AllProduct() {
   const columns = useMemo(
     () =>
       createProductTableColumns({
-        onOpen: (product) => navigate(`/products/${product.id}`),
+        onOpen: (product) => navigate(`/app/products/${product.id}`),
         onDelete: (product) => {
           void deleteProduct({ id: product.id })
         },

@@ -47,13 +47,13 @@ export function MultiSelectFilter({ config, value, onChange }: Props) {
         <div className="max-h-60 overflow-y-auto">
           {config.options.map((opt) => (
             <Label
-              key={opt.value}
+              key={opt.label}
               className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm font-normal hover:bg-accent"
             >
-              <Checkbox
-                checked={selected.includes(opt.value)}
-                onCheckedChange={() => toggle(opt.value)}
-              />
+          <Checkbox
+  checked={selected.includes(opt.value as string)}
+  onCheckedChange={() => toggle(opt.value as string)}
+/>
               {opt.label}
             </Label>
           ))}

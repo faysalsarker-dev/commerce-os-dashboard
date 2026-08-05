@@ -109,13 +109,15 @@ function serializeValues<T extends FilterValues>(
 export function useFilter<T extends FilterValues>(
   options: UseFilterOptions<T>
 ): UseFilterReturn<T> {
-  const {
-    defaultValues,
-    debounceMs = {},
-    syncToUrl = false,
-    defaultSort,
-    pageSize: defaultPageSize = 10,
-  } = options
+const {
+  defaultValues,
+  syncToUrl = false,
+  defaultSort,
+  pageSize: defaultPageSize = 10,
+} = options;
+
+const debounceMs =
+  options.debounceMs ?? ({} as Partial<Record<keyof T, number>>);
 
   const [values, setValuesState] = useState<T>(() =>
     syncToUrl ? readUrlValues(defaultValues) : defaultValues
@@ -273,12 +275,17 @@ export function useFilter<T extends FilterValues>(
     return (Object.keys(values) as (keyof T)[]).filter((key) => {
       const current = values[key]
       const fallback = defaultValues[key]
-      if (Array.isArray(current)) {
-        const fb = Array.isArray(fallback) ? fallback : []
-        return (
-          current.length !== fb.length || current.some((v, i) => v !== fb[i])
-        )
-      }
+   if (Array.isArray(current)) {
+  const currentArray = current as unknown[];
+  const fallbackArray = Array.isArray(fallback)
+    ? (fallback as unknown[])
+    : [];
+
+  return (
+    currentArray.length !== fallbackArray.length ||
+    currentArray.some((v, i) => v !== fallbackArray[i])
+  );
+}
       if (current && typeof current === "object") {
         const fb = (
           fallback && typeof fallback === "object" ? fallback : {}

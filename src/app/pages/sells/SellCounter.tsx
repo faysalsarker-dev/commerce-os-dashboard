@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useReducer } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,22 +16,21 @@ import { DueDatePicker } from "@/components/modules/sell-counter/DueDatePicker";
 import { CompleteSaleButton } from "@/components/modules/sell-counter/CompleteSaleButton";
 import {
   PAYMENT_METHODS,
-  lookupCustomerByPhone,
-  lookupProductByCode,
-  type CartLine,
-  type PosCustomer,
 } from "@/components/modules/sell-counter/types";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { PageContainer } from "@/components/shared/common";
+import {
+  useScanProductMutation,
+  useCheckoutMutation,
+} from "@/redux/features/sales/sales.api";
+import { sellCounterReducer, initialState } from "@/logics/sellCounterReducer";
 
 export function SellCounter() {
-  const [lines, setLines] = useState<CartLine[]>([]);
-  const [customer, setCustomer] = useState<PosCustomer | null>(null);
-  const [notFoundPhone, setNotFoundPhone] = useState<string | null>(null);
-  const [discount, setDiscount] = useState(0);
-  const [paymentMethodId, setPaymentMethodId] = useState<string | null>(null);
-  const [amountReceived, setAmountReceived] = useState(0);
-  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [state, dispatch] = useReducer(sellCounterReducer, initialState);
+  const { lines, customer, notFoundPhone, discount, paymentMethodId, amountReceived, dueDate } = state;
+
+  const [scanProduct, { isLoading: isScanning }] = useScanProductMutation();
+  const [checkout, { isLoading: isCheckingOut }] = useCheckoutMutation();
 
   const subtotal = useMemo(
     () => lines.reduce((sum, l) => sum + l.sellingPrice * l.quantity, 0),
@@ -39,72 +39,76 @@ export function SellCounter() {
   const total = Math.max(0, subtotal - discount);
   const due = Math.max(0, total - amountReceived);
 
-  /** Stub — will call the product API later. */
   const handleScanProduct = async (code: string) => {
-    console.log("handleScanProduct", code);
-    const product = await lookupProductByCode(code);
-    if (!product) return;
-    setLines((prev) => {
-      const existing = prev.find((l) => l.id === product.id);
+    if (!code.trim()) return;
+    try {
+      const res = await scanProduct({ code: code.trim() }).unwrap();
+      const scanned = res.data;
+      const existing = lines.find((l) => l.id === scanned.variantId);
+
       if (existing) {
-        return prev.map((l) => (l.id === product.id ? { ...l, quantity: l.quantity + 1 } : l));
+        if (existing.quantity + 1 > scanned.stockQty) {
+          toast.warning("Not enough stock", {
+            description: `Only ${scanned.stockQty} of ${scanned.productName} available.`,
+          });
+          return;
+        }
+        dispatch({ type: "INCREMENT_LINE", id: scanned.variantId });
+        return;
       }
-      return [...prev, { ...product, quantity: 1 }];
-    });
-  };
 
-  const handleQuantityChange = (id: string, quantity: number) => {
-    if (quantity < 1) return;
-    setLines((prev) => prev.map((l) => (l.id === id ? { ...l, quantity } : l)));
-  };
+      if (scanned.stockQty < 1) {
+        toast.warning("Out of stock", {
+          description: `${scanned.productName} has no stock available.`,
+        });
+        return;
+      }
 
-  const handleRemoveLine = (id: string) => {
-    setLines((prev) => prev.filter((l) => l.id !== id));
-  };
-
-  const handleSearchCustomer = async (phone: string) => {
-    console.log("handleSearchCustomer", phone);
-    const found = await lookupCustomerByPhone(phone);
-    if (found) {
-      setCustomer(found);
-      setNotFoundPhone(null);
-    } else {
-      setCustomer(null);
-      setNotFoundPhone(phone.trim());
+      dispatch({ type: "ADD_LINE", line: { ...scanned, id: scanned.variantId, quantity: 1 } });
+    } catch {
+      toast.error("Product not found", {
+        description: `No product matched "${code}". Check the barcode or SKU and try again.`,
+      });
     }
   };
 
+  const handleQuantityChange = (id: string, quantity: number) =>
+    dispatch({ type: "SET_QUANTITY", id, quantity });
+
+  const handleRemoveLine = (id: string) => dispatch({ type: "REMOVE_LINE", id });
+
+  const handleSearchCustomer = async (phone: string) => {
+    dispatch({ type: "SET_CUSTOMER", customer: null, notFoundPhone: phone.trim() });
+  };
+
   const handleCreateCustomer = (name: string, phone: string) => {
-    console.log("handleCreateCustomer", { name, phone });
-    setCustomer({ id: `new_${phone}`, name, phone });
-    setNotFoundPhone(null);
+    dispatch({ type: "SET_CUSTOMER", customer: { id: `new_${phone}`, name, phone }, notFoundPhone: null });
   };
 
-  const handleApplyCoupon = (code: string) => {
-    console.log("handleApplyCoupon", code);
-  };
+  const handleCompleteSale = async () => {
+    if (!paymentMethodId) {
+      toast.warning("Select a payment method before completing the sale.");
+      return;
+    }
+    try {
+      const res = await checkout({
+        items: lines.map((l) => ({ variantId: l.id, quantity: l.quantity, unitPrice: l.sellingPrice })),
+        paymentMethod: paymentMethodId.toUpperCase(),
+        discount: discount > 0 ? discount : undefined,
+        totalAmount: total,
+        customerId: customer?.id,
+      }).unwrap();
 
-  const handleSelectPaymentMethod = (id: string) => {
-    console.log("handleSelectPaymentMethod", id);
-    setPaymentMethodId(id);
-  };
+      toast.success("Sale completed!", {
+        description: `Invoice #${res.data.invoiceNumber} — ${formatCurrency(res.data.totalAmount)}`,
+      });
 
-  const handlePrintBill = () => {
-    console.log("handlePrintBill");
-  };
-
-  const handleCompleteSale = () => {
-    console.log("handleCompleteSale", {
-      lines,
-      customer,
-      discount,
-      total,
-      paymentMethodId,
-      amountReceived,
-      due,
-      dueDate,
-    });
-    handlePrintBill();
+      dispatch({ type: "RESET_SALE" });
+    } catch {
+      toast.error("Checkout failed", {
+        description: "Something went wrong processing the sale. Please try again.",
+      });
+    }
   };
 
   return (
@@ -122,7 +126,10 @@ export function SellCounter() {
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-4">
-            <ProductScanner onScan={(code) => void handleScanProduct(code)} />
+            <ProductScanner
+              onScan={(code) => void handleScanProduct(code)}
+              isLoading={isScanning}
+            />
             <ProductList
               lines={lines}
               onQuantityChange={handleQuantityChange}
@@ -136,25 +143,21 @@ export function SellCounter() {
               notFoundPhone={notFoundPhone}
               onSearch={handleSearchCustomer}
               onCreate={handleCreateCustomer}
-              onClear={() => {
-                setCustomer(null);
-                setNotFoundPhone(null);
-              }}
+              onClear={() => dispatch({ type: "CLEAR_CUSTOMER" })}
             />
 
             <BillSummary
               subtotal={subtotal}
               discount={discount}
               total={total}
-              onDiscountChange={setDiscount}
-              onApplyCoupon={handleApplyCoupon}
+              onDiscountChange={(value) => dispatch({ type: "SET_DISCOUNT", discount: value })}
             />
 
             <Card className="space-y-4 p-4">
               <PaymentMethodSelector
                 methods={PAYMENT_METHODS}
                 selectedId={paymentMethodId}
-                onSelect={handleSelectPaymentMethod}
+                onSelect={(id) => dispatch({ type: "SET_PAYMENT_METHOD", id })}
               />
 
               <Separator />
@@ -169,14 +172,16 @@ export function SellCounter() {
                   min={0}
                   placeholder="0"
                   value={amountReceived === 0 ? "" : amountReceived}
-                  onChange={(e) => setAmountReceived(Math.max(0, Number(e.target.value) || 0))}
+                  onChange={(e) =>
+                    dispatch({ type: "SET_AMOUNT_RECEIVED", amount: Math.max(0, Number(e.target.value) || 0) })
+                  }
                   className="numeric"
                 />
               </div>
 
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Due</span>
-                <span className="numeric font-semibold">{formatCurrency (due)}</span>
+                <span className="numeric font-semibold">{formatCurrency(due)}</span>
               </div>
 
               <AnimatePresence initial={false}>
@@ -189,12 +194,19 @@ export function SellCounter() {
                     transition={{ duration: 0.22, ease: "easeOut" }}
                     className="overflow-hidden"
                   >
-                    <DueDatePicker date={dueDate} onChange={setDueDate} />
+                    <DueDatePicker
+                      date={dueDate}
+                      onChange={(date) => dispatch({ type: "SET_DUE_DATE", date })}
+                    />
                   </motion.div>
                 ) : null}
               </AnimatePresence>
 
-              <CompleteSaleButton disabled={lines.length === 0} onComplete={handleCompleteSale} />
+              <CompleteSaleButton
+                disabled={lines.length === 0 || isCheckingOut}
+                isLoading={isCheckingOut}
+                onComplete={handleCompleteSale}
+              />
             </Card>
           </aside>
         </div>

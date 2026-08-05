@@ -12,7 +12,7 @@ interface BillSummaryProps {
   discount: number;
   total: number;
   onDiscountChange: (value: number) => void;
-  onApplyCoupon: (code: string) => void;
+  // onApplyCoupon: (code: string) => void;
 }
 
 export function BillSummary({
@@ -20,7 +20,7 @@ export function BillSummary({
   discount,
   total,
   onDiscountChange,
-  onApplyCoupon,
+  // onApplyCoupon,
 }: BillSummaryProps) {
   const [coupon, setCoupon] = useState("");
 
@@ -32,7 +32,7 @@ export function BillSummary({
         className="flex items-center gap-2"
         onSubmit={(e) => {
           e.preventDefault();
-          if (coupon.trim()) onApplyCoupon(coupon.trim());
+          // if (coupon.trim()) onApplyCoupon(coupon.trim());
         }}
       >
         <Input

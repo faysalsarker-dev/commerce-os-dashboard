@@ -31,7 +31,9 @@ export function SelectFilter({ config, value, onChange }: Props) {
     <Select
       value={value || CLEAR_VALUE}
       items={items}
-      onValueChange={(next) => onChange(next === CLEAR_VALUE  ? "" : next)}
+      onValueChange={(next) =>
+  onChange(next == null || next === CLEAR_VALUE ? "" : next)
+}
     >
       <SelectTrigger className={`h-10 min-w-40 ${config.className ?? ""}`}>
         <SelectValue placeholder={config.placeholder ?? config.label ?? "All"} />
@@ -39,7 +41,7 @@ export function SelectFilter({ config, value, onChange }: Props) {
       <SelectContent>
         <SelectItem value={CLEAR_VALUE}>{config.placeholder ?? config.label ?? "All"}</SelectItem>
         {config.options.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value}>
+          <SelectItem key={opt.label} value={opt.value}>
             {opt.label}
           </SelectItem>
         ))}

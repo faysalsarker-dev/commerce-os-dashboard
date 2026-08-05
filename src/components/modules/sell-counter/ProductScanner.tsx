@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ScanLine, Search } from "lucide-react";
+import {  DivideCircle, ScanLine, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 interface ProductScannerProps {
   onScan: (code: string) => void;
+  isLoading?: boolean;
 }
 
-export function ProductScanner({ onScan }: ProductScannerProps) {
+export function ProductScanner({ onScan, isLoading }: ProductScannerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [code, setCode] = useState("");
   const [flash, setFlash] = useState(0);
@@ -44,6 +45,9 @@ export function ProductScanner({ onScan }: ProductScannerProps) {
         ) : null}
       </AnimatePresence>
 
+
+
+
       <form onSubmit={submit} className="relative flex items-center gap-2">
         <div className="relative flex-1">
           <ScanLine className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -57,10 +61,23 @@ export function ProductScanner({ onScan }: ProductScannerProps) {
             className="numeric h-11 pl-9 text-base"
           />
         </div>
-        <Button type="submit" className="h-11">
+        <Button disabled={isLoading} type="submit" className="h-11">
           <Search /> Add
         </Button>
       </form>
+{
+  isLoading && (
+<div className="flex items-center gap-2">
+  <DivideCircle/>
+  <p>Processing...</p>
+</div>
+
+  )
+}
+
+
+
+
     </Card>
   );
 }

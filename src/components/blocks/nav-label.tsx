@@ -23,7 +23,7 @@ export function NavLabel({
           exit={{ opacity: 0, x: -8 }}
           transition={{ duration: 0.15, ease: "easeOut" }}
           className={cn(
-            "overflow-hidden whitespace-nowrap text-sm text-primary",
+            "overflow-hidden whitespace-nowrap text-sm text-black",
             active ? "font-semibold text-primary-foreground" : "font-medium"
           )}
         >

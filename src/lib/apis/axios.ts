@@ -41,7 +41,7 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 
     // CRITICAL FIX: Don't try to refresh token for auth endpoints
-    const authEndpoints = ['/user/login', '/user/register', '/user/refresh-token', '/user/forget-password', '/user/reset-password'];
+    const authEndpoints = ['/auth/login', '/auth/register', '/auth/refresh-token', '/auth/forget-password', '/auth/reset-password'];
     const isAuthEndpoint = authEndpoints.some(endpoint => originalRequest.url?.includes(endpoint));
 
     // If 401 Unauthorized AND not an auth endpoint, try refresh token

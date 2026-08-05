@@ -36,6 +36,7 @@ import {
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
 } from "@/redux/features/category/category.api";
+import type { ApiError } from "@/types/shared";
 
 // ============================================================================
 // Schema
@@ -50,7 +51,7 @@ const categoryFormSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Lowercase letters, numbers and hyphens only"),
   description: z.string().max(500, "Keep it under 500 characters").optional().or(z.literal("")),
   isActive: z.boolean(),
-  displayOrder: z.coerce.number().int("Must be a whole number").min(0, "Must be 0 or more"),
+  displayOrder: z.number().int("Must be a whole number").min(0, "Must be 0 or more"),
 });
 
 type CategoryFormValues = z.infer<typeof categoryFormSchema>;
@@ -161,15 +162,16 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
 
     try {
       if (isEditMode && category) {
-        await updateCategory({ id: category.id, body: formData }).unwrap();
+        await updateCategory({ id: category.id, data: formData }).unwrap();
         toast.success("Category updated");
       } else {
         await createCategory(formData).unwrap();
         toast.success("Category created");
       }
       setDialogOpen(false);
-    } catch (err: any) {
-      const message = err?.data?.message ?? "Something went wrong while saving this category.";
+    } catch (err) {
+      const error = err as ApiError;
+      const message = error?.data?.message ?? "Something went wrong while saving this category.";
       if (String(message).toLowerCase().includes("slug")) {
         form.setError("slug", { message });
       } else {
@@ -188,7 +190,7 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      {defaultTrigger && <DialogTrigger asChild>{defaultTrigger}</DialogTrigger>}
+      {defaultTrigger && <DialogTrigger>{defaultTrigger}</DialogTrigger>}
 
       <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
         <Form {...form}>
@@ -314,7 +316,7 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="min-w-[120px]">
+              <Button type="submit" disabled={isSubmitting} className="min-w-30">
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isEditMode ? "Save changes" : "Create"}
               </Button>

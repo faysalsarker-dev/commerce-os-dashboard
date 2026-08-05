@@ -1,6 +1,5 @@
-"use client";
 
-import { ReactNode, useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Trash2, TriangleAlert } from "lucide-react";
 
 import {
@@ -53,7 +52,7 @@ export function DeleteAlertDialog({
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+      <AlertDialogTrigger>{trigger}</AlertDialogTrigger>
 
       <AlertDialogContent className="sm:max-w-md">
         <AlertDialogHeader>

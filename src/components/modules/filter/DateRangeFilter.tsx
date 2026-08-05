@@ -58,7 +58,7 @@ export function DateRangeFilter({ config, value, onChange }: Props) {
               to: next?.to ? format(next.to, "yyyy-MM-dd") : undefined,
             })
           }
-          initialFocus
+        
         />
         {(current.from || current.to) && (
           <div className="border-t p-2">

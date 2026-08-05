@@ -10,18 +10,20 @@ import {
   SidebarMenuItem,
 } from "@/components/ui"
 import { NavGroup } from "./nav-group"
-import { CommandIcon } from "lucide-react"
 import { useAuth } from "@/hooks/auth/useAuth"
 import { generateSidebarNav } from "@/app/router/generator/generateSidebarNav"
 import { routeGroups } from "@/app/router/config/routes.config"
 import type { Role } from "@/types/data-types/enums"
+import Logo from "../ui/Logo"
+import { Link } from "react-router"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { role } = useAuth()
+  const { role, isLoading, isFetching } = useAuth()
+  const isAuthPending = isLoading || isFetching
 
   const navGroups = React.useMemo(
-    () => generateSidebarNav(routeGroups, role as Role),
-    [role]
+    () => generateSidebarNav(routeGroups, isAuthPending ? undefined : (role as Role | undefined)),
+    [role, isAuthPending]
   )
 
   return (
@@ -31,10 +33,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               className="data-[slot=sidebar-menu-button]:p-1.5!"
-              render={<a href="#" />}
+              render={<Link to="/app" />}
             >
-              <CommandIcon className="size-5!" />
-              <span className="text-base font-semibold">Acme Inc.</span>
+              <Logo width={30} />
+              <span className="text-base font-semibold">CommerceOS</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

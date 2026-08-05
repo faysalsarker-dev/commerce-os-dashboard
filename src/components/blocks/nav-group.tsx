@@ -58,7 +58,7 @@ export function NavGroup({ title, items, className }: NavGroupProps) {
   return (
     <SidebarGroup className={className}>
       {title && (
-        <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+        <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wide ">
           {title}
         </SidebarGroupLabel>
       )}
@@ -101,7 +101,7 @@ export function NavGroup({ title, items, className }: NavGroupProps) {
                                 className={cn(
                                   childActive
                                     ? "bg-primary text-primary-foreground"
-                                    : "text-muted-foreground hover:bg-muted"
+                                    : "text-black hover:bg-muted"
                                 )}
                               >
                                 <NavLabel active={childActive}>{child.title}</NavLabel>

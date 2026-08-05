@@ -5,22 +5,27 @@ import { Button } from "@/components/ui/button";
 
 interface CompleteSaleButtonProps {
   disabled?: boolean;
-  onComplete: () => void;
+  onComplete: () => Promise<void> | void;
+  isLoading: boolean;
 }
 
-export function CompleteSaleButton({ disabled, onComplete }: CompleteSaleButtonProps) {
+export function CompleteSaleButton({ disabled, onComplete, isLoading }: CompleteSaleButtonProps) {
   const [done, setDone] = useState(false);
 
-  const handleClick = () => {
-    onComplete();
-    setDone(true);
-    window.setTimeout(() => setDone(false), 1600);
+  const handleClick = async () => {
+    try {
+      await onComplete();
+      setDone(true);
+      window.setTimeout(() => setDone(false), 1600);
+    } catch {
+      // Sale failed — don't show success state
+    }
   };
 
   return (
     <Button
       className="relative h-11 w-full overflow-hidden"
-      disabled={disabled || done}
+      disabled={disabled || done || isLoading}
       onClick={handleClick}
     >
       <AnimatePresence mode="wait" initial={false}>

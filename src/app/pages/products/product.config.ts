@@ -51,7 +51,7 @@ export const createProductTableColumns = ({
   onDelete,
 }: ProductTableHandlers) =>
   createColumns<Product>({
-    resource: "products",
+    resource: "product",
     columns: [
       column("name"),
       column("category", {

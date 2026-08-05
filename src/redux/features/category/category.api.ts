@@ -2,9 +2,8 @@ import { baseApi } from "@/redux/baseApi";
 
 import type {
   Category,
-  CategoryFilters,
-  CreateCategoryPayload,
-  UpdateCategoryPayload,
+  CategoryFilters
+
 } from "@/types/data-types/category/category.types";
 
 import type { ApiResponse } from "@/types/shared";
@@ -13,10 +12,10 @@ const BASE_URL = "/category";
 
 export const categoryApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    createCategory: builder.mutation<
-      ApiResponse<Category>,
-      CreateCategoryPayload
-    >({
+    createCategory:builder.mutation<
+  ApiResponse<Category>,
+FormData>
+({
       query: (data) => ({
         url: BASE_URL,
         method: "POST",
@@ -90,7 +89,7 @@ export const categoryApi = baseApi.injectEndpoints({
       ApiResponse<Category>,
       {
         id: string;
-        data: UpdateCategoryPayload;
+        data:FormData;
       }
     >({
       query: ({ id, data }) => ({

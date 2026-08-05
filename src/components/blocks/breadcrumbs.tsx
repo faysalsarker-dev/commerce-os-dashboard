@@ -44,8 +44,8 @@ export function HeaderBreadcrumbs() {
                 {isLast ? (
                   <BreadcrumbPage>{label}</BreadcrumbPage>
                 ) : (
-                  <BreadcrumbLink asChild>
-                    <Link to={href}>{label}</Link>
+                  <BreadcrumbLink render={<Link to={href}/>}>
+                    {label}
                   </BreadcrumbLink>
                 )}
               </BreadcrumbItem>

@@ -1,4 +1,4 @@
-import { BoxIcon} from "lucide-react"
+import { PackageIcon, LayoutGridIcon, ScanBarcodeIcon } from "lucide-react"
 
 import type { RouteConfig } from "@/types/routes/route.types"
 import AllProduct from "@/app/pages/products/AllProduct"
@@ -14,47 +14,53 @@ export interface RouteGroup {
 }
 
 export const routeGroups: RouteGroup[] = [
- {label: "Data Library",
+
+  {
+    label: "Sells",
+    items: [
+      {
+        path: "sell",
+        name: "Sell Counter",
+        Component: SellCounter,
+        icon: ScanBarcodeIcon,
+        page: "sell",
+      }
+
+
+    ]
+  }
+  ,
+  {
+    label: "Data Library",
     items: [
       {
         path: "products",
         name: "Products",
         Component: AllProduct,
-        icon: BoxIcon,
-        page: "products",
+        icon: PackageIcon,
+        page: "product",
       },
       {
         path: "category",
         name: "Products Category",
         Component: AllCategory,
-        icon: BoxIcon,
+        icon: LayoutGridIcon,
         page: "category",
       },
       {
         path: "products/:id",
         name: "Product Details",
         Component: ProductDetailPage,
-        page: "products",
+        page: "product",
         isVisible: false,
       },
 
-    ]},
- {label: "Sells",
-    items: [
-      {
-        path: "sell",
-        name: "Sell Counter",
-        Component: SellCounter,
-        icon: BoxIcon,
-        page: "sell",
-      }
-   
+    ]
+  }
 
-    ]}
-  
+
 ]
 
-// Flat list — routing doesn't care about sidebar grouping, only items do
 export const routes: RouteConfig[] = routeGroups.flatMap((group) => group.items)
 
 

@@ -16,24 +16,24 @@ export function DueDatePicker({ date, onChange }: DueDatePickerProps) {
     <div className="space-y-1.5">
       <Label className="text-xs">Due date</Label>
       <Popover>
-        <PopoverTrigger asChild>
-          <Button
+        <PopoverTrigger render={<Button
+            type="button"
             variant="outline"
             className={cn(
               "w-full justify-start text-left font-normal",
               !date && "text-muted-foreground",
             )}
-          >
+          />}>
+          
             <CalendarIcon />
             {date ? format(date, "PPP") : <span>Pick a date</span>}
-          </Button>
+         
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
             selected={date}
             onSelect={onChange}
-            initialFocus
             className={cn("p-3 pointer-events-auto")}
           />
         </PopoverContent>

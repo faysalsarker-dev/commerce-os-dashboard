@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/auth/useAuth"
 import { can, canAccessPage } from "@/lib/permissions/can"
-import type { Action, Page, Resource, Role } from "@/types/permissions/permissions.types"
+import type { Role } from "@/types/data-types/enums"
+import type { Action, Page, Resource } from "@/types/permissions/permissions.types"
 
 
 export function usePermission() {
