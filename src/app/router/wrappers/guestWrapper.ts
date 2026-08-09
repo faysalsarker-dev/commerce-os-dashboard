@@ -14,7 +14,7 @@ export const GuestWrapper = <P extends object>(
 
     if (isAuthenticated) {
       toast.error("You are already logged in")
-      navigate(-1)
+      navigate("/app/products", { replace: true })
     }
 
     return React.createElement(WrappedComponent, props)

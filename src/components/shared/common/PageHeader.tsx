@@ -57,6 +57,7 @@ export function PageHeader({
     <Button
       onClick={onClick}
       disabled={!onClick}
+      type="button"
     >
       <Plus className="size-4" />
       Add {title}

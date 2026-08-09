@@ -51,12 +51,12 @@ const categoryFormSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Lowercase letters, numbers and hyphens only"),
   description: z.string().max(500, "Keep it under 500 characters").optional().or(z.literal("")),
   isActive: z.boolean(),
-  displayOrder: z.number().int("Must be a whole number").min(0, "Must be 0 or more"),
+  displayOrder: z.coerce.number().int("Must be a whole number").min(0, "Must be 0 or more"),
 });
 
 type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
-const defaultValues: CategoryFormValues = {
+const DEFAULT_VALUES: CategoryFormValues = {
   name: "",
   slug: "",
   description: "",
@@ -64,7 +64,15 @@ const defaultValues: CategoryFormValues = {
   displayOrder: 0,
 };
 
-const makeSlug = (value: string) => slugify(value, { lower: true, strict: true, trim: true });
+const toSlug = (value: string) => slugify(value, { lower: true, strict: true, trim: true });
+
+const categoryToFormValues = (category: Category): CategoryFormValues => ({
+  name: category.name,
+  slug: category.slug,
+  description: category.description ?? "",
+  isActive: category.isActive,
+  displayOrder: category.displayOrder,
+});
 
 // ============================================================================
 // FormData builder — plain, multer-friendly (field name: "image")
@@ -73,19 +81,19 @@ const makeSlug = (value: string) => slugify(value, { lower: true, strict: true, 
 function buildCategoryFormData(
   values: CategoryFormValues,
   image: ImageUploaderResult | null
-) {
+): FormData {
   const formData = new FormData();
 
   formData.append("name", values.name);
   formData.append("slug", values.slug);
-  formData.append("description", values.description ?? "");
+  formData.append("description", (values.description ?? "").trim());
   formData.append("isActive", String(values.isActive));
   formData.append("displayOrder", String(values.displayOrder));
 
-  // new file(s) picked by the user — multer field name "image"
+  // Newly picked file(s) — multer field name "image"
   image?.files.forEach((file) => formData.append("image", file));
 
-  // edit mode bookkeeping so the backend knows what stayed / got removed
+  // Edit-mode bookkeeping so the backend knows what stayed vs. what to delete
   if (image?.existingUrls.length) {
     formData.append("existingImage", image.existingUrls[0]);
   }
@@ -94,6 +102,13 @@ function buildCategoryFormData(
   }
 
   return formData;
+}
+
+function getErrorMessage(err: unknown): string {
+  const message = (err as ApiError)?.data?.message;
+  return typeof message === "string" && message.trim()
+    ? message
+    : "Something went wrong while saving this category.";
 }
 
 // ============================================================================
@@ -124,61 +139,70 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categoryFormSchema),
-    defaultValues,
+    defaultValues: DEFAULT_VALUES,
   });
 
+  // Reset form + local state whenever the dialog opens (or the target category changes)
   React.useEffect(() => {
     if (!dialogOpen) return;
+
     if (category) {
-      form.reset({
-        name: category.name,
-        slug: category.slug,
-        description: category.description ?? "",
-        isActive: category.isActive,
-        displayOrder: category.displayOrder,
-      });
+      form.reset(categoryToFormValues(category));
       setSlugTouched(true);
     } else {
-      form.reset(defaultValues);
+      form.reset(DEFAULT_VALUES);
       setSlugTouched(false);
     }
     setImageResult(null);
   }, [dialogOpen, category, form]);
 
+  // Auto-derive the slug from the name until the user edits the slug manually
   const nameValue = form.watch("name");
-
   React.useEffect(() => {
     if (slugTouched) return;
-    form.setValue("slug", makeSlug(nameValue), { shouldValidate: true });
+    form.setValue("slug", toSlug(nameValue), { shouldValidate: true });
   }, [nameValue, slugTouched, form]);
 
-  const regenerateSlug = () => {
-    form.setValue("slug", makeSlug(form.getValues("name")), { shouldValidate: true });
+  const regenerateSlug = React.useCallback(() => {
+    form.setValue("slug", toSlug(form.getValues("name")), { shouldValidate: true });
     setSlugTouched(false);
-  };
+  }, [form]);
 
-  const onSubmit = async (values: CategoryFormValues) => {
-    const formData = buildCategoryFormData(values, imageResult);
+  const onSubmit = React.useCallback(
+    async (values: CategoryFormValues) => {
+      const formData = buildCategoryFormData(values, imageResult);
 
-    try {
-      if (isEditMode && category) {
-        await updateCategory({ id: category.id, data: formData }).unwrap();
-        toast.success("Category updated");
-      } else {
-        await createCategory(formData).unwrap();
-        toast.success("Category created");
+      try {
+        if (isEditMode && category) {
+          await updateCategory({ id: category.id, data: formData }).unwrap();
+          toast.success("Category updated");
+        } else {
+          await createCategory(formData).unwrap();
+          toast.success("Category created");
+        }
+        setDialogOpen(false);
+      } catch (err) {
+        const message = getErrorMessage(err);
+        if (message.toLowerCase().includes("slug")) {
+          form.setError("slug", { message });
+        } else {
+          toast.error(message);
+        }
       }
-      setDialogOpen(false);
-    } catch (err) {
-      const error = err as ApiError;
-      const message = error?.data?.message ?? "Something went wrong while saving this category.";
-      if (String(message).toLowerCase().includes("slug")) {
-        form.setError("slug", { message });
-      } else {
-        toast.error(message);
-      }
+    },
+    [imageResult, isEditMode, category, updateCategory, createCategory, setDialogOpen, form]
+  );
+
+  // Enter must never implicitly submit the form (e.g. the phantom Enter
+  // keydown some browsers fire when the native file picker closes) —
+  // except from inside the description textarea, where Enter should
+  // just insert a newline as usual.
+  const guardEnterSubmit = React.useCallback((e: React.KeyboardEvent<HTMLFormElement>) => {
+    const isTextarea = (e.target as HTMLElement).tagName === "TEXTAREA";
+    if (e.key === "Enter" && !isTextarea) {
+      e.preventDefault();
     }
-  };
+  }, []);
 
   const defaultTrigger =
     trigger === null ? null : trigger ?? (
@@ -194,7 +218,7 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
 
       <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={form.handleSubmit(onSubmit)} onKeyDown={guardEnterSubmit}>
             <DialogHeader className="px-6 pt-6 pb-4 border-b space-y-1">
               <DialogTitle className="text-base">
                 {isEditMode ? "Edit category" : "New category"}
@@ -233,7 +257,7 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
                           {...field}
                           onChange={(e) => {
                             setSlugTouched(true);
-                            field.onChange(makeSlug(e.target.value));
+                            field.onChange(toSlug(e.target.value));
                           }}
                           className="font-mono text-sm"
                         />
@@ -260,7 +284,8 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Description <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+                      Description{" "}
+                      <span className="text-xs font-normal text-muted-foreground">(optional)</span>
                     </FormLabel>
                     <FormControl>
                       <Textarea rows={3} placeholder="What belongs in this category?" {...field} />
@@ -270,7 +295,7 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
                 )}
               />
 
-              <FormItem >
+              <FormItem>
                 <FormLabel>Image</FormLabel>
                 <ImageUploader className="w-full" onChange={setImageResult} />
               </FormItem>

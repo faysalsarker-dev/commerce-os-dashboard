@@ -123,7 +123,10 @@ export function ImageUploader({
         role="button"
         tabIndex={canAdd ? 0 : -1}
         aria-disabled={!canAdd}
-        onClick={() => canAdd && inputRef.current?.click()}
+        onClick={(e) => {
+          e.preventDefault();
+          if (canAdd) inputRef.current?.click();
+        }}
         onKeyDown={(event) => {
           if (!canAdd) return;
           if (event.key === "Enter" || event.key === " ") {
@@ -165,6 +168,11 @@ export function ImageUploader({
         accept={accept}
         className="sr-only"
         disabled={!canAdd}
+        // Prevent the programmatic .click() from bubbling up to a parent form
+        onClick={(e) => e.stopPropagation()}
+        // On Windows, closing the OS file-picker fires an Enter keydown back
+        // into the page — intercept it before it can submit a parent form.
+        onKeyDown={(e) => e.preventDefault()}
         onChange={(event) => {
           addFiles(event.target.files);
           event.target.value = "";

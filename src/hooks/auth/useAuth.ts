@@ -20,7 +20,8 @@ export const useAuth = (): UseAuthResult => {
   const dispatch = useAppDispatch()
 
   const { data: userResponse, isLoading, isFetching, isError, isSuccess, refetch } = useGetMeQuery(undefined, {
-    refetchOnMountOrArgChange: false,
+   refetchOnMountOrArgChange: false,
+  refetchOnFocus: false,   
   })
 
   const user = userResponse?.data

@@ -142,6 +142,7 @@ export function LoginCard() {
               </div>
               <a
                 href="#"
+                onClick={(event) => event.preventDefault()}
                 className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
               >
                 Forgot password?

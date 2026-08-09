@@ -90,6 +90,16 @@ export function EntityFormDialog<TValues extends FieldValues, TResult>({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
+            // Prevent Enter key (including the phantom one Windows fires when
+            // the OS file-picker dialog closes) from submitting the form.
+            onKeyDown={(e) => {
+              if (
+                e.key === "Enter" &&
+                (e.target as HTMLElement).tagName !== "TEXTAREA"
+              ) {
+                e.preventDefault()
+              }
+            }}
             className="space-y-4"
           >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

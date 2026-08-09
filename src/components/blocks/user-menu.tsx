@@ -57,7 +57,7 @@ const [logoutOpen, setLogoutOpen] = useState(false);
 
   return (
     <Sheet>
-      <SheetTrigger render={<button className="rounded-full outline-none bg-none"/>}>
+      <SheetTrigger render={<button type="button" className="rounded-full outline-none bg-none"/>}>
     
           <Avatar className="size-9 cursor-pointer">
             <AvatarImage src={user?.image ?? ""} />
