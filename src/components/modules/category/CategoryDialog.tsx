@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import slugify from "slugify";
 import { Loader2, RefreshCw, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -14,12 +13,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import {
+ Button ,Input ,Textarea ,Switch ,
   Form,
   FormField,
   FormItem,
@@ -27,7 +21,7 @@ import {
   FormControl,
   FormDescription,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/components/ui";
 
 import { ImageUploader, type ImageUploaderResult } from "@/components/blocks/ImageUploader";
 
@@ -37,32 +31,13 @@ import {
   useUpdateCategoryMutation,
 } from "@/redux/features/category/category.api";
 import type { ApiError } from "@/types/shared";
+import { categoryFormSchema, DEFAULT_VALUES, type CategoryFormValues } from "@/types/validations/category/category.validation";
 
 // ============================================================================
 // Schema
 // ============================================================================
 
-const categoryFormSchema = z.object({
-  name: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
-  slug: z
-    .string()
-    .trim()
-    .min(2, "Slug must be at least 2 characters")
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Lowercase letters, numbers and hyphens only"),
-  description: z.string().max(500, "Keep it under 500 characters").optional().or(z.literal("")),
-  isActive: z.boolean(),
-  displayOrder: z.coerce.number().int("Must be a whole number").min(0, "Must be 0 or more"),
-});
 
-type CategoryFormValues = z.infer<typeof categoryFormSchema>;
-
-const DEFAULT_VALUES: CategoryFormValues = {
-  name: "",
-  slug: "",
-  description: "",
-  isActive: true,
-  displayOrder: 0,
-};
 
 const toSlug = (value: string) => slugify(value, { lower: true, strict: true, trim: true });
 
@@ -74,9 +49,6 @@ const categoryToFormValues = (category: Category): CategoryFormValues => ({
   displayOrder: category.displayOrder,
 });
 
-// ============================================================================
-// FormData builder — plain, multer-friendly (field name: "image")
-// ============================================================================
 
 function buildCategoryFormData(
   values: CategoryFormValues,
@@ -142,7 +114,7 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
     defaultValues: DEFAULT_VALUES,
   });
 
-  // Reset form + local state whenever the dialog opens (or the target category changes)
+  
   React.useEffect(() => {
     if (!dialogOpen) return;
 
@@ -193,10 +165,6 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
     [imageResult, isEditMode, category, updateCategory, createCategory, setDialogOpen, form]
   );
 
-  // Enter must never implicitly submit the form (e.g. the phantom Enter
-  // keydown some browsers fire when the native file picker closes) —
-  // except from inside the description textarea, where Enter should
-  // just insert a newline as usual.
   const guardEnterSubmit = React.useCallback((e: React.KeyboardEvent<HTMLFormElement>) => {
     const isTextarea = (e.target as HTMLElement).tagName === "TEXTAREA";
     if (e.key === "Enter" && !isTextarea) {

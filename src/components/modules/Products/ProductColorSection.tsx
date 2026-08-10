@@ -15,6 +15,7 @@ import {
 } from "@/redux/features/product/product.api"
 import type { ProductColor } from "@/types/data-types/product/product.types"
 import type { VariantFormValues } from "@/components/modules/Products/VariantSheet"
+import { handleAsyncMutation } from "@/utils/asyncHandler"
 
 interface ProductColorsSectionProps {
   productId: string
@@ -38,63 +39,89 @@ export function ProductColorsSection({ productId, productName, colors }: Product
     setColorDialogOpen(true)
   }
 
-const submitColor = async (formData: FormData): Promise<void> => {
-  if (editingColor) {
-    formData.append("id", editingColor.id);
+  const submitColor = async (formData: FormData): Promise<void> => {
+    await handleAsyncMutation(
+      async () => {
+        if (editingColor) {
+          formData.append("id", editingColor.id);
+          return await updateColor({
+            id: editingColor.id,
+            productId,
+            data: formData,
+          }).unwrap();
+        }
 
-    await updateColor({
-      id: editingColor.id,
-      productId,
-      data: formData,
-    }).unwrap();
+        formData.append("productId", productId);
+        return await createColor({
+          productId,
+          data: formData,
+        }).unwrap();
+      },
+      {
+        successMessage: editingColor ? "Colour updated" : "Colour created",
+      }
+    );
+  };
 
-    return;
-  }
+  const handleDeleteColor = async (colorId: string): Promise<void> => {
+    await handleAsyncMutation(
+      () =>
+        deleteColor({
+          id: colorId,
+          productId,
+        }).unwrap(),
+      {
+        successMessage: "Colour deleted",
+      }
+    );
+  };
 
-  await createColor({
-    productId,
-    data: formData,
-  }).unwrap();
-};
+  const handleCreateVariant = async (
+    colorId: string,
+    data: VariantFormValues
+  ): Promise<void> => {
+    await handleAsyncMutation(
+      () =>
+        createVariantMutation({
+          ...data,
+          productColorId: colorId,
+          productId,
+        }).unwrap(),
+      {
+        successMessage: "Size added",
+      }
+    );
+  };
 
-const handleDeleteColor = async (colorId: string): Promise<void> => {
-    console.log('fire...',colorId)
-  await deleteColor({
-    id: colorId,
-    productId,
-  }).unwrap();
-};
+  const handleUpdateVariant = async (
+    variantId: string,
+    data: VariantFormValues
+  ): Promise<void> => {
+    await handleAsyncMutation(
+      () =>
+        updateVariantMutation({
+          id: variantId,
+          productId,
+          data,
+        }).unwrap(),
+      {
+        successMessage: "Size updated",
+      }
+    );
+  };
 
-const handleCreateVariant = async (
-  colorId: string,
-  data: VariantFormValues,
-): Promise<void> => {
-  await createVariantMutation({
-    productColorId: colorId,
-    productId,
-    data,
-  }).unwrap();
-};
-
-const handleUpdateVariant = async (
-  variantId: string,
-  data: VariantFormValues,
-): Promise<void> => {
-  await updateVariantMutation({
-    id: variantId,
-    productId,
-    data,
-  }).unwrap();
-};
-
-const handleDeleteVariant = async (
-  variantId: string,
-): Promise<void> => {
-  await deleteVariantMutation({
-    id: variantId,
-    productId,
-  }).unwrap();
-};
+  const handleDeleteVariant = async (variantId: string): Promise<void> => {
+    await handleAsyncMutation(
+      () =>
+        deleteVariantMutation({
+          id: variantId,
+          productId,
+        }).unwrap(),
+      {
+        successMessage: "Size deleted",
+      }
+    );
+  };
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">

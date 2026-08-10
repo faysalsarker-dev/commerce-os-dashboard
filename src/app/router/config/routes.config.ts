@@ -1,10 +1,11 @@
-import { PackageIcon, LayoutGridIcon, ScanBarcodeIcon } from "lucide-react"
+import { PackageIcon, LayoutGridIcon, ScanBarcodeIcon, Undo } from "lucide-react"
 
 import type { RouteConfig } from "@/types/routes/route.types"
 import AllProduct from "@/app/pages/products/AllProduct"
 import AllCategory from "@/app/pages/category/AllCategory"
 import ProductDetailPage from "@/app/pages/products/ProductDetailPage"
 import SellCounter from "@/app/pages/sells/SellCounter"
+import RefundCounter from "@/app/pages/refund/RefundCounter"
 
 
 
@@ -28,6 +29,20 @@ export const routeGroups: RouteGroup[] = [
 
 
     ]
+  },
+  {
+    label: "Refund",
+    items: [
+      {
+        path: "refund",
+        name: "Refund Counter",
+        Component: RefundCounter,
+        icon: Undo,
+        page: "refund",
+      }
+
+
+    ]
   }
   ,
   {
@@ -42,7 +57,7 @@ export const routeGroups: RouteGroup[] = [
       },
       {
         path: "category",
-        name: "Products Category",
+        name: "Category",
         Component: AllCategory,
         icon: LayoutGridIcon,
         page: "category",

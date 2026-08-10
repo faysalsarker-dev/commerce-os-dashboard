@@ -65,7 +65,7 @@ export const createCategoryTableColumns = ({
       }),
       column("name", { sortable: true }),
       column("description", {
-        formatter: (value) => (value ? String(value).toUpperCase() : "-"),
+        formatter: (value) => (value ? `${String(value).slice(0, 50).toUpperCase()}...` : "-"),
       }),
       column.status("isActive", { label: "Status",
         formatter: (value) => {

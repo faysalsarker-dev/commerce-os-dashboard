@@ -42,7 +42,6 @@ export function ColorCard({
   const [qrLabel, setQrLabel] = useState<QrLabel | null>(null);
   const [deleteColorOpen, setDeleteColorOpen] = useState(false);
   const [deletingVariant, setDeletingVariant] = useState<ProductVariant | null>(null);
-console.log("state",deleteColorOpen)
 
   const stock = color.variants.reduce((sum, v) => sum + v.stockQty, 0);
   const skuPrefix = color.colorName.slice(0, 3).toUpperCase();

@@ -11,7 +11,6 @@ export const variantSchema = z.object({
     .min(3, "SKU must be at least 3 characters")
     .regex(/^[A-Za-z0-9-]+$/, "Use letters, numbers and dashes only"),
   stockQty: z
-    .coerce
     .number()
     .int("Whole units only")
     .min(0, "Stock cannot be negative"),

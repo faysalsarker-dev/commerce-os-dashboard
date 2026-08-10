@@ -33,7 +33,6 @@ interface ColorFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   color: ProductColor | null;
-  /** Receives multipart/form-data ready for a multer endpoint. */
   onSubmit: (formData: FormData) => Promise<void>;
 }
 
@@ -80,7 +79,7 @@ export function ColorFormDialog({ open, onOpenChange, color, onSubmit }: ColorFo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-130">
+      <DialogContent className="w-full sm:max-w-[520px] md:max-w-[640px] h-[95vh] ">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit colour" : "Add colour"}</DialogTitle>
           <DialogDescription>
@@ -91,7 +90,7 @@ export function ColorFormDialog({ open, onOpenChange, color, onSubmit }: ColorFo
         <Form {...form}>
           <form
             onSubmit={submit}
-            className="max-h-[65vh] space-y-5 overflow-y-auto px-1 pb-1"
+            className="max-h-[65vh] space-y-5 overflow-auto px-4 pb-4 pr-3"
             encType="multipart/form-data"
           >
             <FormField
@@ -101,7 +100,7 @@ export function ColorFormDialog({ open, onOpenChange, color, onSubmit }: ColorFo
                 <FormItem>
                   <FormLabel>Colour name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Sky Blue" autoFocus {...field} />
+                    <Input placeholder="Sky Blue" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -136,7 +135,7 @@ export function ColorFormDialog({ open, onOpenChange, color, onSubmit }: ColorFo
               label="Colour images"
             />
 
-            <DialogFooter>
+            <DialogFooter className="flex items-center justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -145,7 +144,7 @@ export function ColorFormDialog({ open, onOpenChange, color, onSubmit }: ColorFo
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-28">
+              <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-[7rem]">
                 {form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : null}
                 {isEditing ? "Save changes" : "Add colour"}
               </Button>

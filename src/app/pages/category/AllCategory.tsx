@@ -12,7 +12,7 @@ import {
 } from "@/redux/features/category/category.api"
 import type { Category } from "@/types/data-types/category/category.types"
 import { useMemo, useState } from "react"
-import { toast } from "sonner"
+import { handleAsyncMutation } from "@/utils/asyncHandler"
 import {
   CATEGORY_FILTER_CONFIG,
   CATEGORY_PAGE_CONFIG,
@@ -48,15 +48,11 @@ export default function AllCategory() {
           setSelectedCategory(category)
           setIsDialogOpen(true)
         },
-        onDelete: async (category) => {
-          try {
-            await deleteCategory(category.id).unwrap()
-            toast.success("Category deleted")
-          } catch (error) {
-            toast.error("Unable to delete category")
-            console.error("Unable to delete category", error)
-          }
-        },
+        onDelete: (category) =>
+          handleAsyncMutation(() => deleteCategory(category.id).unwrap(), {
+            successMessage: "Category deleted",
+            errorMessage: "Unable to delete category",
+          }),
       }),
     [deleteCategory],
   )

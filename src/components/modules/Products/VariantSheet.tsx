@@ -70,6 +70,29 @@ export function VariantSheet({
     );
   }, [open, variant, skuPrefix, form]);
 
+  const handleSizeChange = (newSize: SizeOption) => {
+    const currentSku = form.getValues("sku") || "";
+    const prefixWithDash = `${skuPrefix}-`;
+
+    let suffix = "";
+    if (currentSku.startsWith(prefixWithDash)) {
+      const remainder = currentSku.slice(prefixWithDash.length);
+      const matchingSize = SIZE_OPTIONS.find(
+        (s) => remainder.startsWith(`${s}-`) || remainder === s
+      );
+      if (matchingSize) {
+        suffix = remainder.startsWith(`${matchingSize}-`)
+          ? remainder.slice(matchingSize.length + 1)
+          : "";
+      } else {
+        suffix = remainder;
+      }
+    }
+
+    const newSku = suffix ? `${skuPrefix}-${newSize}-${suffix}` : `${skuPrefix}-${newSize}-`;
+    form.setValue("sku", newSku, { shouldValidate: true });
+  };
+
   const submit = form.handleSubmit(async (values) => {
     await onSubmit(values);
     onOpenChange(false);
@@ -93,11 +116,16 @@ export function VariantSheet({
               <FormField
                 control={form.control}
                 name="size"
-      
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Size</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={(val) => {
+                        field.onChange(val);
+                        handleSizeChange(val as SizeOption);
+                      }}
+                      value={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select a size" />
@@ -133,26 +161,30 @@ export function VariantSheet({
               />
 
         <FormField
-  control={form.control}
-  name="stockQty"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Stock on hand</FormLabel>
-      <FormControl>
-        <Input
-          type="number"
-          min={0}
-          className="numeric"
-          onChange={(e) => field.onChange(e.target.valueAsNumber)}
-          onBlur={field.onBlur}
-          name={field.name}
-          ref={field.ref}
+          control={form.control}
+          name="stockQty"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Stock on hand</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  min={0}
+                  className="numeric"
+                  value={field.value ?? 0}
+                  onChange={(e) => {
+                    const val = e.target.valueAsNumber;
+                    field.onChange(Number.isNaN(val) ? 0 : val);
+                  }}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
             </div>
 
             <SheetFooter className="flex-row justify-end gap-2 border-t border-border px-6 py-4">

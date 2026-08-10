@@ -19,10 +19,9 @@ import {
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
-import { toast } from "sonner"
 import type { EntityFormConfig } from "@/types/form/form.types"
 import { EntityFormField } from "./EntityFormField"
-import type { ApiError } from "@/types/shared"
+import { handleAsyncMutation } from "@/utils/asyncHandler"
 
 interface EntityFormDialogProps<TValues extends FieldValues, TResult> {
   open: boolean
@@ -67,17 +66,14 @@ export function EntityFormDialog<TValues extends FieldValues, TResult>({
 
   const watchedValues = useWatch({ control: form.control }) as Partial<TValues>
 
-  const handleSubmit = async (data: TValues) => {
-    try {
-      await onSubmit(data)
-      toast.success(`${title} saved successfully`)
-      onOpenChange(false)
-      form.reset()
-    } catch (err) {
-      const error = err as ApiError
-      toast.error(error?.data?.message ?? "Something went wrong")
-    }
-  }
+  const handleSubmit = (data: TValues) =>
+    handleAsyncMutation(() => onSubmit(data), {
+      successMessage: `${title} saved successfully`,
+      onSuccess: () => {
+        onOpenChange(false)
+        form.reset()
+      },
+    })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
