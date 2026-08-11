@@ -32,16 +32,20 @@ export function SelectFilter({ config, value, onChange }: Props) {
       value={value || CLEAR_VALUE}
       items={items}
       onValueChange={(next) =>
-  onChange(next == null || next === CLEAR_VALUE ? "" : next)
-}
+        onChange(next == null || next === CLEAR_VALUE ? "" : next)
+      }
     >
-      <SelectTrigger className={`h-10 min-w-40 ${config.className ?? ""}`}>
+      <SelectTrigger
+        className={`h-10 min-w-40 rounded-xl border-border/60 bg-muted/40 text-sm shadow-none transition-colors hover:bg-muted/70 data-[state=open]:bg-background ${config.className ?? ""}`}
+      >
         <SelectValue placeholder={config.placeholder ?? config.label ?? "All"} />
       </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={CLEAR_VALUE}>{config.placeholder ?? config.label ?? "All"}</SelectItem>
+      <SelectContent className="rounded-xl p-1">
+        <SelectItem value={CLEAR_VALUE} className="rounded-lg text-sm">
+          {config.placeholder ?? config.label ?? "All"}
+        </SelectItem>
         {config.options.map((opt) => (
-          <SelectItem key={opt.label} value={opt.value}>
+          <SelectItem key={opt.label} value={opt.value} className="rounded-lg text-sm">
             {opt.label}
           </SelectItem>
         ))}

@@ -4,6 +4,7 @@ import type { ComponentType } from "react"
 import { Button , Badge } from "@/components/ui"
 import type { FilterConfig, FilterValues, UseFilterReturn } from "@/types/filter/filter.types"
 import { DateRangeFilter, MultiSelectFilter, NumberRangeFilter, SearchFilter, SelectFilter } from "@/components/modules/filter"
+import { AnimatePresence , motion} from "framer-motion"
 
 
 
@@ -71,8 +72,12 @@ export function FilterBar<T extends FilterValues>({
   const { values, setValue, remove, reset, hasFilters, activeFilterKeys } = filter
 
   return (
-    <div className={`flex flex-col gap-2 ${className ?? ""} bg-card border rounded p-4 shadow`}>
+    <div
+      className={`rounded-2xl border border-border/60 bg-card p-3 shadow-sm ring-1 ring-black/2 sm:p-4 ${className ?? ""}`}
+    >
       <div className="flex flex-wrap items-center gap-2">
+       
+
         {filters.map((config) => {
           const Component = filterRegistry[config.type]
           if (!Component) {
@@ -89,39 +94,72 @@ export function FilterBar<T extends FilterValues>({
           )
         })}
 
-        {hasFilters && (
-          <Button type="button" variant="ghost" onClick={reset} className="h-10 text-muted-foreground">
-            Clear all
-          </Button>
-        )}
+        <AnimatePresence initial={false}>
+          {hasFilters && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="ml-auto"
+            >
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={reset}
+                className="h-10 gap-1.5 rounded-xl px-3 text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              >
+                <X className="size-3.5" />
+                Clear all
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {showActiveChips && hasFilters && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          {activeFilterKeys.map((key) => {
-            const config = filters.find((f) => f.name === key)
-            const displayValue = formatChipValue(config, values[key])
-            if (!displayValue) return null
-            return (
-              <Badge
-                key={String(key)}
-                variant="secondary"
-                className="gap-1 py-1 pl-2.5 pr-1.5 font-medium"
-              >
-                {config?.label ?? config?.name ?? String(key)}: {displayValue}
-                <Button
-                  type="button"
-                  onClick={() => remove(key)}
-                  className="rounded-full p-0.5 hover:bg-black/10"
-                  aria-label={`Remove ${String(key)} filter`}
+        <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/60 pt-3">
+          <span className="mr-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Active
+          </span>
+          <AnimatePresence initial={false}>
+            {activeFilterKeys.map((key) => {
+              const config = filters.find((f) => f.name === key)
+              const displayValue = formatChipValue(config, values[key])
+              if (!displayValue) return null
+              return (
+                <motion.div
+                  key={String(key)}
+                  layout
+                  initial={{ opacity: 0, y: -4, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
                 >
-                  <X className="h-3 w-3" />
-                </Button>
-              </Badge>
-            )
-          })}
+                  <Badge
+                    variant="secondary"
+                    className="gap-1 rounded-full border border-border/60 bg-muted/70 py-1 pl-2.5 pr-1 text-xs font-medium text-foreground"
+                  >
+                    <span className="text-muted-foreground">
+                      {config?.label ?? config?.name ?? String(key)}:
+                    </span>
+                    <span className="max-w-45 truncate">{displayValue}</span>
+                    <Button
+                      type="button"
+                      onClick={() => remove(key)}
+                      className="ml-0.5 grid size-4 place-items-center rounded-full p-0 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
+                      aria-label={`Remove ${String(key)} filter`}
+                    >
+                      <X className="size-3" />
+                    </Button>
+                  </Badge>
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
         </div>
       )}
     </div>
   )
 }
+

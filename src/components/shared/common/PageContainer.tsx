@@ -18,7 +18,7 @@ export function PageContainer({
         ease: "easeOut",
       }}
       className={cn(
-        "flex flex-col gap-6 px-4 py-6 sm:px-6 lg:px-4 bg-background ",
+        "flex flex-col gap-6 px-4 py-6 sm:px-6 lg:px-4 bg-background min-w-full",
         "w-full",
         className
       )}

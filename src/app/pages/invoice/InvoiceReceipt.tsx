@@ -1,7 +1,7 @@
 import { Check, Printer, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InvoiceCard } from "@/components/modules/invoice/InvoiceCard";
-import { MOCK_INVOICE, type Invoice } from "@/components/modules/invoice/types";
+import { type Invoice } from "@/components/modules/invoice/types";
 import { useReducedMotion, motion } from "framer-motion";
 import { Link, useLocation, Navigate } from "react-router";
 

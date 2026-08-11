@@ -11,13 +11,13 @@ interface Props {
 
 export function SearchFilter({ config, value, onChange }: Props) {
   return (
-    <div className={`relative min-w-[220px] flex-1 ${config.className ?? ""}`}>
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+   <div className={`group relative min-w-55 flex-1 ${config.className ?? ""}`}>
+      <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-foreground" />
       <Input
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
         placeholder={config.placeholder ?? config.label ?? "Search..."}
-        className="h-10 pl-9 pr-8"
+        className="h-10 rounded-xl border-border/60 bg-muted/40 pl-10 pr-9 text-sm shadow-none transition-colors placeholder:text-muted-foreground focus-visible:bg-background"
       />
       {value ? (
         <Button
@@ -25,10 +25,10 @@ export function SearchFilter({ config, value, onChange }: Props) {
           variant="ghost"
           size="icon"
           onClick={() => onChange("")}
-          className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          className="absolute right-1 top-1/2 size-7 -translate-y-1/2 rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
           aria-label="Clear search"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="size-3.5" />
         </Button>
       ) : null}
     </div>

@@ -33,4 +33,6 @@ export * from "./status-badge";
 export * from "./collapsible"
 export * from "./pagination"
 export * from "./radio-group"
+export * from "./popover"
+export * from "./scroll-area"
 

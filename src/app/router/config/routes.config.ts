@@ -6,7 +6,6 @@ import AllCategory from "@/app/pages/category/AllCategory"
 import ProductDetailPage from "@/app/pages/products/ProductDetailPage"
 import SellCounter from "@/app/pages/sells/SellCounter"
 import RefundCounter from "@/app/pages/refund/RefundCounter"
-import InvoiceReceipt from "@/app/pages/invoice/InvoiceReceipt"
 
 
 
@@ -27,14 +26,7 @@ export const routeGroups: RouteGroup[] = [
         icon: ScanBarcodeIcon,
         page: "sell",
       },
-      {
-        path: "sell/invoice",
-        name: "Invoice",
-        Component: InvoiceReceipt,
-        icon: ScanBarcodeIcon,
-        isVisible: false,
-        page: "sell",
-      },
+     
 
 
     ]

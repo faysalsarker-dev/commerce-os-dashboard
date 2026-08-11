@@ -79,7 +79,7 @@ export interface CheckoutPayload {
   items: CheckoutItemPayload[];
   discount?: number;            // order-level discount in taka
   shippingFee?: number;
-  paymentMethod: PaymentMethod;
+  paymentMethod: PaymentMethod | string;
   isFullPayment: boolean;       // required now — this is what was silently defaulting to true before
   paidAmount?: number;          // send only when isFullPayment is false
   dueDate?: string;             // ISO string, send only when there's a due

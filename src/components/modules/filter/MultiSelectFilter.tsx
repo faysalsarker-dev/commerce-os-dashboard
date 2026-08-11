@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react"
+import { Check, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -30,33 +30,47 @@ export function MultiSelectFilter({ config, value, onChange }: Props) {
       : `${selected.length} selected`
 
   return (
-    <Popover>
+     <Popover>
       <PopoverTrigger render={
-  <Button
+        <Button
           type="button"
           variant="outline"
-          className={`h-10 min-w-[160px] justify-between font-normal ${config.className ?? ""}`}
+          className={`h-10 min-w-40 justify-between gap-2 rounded-xl border-border/60 bg-muted/40 font-normal shadow-none transition-colors hover:bg-muted/70 data-[state=open]:bg-background ${config.className ?? ""}`}
         >
-          <span className={selected.length === 0 ? "text-muted-foreground" : ""}>{label}</span>
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          <span className="flex items-center gap-2 truncate">
+            <span className={selected.length === 0 ? "text-muted-foreground" : "font-medium"}>
+              {label}
+            </span>
+            {selected.length > 1 && (
+              <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+                {selected.length}
+              </span>
+            )}
+          </span>
+          <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
         </Button>
       }/>
-      
-    
-      <PopoverContent align="start" className="w-56 p-1">
-        <div className="max-h-60 overflow-y-auto">
-          {config.options.map((opt) => (
-            <Label
-              key={opt.label}
-              className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm font-normal hover:bg-accent"
-            >
-          <Checkbox
-  checked={selected.includes(opt.value as string)}
-  onCheckedChange={() => toggle(opt.value as string)}
-/>
-              {opt.label}
-            </Label>
-          ))}
+
+      <PopoverContent align="start" className="w-60 rounded-xl p-1.5">
+        <div className="max-h-60 space-y-0.5 overflow-y-auto">
+          {config.options.map((opt) => {
+            const isChecked = selected.includes(opt.value as string)
+            return (
+              <Label
+                key={opt.label}
+                className={`flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-sm font-normal transition-colors hover:bg-accent ${
+                  isChecked ? "bg-accent/60 font-medium" : ""
+                }`}
+              >
+                <Checkbox
+                  checked={isChecked}
+                  onCheckedChange={() => toggle(opt.value as string)}
+                />
+                <span className="flex-1 truncate">{opt.label}</span>
+                {isChecked && <Check className="size-3.5 shrink-0 text-primary" />}
+              </Label>
+            )
+          })}
         </div>
       </PopoverContent>
     </Popover>

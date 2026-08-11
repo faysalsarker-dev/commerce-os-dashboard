@@ -60,11 +60,12 @@ export const createProductTableColumns = ({
       }),
       column.currency("costPrice", {
         label: "Cost Price",
-        sortable: true,
+        sortable: false,
         currency: "BDT",
       }),
       column.currency("sellingPrice", {
         label: "Selling Price",
+        sortable: false,
         currency: "BDT",
       }),
       column("colors", {
