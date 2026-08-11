@@ -1,4 +1,4 @@
-import { useMemo, useReducer } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -16,6 +16,7 @@ import { DueDatePicker } from "@/components/modules/sell-counter/DueDatePicker";
 import { CompleteSaleButton } from "@/components/modules/sell-counter/CompleteSaleButton";
 import {
   PAYMENT_METHODS,
+  type PaymentMethod,
 } from "@/components/modules/sell-counter/types";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { PageContainer } from "@/components/shared/common";
@@ -23,14 +24,24 @@ import {
   useScanProductMutation,
   useCheckoutMutation,
 } from "@/redux/features/sales/sales.api";
+import {
+  useCreateCustomerMutation,
+  useGetCustomerByPhoneQuery,
+} from "@/redux/features/customer/customer.api";
 import { sellCounterReducer, initialState } from "@/logics/sellCounterReducer";
+import { useNavigate } from "react-router";
 
 export function SellCounter() {
   const [state, dispatch] = useReducer(sellCounterReducer, initialState);
   const { lines, customer, notFoundPhone, discount, paymentMethodId, amountReceived, dueDate } = state;
-
+  const [searchedPhone, setSearchedPhone] = useState<string | null>(null);
+const navigate = useNavigate()
   const [scanProduct, { isLoading: isScanning }] = useScanProductMutation();
   const [checkout, { isLoading: isCheckingOut }] = useCheckoutMutation();
+  const { data: searchedCustomerResponse, isSuccess: isCustomerSearchSuccess, isError: customerSearchError } = useGetCustomerByPhoneQuery(searchedPhone ?? "", {
+    skip: !searchedPhone,
+  });
+  const [createCustomer] = useCreateCustomerMutation();
 
   const subtotal = useMemo(
     () => lines.reduce((sum, l) => sum + l.sellingPrice * l.quantity, 0),
@@ -77,39 +88,110 @@ export function SellCounter() {
 
   const handleRemoveLine = (id: string) => dispatch({ type: "REMOVE_LINE", id });
 
-  const handleSearchCustomer = async (phone: string) => {
-    dispatch({ type: "SET_CUSTOMER", customer: null, notFoundPhone: phone.trim() });
+  const handleSearchCustomer = (phone: string) => {
+    const normalized = phone.trim();
+    if (!normalized) return;
+
+    setSearchedPhone(normalized);
+    dispatch({ type: "SET_CUSTOMER", customer: null, notFoundPhone: null });
   };
 
-  const handleCreateCustomer = (name: string, phone: string) => {
-    dispatch({ type: "SET_CUSTOMER", customer: { id: `new_${phone}`, name, phone }, notFoundPhone: null });
+  const handleCreateCustomer = async (name: string, phone: string) => {
+    try {
+      const res = await createCustomer({ name, phone }).unwrap();
+      const createdCustomer = res.data;
+
+      dispatch({
+        type: "SET_CUSTOMER",
+        customer: {
+          id: createdCustomer.id,
+          name: createdCustomer.name,
+          phone: createdCustomer.phone ?? phone,
+          totalDue: createdCustomer.totalDue ?? 0,
+          totalOrders: createdCustomer.totalOrders ?? 0,
+          totalSpent: createdCustomer.totalSpent ?? 0,
+        },
+        notFoundPhone: null,
+      });
+      setSearchedPhone(null);
+      toast.success("Customer created successfully.");
+    } catch {
+      toast.error("Failed to create customer. Please try again.");
+    }
   };
 
-  const handleCompleteSale = async () => {
-    if (!paymentMethodId) {
-      toast.warning("Select a payment method before completing the sale.");
+  useEffect(() => {
+    if (!searchedPhone) return;
+
+    if (customerSearchError) {
+      toast.error("Failed to search for customer. Please try again.");
       return;
     }
-    try {
-      const res = await checkout({
-        items: lines.map((l) => ({ variantId: l.id, quantity: l.quantity, unitPrice: l.sellingPrice })),
-        paymentMethod: paymentMethodId.toUpperCase(),
-        discount: discount > 0 ? discount : undefined,
-        totalAmount: total,
-        customerId: customer?.id,
-      }).unwrap();
 
-      toast.success("Sale completed!", {
-        description: `Invoice #${res.data.invoiceNumber} — ${formatCurrency(res.data.totalAmount)}`,
-      });
+    if (!searchedCustomerResponse) return;
 
-      dispatch({ type: "RESET_SALE" });
-    } catch {
-      toast.error("Checkout failed", {
-        description: "Something went wrong processing the sale. Please try again.",
+    const responseCustomer =  searchedCustomerResponse?.data;
+    if (responseCustomer) {
+      dispatch({
+        type: "SET_CUSTOMER",
+        customer: {
+          id: responseCustomer.id,
+          name: responseCustomer.name,
+          phone: responseCustomer.phone ?? searchedPhone,
+          totalDue: responseCustomer.totalDue ?? 0,
+          totalOrders: responseCustomer.totalOrders ?? 0,
+          totalSpent: responseCustomer.totalSpent ?? 0,
+        },
+        notFoundPhone: null,
       });
+      return;
     }
-  };
+
+    if (isCustomerSearchSuccess) {
+      dispatch({ type: "SET_CUSTOMER", customer: null, notFoundPhone: searchedPhone });
+    }
+  }, [searchedPhone, searchedCustomerResponse, customerSearchError, isCustomerSearchSuccess, dispatch]);
+
+ const handleCompleteSale = async () => {
+  if (!paymentMethodId) {
+    toast.warning("Select a payment method before completing the sale.");
+    return;
+  }
+  const isFullPayment = due <= 0;
+
+  if (!isFullPayment && !customer) {
+    toast.warning("Select a customer before completing a sale with a due balance.");
+    return;
+  }
+
+  if (!isFullPayment && due > 0 && !dueDate) {
+    toast.warning("Set a due date for the remaining balance.");
+    return;
+  }
+
+  try {
+    const res = await checkout({
+      items: lines.map((l) => ({ variantId: l.id, quantity: l.quantity })), // unitPrice dropped — backend derives it from DB
+      paymentMethod: paymentMethodId.toUpperCase(),
+      discount: discount > 0 ? discount : undefined,
+      customerId: customer?.id,
+      isFullPayment,
+      paidAmount: isFullPayment ? undefined : amountReceived,
+      dueDate: !isFullPayment && dueDate ? dueDate.toISOString() : undefined,
+    }).unwrap();
+
+    toast.success("Sale completed!", {
+      description: `Invoice #${res.data.invoice.invoiceNo} — ${formatCurrency(res.data.invoice.total)}`,
+    });
+
+    dispatch({ type: "RESET_SALE" });
+    navigate("/app/sell/invoice", { state: { invoice: res.data.invoice } });
+  } catch {
+    toast.error("Checkout failed", {
+      description: "Something went wrong processing the sale. Please try again.",
+    });
+  }
+};
 
   return (
     <PageContainer>

@@ -11,6 +11,9 @@ export interface PosCustomer {
   id: string;
   name: string;
   phone: string;
+  totalDue: number;
+  totalOrders: number;
+  totalSpent: number;
 }
 
 export interface PaymentMethod {

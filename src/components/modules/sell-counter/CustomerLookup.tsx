@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { PosCustomer } from "./types";
+import type { Customer } from "@/types/data-types/customer/customer.types";
 
 interface CustomerLookupProps {
-  customer: PosCustomer | null;
+  customer: Customer | null;
   onSearch: (phone: string) => void | Promise<void>;
   onCreate: (name: string, phone: string) => void;
   onClear: () => void;
@@ -37,19 +37,47 @@ export function CustomerLookup({
       </div>
 
       {customer ? (
-        <motion.div
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 rounded-md border border-border bg-muted/40 px-3 py-2.5"
-        >
-          <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-            <UserRound className="size-4" />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium">{customer.name}</p>
-            <p className="numeric truncate text-xs text-muted-foreground">{customer.phone}</p>
-          </div>
-        </motion.div>
+       <motion.div
+    initial={{ opacity: 0, y: 4 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="rounded-md border border-border bg-muted/40 p-3"
+  >
+    <div className="flex items-center gap-3">
+      <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+        <UserRound className="size-4" />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{customer.name}</p>
+        <p className="numeric truncate text-xs text-muted-foreground">
+          {customer.phone}
+        </p>
+      </div>
+    </div>
+
+    <div className="mt-3 grid grid-cols-3 divide-x rounded-md border bg-background">
+      <div className="px-3 py-2">
+        <p className="text-[11px] text-muted-foreground">Due</p>
+        <p className="numeric mt-0.5 text-sm font-semibold">
+          {customer.totalDue ?? 0}
+        </p>
+      </div>
+
+      <div className="px-3 py-2">
+        <p className="text-[11px] text-muted-foreground">Orders</p>
+        <p className="numeric mt-0.5 text-sm font-semibold">
+          {customer.totalOrders ?? 0}
+        </p>
+      </div>
+
+      <div className="px-3 py-2">
+        <p className="text-[11px] text-muted-foreground">Spent</p>
+        <p className="numeric mt-0.5 text-sm font-semibold">
+          {customer.totalSpent ?? 0}
+        </p>
+      </div>
+    </div>
+  </motion.div>
       ) : (
         <>
           <form

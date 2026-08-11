@@ -1,8 +1,9 @@
-import type { CartLine, PosCustomer } from "@/components/modules/sell-counter/types";
+import type { CartLine } from "@/components/modules/sell-counter/types";
+import type { Customer } from "@/types/data-types/customer/customer.types";
 
 interface SellCounterState {
   lines: CartLine[];
-  customer: PosCustomer | null;
+  customer: Customer | null;
   notFoundPhone: string | null;
   discount: number;
   paymentMethodId: string | null;
@@ -25,7 +26,7 @@ type Action =
   | { type: "INCREMENT_LINE"; id: string }
   | { type: "SET_QUANTITY"; id: string; quantity: number }
   | { type: "REMOVE_LINE"; id: string }
-  | { type: "SET_CUSTOMER"; customer: PosCustomer | null; notFoundPhone: string | null }
+  | { type: "SET_CUSTOMER"; customer: Customer | null; notFoundPhone: string | null }
   | { type: "CLEAR_CUSTOMER" }
   | { type: "SET_DISCOUNT"; discount: number }
   | { type: "SET_PAYMENT_METHOD"; id: string }

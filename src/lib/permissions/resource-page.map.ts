@@ -9,5 +9,6 @@ export const RESOURCE_PAGE_MAP: Record<Resource, Page> = {
   category: "category",
   settings: "settings",
   sell: "sell",
+  refund: "refund",
 add_product: "product",
 };

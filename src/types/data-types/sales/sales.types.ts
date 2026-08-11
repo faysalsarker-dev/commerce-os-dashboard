@@ -16,30 +16,7 @@ export interface ScannedProduct {
   inStock: boolean;
 }
 
-export interface CheckoutItemPayload {
-  productId?: string;
-  variantId?: string;
-  quantity: number;
-  unitPrice: number;
-}
 
-export interface CheckoutPayload {
-  items: CheckoutItemPayload[];
-  paymentMethod: "CASH" | "CARD" | "MOBILE_PAYMENT" | string;
-  discount?: number;
-  tax?: number;
-  totalAmount: number;
-  customerId?: string;
-  note?: string;
-}
-
-export interface CheckoutResponse {
-  id: string;
-  invoiceNumber: string;
-  totalAmount: number;
-  paymentMethod: string;
-  createdAt: string;
-}
 
 export interface ReturnItemPayload {
   variantId?: string;
@@ -76,4 +53,86 @@ export interface SaleRecord {
   paymentMethod: string;
   itemsCount: number;
   createdAt: string;
+}
+
+
+// ---- Payment method must match your Prisma enum exactly — no free-form string escape hatch ----
+export type PaymentMethod = "CASH" | "BKASH" | "NAGAD" | "ROCKET" | "CARD" | "BANK_TRANSFER";
+// "MOBILE_PAYMENT" doesn't exist in your schema's PaymentMethod enum — BKASH/NAGAD/ROCKET are
+// your actual mobile payment methods. And the `| string` fallback defeats the whole point of a
+// union type — it lets TypeScript pass through any typo silently. Drop it.
+
+export type SaleChannel = "OFFLINE" | "ONLINE";
+export type SaleStatus = "DRAFT" | "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "PARTIALLY_RETURNED" | "RETURNED";
+export type PaymentStatus = "UNPAID" | "PARTIAL" | "PAID" | "REFUNDED" | "PARTIALLY_REFUNDED";
+
+export interface CheckoutItemPayload {
+  variantId: string;   // required, not optional — backend has no productId fallback path
+  quantity: number;
+  discount?: number;   // per-line discount in taka
+  // productId removed — checkout only ever operates on variants, a product alone has no
+  // price/sku/stock, so there's nothing the backend could do with a bare productId
+}
+
+export interface CheckoutPayload {
+  customerId?: string;          // omit for guest sale
+  items: CheckoutItemPayload[];
+  discount?: number;            // order-level discount in taka
+  shippingFee?: number;
+  paymentMethod: PaymentMethod;
+  isFullPayment: boolean;       // required now — this is what was silently defaulting to true before
+  paidAmount?: number;          // send only when isFullPayment is false
+  dueDate?: string;             // ISO string, send only when there's a due
+  channel?: SaleChannel;
+  notes?: string;                // was `note` — backend field is `notes`
+  // totalAmount removed — server derives it from DB prices, never trust client math
+  // tax removed — there's no tax field on Sale in the current schema; add this back
+  //   only once/if VAT support is actually added to the Prisma model
+}
+
+// ---- Response ----
+
+export interface InvoiceReceiptItem {
+  productName: string;
+  sku: string;
+  quantity: number;
+  unitPrice: number;
+  discount: number;
+  subtotal: number;
+}
+
+export interface InvoiceReceiptCustomer {
+  id: string;
+  name: string;
+  phone: string | null;
+}
+
+export interface InvoiceReceipt {
+  invoiceNo: string;     // was `invoiceNumber`
+  saleId: string;
+  date: string;
+  channel: SaleChannel;
+  status: SaleStatus;
+
+  soldBy: { id: string; name: string };
+  customer: InvoiceReceiptCustomer | null;
+
+  items: InvoiceReceiptItem[];
+
+  subtotal: number;
+  discount: number;
+  shippingFee: number;
+  total: number;         // was `totalAmount`
+
+  paidAmount: number;
+  dueAmount: number;
+  paymentStatus: PaymentStatus;
+  paymentMethod: PaymentMethod | null;
+  dueDate: string | null;
+
+  notes: string | null;
+}
+
+export interface CheckoutResponse {
+  invoice: InvoiceReceipt;   // it's nested, not a flat top-level object
 }
