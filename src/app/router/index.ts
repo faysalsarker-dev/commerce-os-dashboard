@@ -9,6 +9,7 @@ import { AuthWrapper, GuestWrapper } from "./wrappers";
 import { generateRoutes } from "./generator/generateRoutes";
 import { routes } from "./config/routes.config";
 import InvoiceReceipt from "../pages/invoice/InvoiceReceipt";
+import Page from "../pages/root/Page";
 
 
 
@@ -41,6 +42,10 @@ export const router = createBrowserRouter([
   {
     path: "*",
     Component: NotFoundPage
+  },
+  {
+    path: "/",
+    Component: Page
   }
 
 ]);

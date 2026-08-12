@@ -15,6 +15,8 @@ export const useLogout = () => {
       // server call failed, but still clear local session
       toast.error('Logout request failed, session cleared locally')
     } finally {
+      // Invalidate USER tag and reset RTK Query state to ensure no cached user remains
+      dispatch(authApi.util.invalidateTags([{ type: "USER", id: "CURRENT" }]))
       dispatch(authApi.util.resetApiState())
     }
   }, [

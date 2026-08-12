@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button"
 import { EntityFormDialog } from "@/components/modules/form/EntityFormDialog"
 import { useGetProductQuery, useUpdateProductMutation } from "@/redux/features/product/product.api"
 import { PageContainer } from "@/components/shared/common"
-import { Metric } from "@/components/common/PageHeader"
+import { Metric } from "@/components/modules/Products/PageHeader"
 import { EmptyState } from "@/components/common/EmptyState"
-import { PageHeader } from "@/components/common/PageHeader"
+import { PageHeader } from "@/components/modules/Products/PageHeader"
 import { ProductDetailSkeleton } from "@/components/modules/Products/ProductDetailSkeleton"
 import { ProductColorsSection } from "@/components/modules/Products/ProductColorSection"
 import { productFormConfig } from "@/components/modules/Products/Product.config"
@@ -62,7 +62,7 @@ export default function ProductDetailPage() {
     <PageContainer className="mx-auto max-w-6xl">
       <PageHeader
         eyebrow={
-          <Button variant="ghost" size="sm" className="-ml-2 h-7 px-2 text-muted-foreground" onClick={() => navigate("/products")}>
+          <Button variant="ghost" size="sm" className="-ml-2 h-7 px-2 text-muted-foreground" onClick={() => navigate("/app/products")}>
             <ArrowLeft /> Products
           </Button>
         }

@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/sidebar"
 
 import { AppSidebar, SiteHeader } from "@/components/blocks"
-import { Outlet } from "react-router"
+import { Outlet, ScrollRestoration } from "react-router"
 
 export default function AppLayout() {
   return (
@@ -21,10 +21,10 @@ export default function AppLayout() {
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
+          <div className="@container/main flex flex-1 flex-col gap-2  rounded-lg">
 
           <Outlet/>
-
+<ScrollRestoration/>
           </div>
         </div>
       </SidebarInset>

@@ -321,7 +321,7 @@ export function DataTablePagination({
   pageCount,
   pageSize,
   totalRows = 0,
-  resourceName,
+  
 
   onPageChange,
   onPageSizeChange,
@@ -330,8 +330,9 @@ export function DataTablePagination({
 
   siblingCount = 1,
 }: DataTablePaginationProps) {
-  const pages = getPaginationRange(page, pageCount, siblingCount)
-
+   const pages = getPaginationRange(page, pageCount, siblingCount)
+  
+ 
   const from = totalRows === 0 ? 0 : (page - 1) * pageSize + 1
 
   const to = totalRows === 0 ? 0 : Math.min(page * pageSize, totalRows)
@@ -345,20 +346,13 @@ export function DataTablePagination({
 
       <div className="hidden items-center justify-between gap-6 md:flex">
         {/* Left */}
+<div className="flex items-center gap-6">
+ <div className="hidden text-sm whitespace-nowrap text-muted-foreground lg:block">
+            Page <span className="font-semibold text-foreground">{page}</span>{" "}
+            of <span className="font-semibold text-foreground">{pageCount}</span>
+          </div>
 
-        <div className="text-sm whitespace-nowrap text-muted-foreground">
-          Showing{" "}
-          <span className="font-semibold text-foreground">
-            {from}-{to}
-          </span>{" "}
-          of <span className="font-semibold text-foreground">{totalRows}</span>{" "}
-          {resourceName}
-        </div>
-
-        {/* Right */}
-
-        <div className="flex items-center gap-5">
-          {onPageSizeChange && (
+   {onPageSizeChange && (
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Rows</span>
 
@@ -385,88 +379,85 @@ export function DataTablePagination({
             </div>
           )}
 
-          <div className="hidden text-sm whitespace-nowrap text-muted-foreground lg:block">
-            Page <span className="font-semibold text-foreground">{page}</span>{" "}
-            of <span className="font-semibold text-foreground">{pageCount}</span>
-          </div>
+         
+</div>
 
-          <Pagination className="mx-0 w-auto">
-            <PaginationContent className="gap-1 rounded-xl bg-muted/40 p-1">
-              {/* Previous */}
+        {/* Right */}
 
-              <PaginationItem>
-                <PaginationLink
-                  aria-label="Previous Page"
-                  onClick={(e) => {
-                    e.preventDefault()
+       <Pagination className="mx-0 w-auto">
+  <PaginationContent className="gap-0">
+    {/* Previous */}
+    <PaginationItem className="mr-4">
+      <PaginationLink
+        aria-label="Previous Page"
+        onClick={(e) => {
+          e.preventDefault();
 
-                    if (page > 1) onPageChange(page - 1)
-                  }}
-                  className={cn(
-                    navLink,
-                    "gap-1",
-                    page <= 1 && "pointer-events-none opacity-40"
-                  )}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Prev
-                </PaginationLink>
-              </PaginationItem>
+          if (page > 1) onPageChange(page - 1);
+        }}
+        className={cn(
+          navLink,
+          "h-9 gap-1.5 rounded-lg border border-border/60 bg-background px-3",
+          page <= 1 && "pointer-events-none opacity-40",
+        )}
+      >
+        <ChevronLeft className="size-4" />
+        Prev
+      </PaginationLink>
+    </PaginationItem>
 
-              {/* Numbers */}
-
-              {pages.map((item, index) =>
-                item === "ellipsis" ? (
-                  <PaginationItem key={index}>
-                    <PaginationEllipsis className="h-9 w-9 text-muted-foreground" />
-                  </PaginationItem>
-                ) : (
-                  <PaginationItem key={item}>
-                    <PaginationLink
-                      href="#"
-                      isActive={item === page}
-                      onClick={(e) => {
-                        e.preventDefault()
-
-                        onPageChange(item)
-                      }}
-                      className={cn(
-                        "h-9 min-w-9 rounded-lg text-sm font-medium transition-all",
-                        item === page
-                          ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground"
-                          : "text-muted-foreground hover:bg-background hover:text-foreground"
-                      )}
-                    >
-                      {item}
-                    </PaginationLink>
-                  </PaginationItem>
-                )
+    {/* Page Numbers */}
+    <div className="flex items-center gap-1 rounded-xl bg-muted/40 p-1">
+      {pages.map((item, index) =>
+        item === "ellipsis" ? (
+          <PaginationItem key={index}>
+            <PaginationEllipsis className="size-9 text-muted-foreground" />
+          </PaginationItem>
+        ) : (
+          <PaginationItem key={item}>
+            <PaginationLink
+              href="#"
+              isActive={item === page}
+              onClick={(e) => {
+                e.preventDefault();
+                onPageChange(item);
+              }}
+              className={cn(
+                "size-9 rounded-lg text-sm font-medium transition-all",
+                item === page
+                  ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground"
+                  : "text-muted-foreground hover:bg-background hover:text-foreground",
               )}
+            >
+              {item}
+            </PaginationLink>
+          </PaginationItem>
+        ),
+      )}
+    </div>
 
-              {/* Next */}
+    {/* Next */}
+    <PaginationItem className="ml-4">
+      <PaginationLink
+        href="#"
+        aria-label="Next Page"
+        onClick={(e) => {
+          e.preventDefault();
 
-              <PaginationItem>
-                <PaginationLink
-                  href="#"
-                  aria-label="Next Page"
-                  onClick={(e) => {
-                    e.preventDefault()
-
-                    if (page < pageCount) onPageChange(page + 1)
-                  }}
-                  className={cn(
-                    navLink,
-                    "gap-1",
-                    page >= pageCount && "pointer-events-none opacity-40"
-                  )}
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4" />
-                </PaginationLink>
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
+          if (page < pageCount) onPageChange(page + 1);
+        }}
+        className={cn(
+          navLink,
+          "h-9 gap-1.5 rounded-lg border border-border/60 bg-background px-3",
+          page >= pageCount && "pointer-events-none opacity-40",
+        )}
+      >
+        Next
+        <ChevronRight className="size-4" />
+      </PaginationLink>
+    </PaginationItem>
+  </PaginationContent>
+</Pagination>
       </div>
 
       {/* Mobile */}

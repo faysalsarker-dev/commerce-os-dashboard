@@ -19,7 +19,7 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col gap-5", className)}>
+    <div className={cn("flex flex-col gap-5 bg-card p-6 rounded-xl", className)}>
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:justify-between">
         <div className="min-w-0 space-y-1.5">
           {eyebrow}
@@ -30,7 +30,7 @@ export function PageHeader({
         </div>
         {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
       </div>
-      {meta ? <div className="flex flex-wrap items-center gap-x-6 gap-y-2">{meta}</div> : null}
+      {meta ? <div className="flex flex-wrap items-center gap-x-6 gap-y-2 bg-background p-3 rounded-xl">{meta}</div> : null}
     </div>
   );
 }

@@ -27,7 +27,7 @@
 import * as React from "react"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { LucideIcon } from "lucide-react"
-import { MoreHorizontal, Pencil, Trash2, Eye, Copy, Archive, ImageOff, TriangleAlert } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, Eye, Copy, Archive, ImageOff, TriangleAlert, Loader2 } from "lucide-react"
 import type {
     Action,
     Resource,
@@ -168,6 +168,8 @@ interface ActionConfig<T, TAction extends string> {
   confirmDescription?: string
   hidden?: boolean | ((row: T) => boolean)
   disabled?: boolean | ((row: T) => boolean)
+  /** Optional external loading indicator (can be `boolean` or a function `(row) => boolean`) */
+  loading?: boolean | ((row: T) => boolean)
 }
 
 /**
@@ -422,6 +424,7 @@ function RowActionsMenu<T, TAction extends string, TResource extends string>({
   confirmHandler?: ConfirmHandler<T, TAction>
 }) {
   const [pendingAction, setPendingAction] = React.useState<ActionConfig<T, TAction> | null>(null)
+  const [isProcessing, setIsProcessing] = React.useState(false)
   const visibleActions = actions.filter((act) => !resolveFlag(act.hidden, row))
 
   const trigger = async (act: ActionConfig<T, TAction>) => {
@@ -453,15 +456,20 @@ function RowActionsMenu<T, TAction extends string, TResource extends string>({
         {visibleActions.map((act, index) => {
           const Icon = act.icon
           const isDisabled = resolveFlag(act.disabled, row)
+          const actionLoading = typeof act.loading === "function" ? act.loading(row) : !!act.loading
 
           const item = (
             <DropdownMenuItem
               key={index}
-              disabled={isDisabled}
-              onClick={() => !isDisabled && trigger(act)}
+              disabled={isDisabled || actionLoading}
+              onClick={() => !isDisabled && !actionLoading && trigger(act)}
               className={act.variant === "destructive" ? "text-destructive focus:text-destructive" : undefined}
             >
-              <Icon className="mr-2 h-4 w-4" />
+              {actionLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Icon className="mr-2 h-4 w-4" />
+              )}
               {act.label}
             </DropdownMenuItem>
           )
@@ -491,18 +499,39 @@ function RowActionsMenu<T, TAction extends string, TResource extends string>({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-              onClick={() => {
-                const actionToConfirm = pendingAction
-                setPendingAction(null)
-                actionToConfirm?.onClick(row)
-              }}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </AlertDialogAction>
+            <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
+            {(() => {
+              const pendingExternalLoading = pendingAction
+                ? (typeof pendingAction.loading === "function" ? pendingAction.loading(row) : !!pendingAction.loading)
+                : false
+
+              const busy = isProcessing || pendingExternalLoading
+
+              return (
+                <AlertDialogAction
+                  className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                  disabled={busy}
+                  onClick={async () => {
+                    if (!pendingAction) return
+                    setIsProcessing(true)
+                    try {
+                      // Support both sync and async handlers
+                      await Promise.resolve(pendingAction.onClick(row) as unknown)
+                    } finally {
+                      setIsProcessing(false)
+                      setPendingAction(null)
+                    }
+                  }}
+                >
+                  {busy ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="mr-2 h-4 w-4" />
+                  )}
+                  {busy ? "Deleting..." : "Delete"}
+                </AlertDialogAction>
+              )
+            })()}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

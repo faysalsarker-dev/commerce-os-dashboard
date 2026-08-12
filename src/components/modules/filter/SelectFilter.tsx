@@ -36,7 +36,7 @@ export function SelectFilter({ config, value, onChange }: Props) {
       }
     >
       <SelectTrigger
-        className={`h-10 min-w-40 rounded-xl border-border/60 bg-muted/40 text-sm shadow-none transition-colors hover:bg-muted/70 data-[state=open]:bg-background ${config.className ?? ""}`}
+        className={`h-10  min-w-40 rounded-xl border-border/60 bg-muted/40 text-sm shadow-none transition-colors hover:bg-muted/70 data-[state=open]:bg-background ${config.className ?? ""}`}
       >
         <SelectValue placeholder={config.placeholder ?? config.label ?? "All"} />
       </SelectTrigger>

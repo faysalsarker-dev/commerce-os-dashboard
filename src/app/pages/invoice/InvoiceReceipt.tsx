@@ -30,7 +30,7 @@ export function InvoiceReceipt() {
         initial={reduceMotion ? false : { opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="mx-auto w-full max-w-[460px]"
+        className="mx-auto w-full max-w-115"
       >
         <div className="mb-5 flex flex-col items-center text-center print:hidden">
           <motion.span
@@ -53,13 +53,13 @@ export function InvoiceReceipt() {
           <Button onClick={handlePrint} className="w-full active:scale-[0.98]">
             <Printer className="size-4" aria-hidden />
             Print invoice
-          </Button>
-          <Button variant="outline" className="w-full active:scale-[0.98]">
-            <Link to="/sell">
+          </Button> <Link to="/app/sell">
+          <Button variant="outline" className="w-full active:scale-[0.98] flex items-center justify-center gap-2">
+           
               <ShoppingCart className="size-4" aria-hidden />
               New sale
-            </Link>
-          </Button>
+            
+          </Button></Link>
         </div>
       </motion.div>
     </main>

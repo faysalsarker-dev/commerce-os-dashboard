@@ -63,7 +63,7 @@ export const createCategoryTableColumns = ({
         size: 44,
         rounded: "md",
       }),
-      column("name", { sortable: true }),
+      column("name"),
       column("description", {
         formatter: (value) => (value ? `${String(value).slice(0, 50).toUpperCase()}...` : "-"),
       }),
@@ -73,8 +73,8 @@ export const createCategoryTableColumns = ({
 
   return isActive ? "Active" : "Inactive";
        }}),
-      column.number("displayOrder", { label: "Order", sortable: true }),
-      column.date("createdAt", { label: "Created", sortable: true }),
+      column.number("displayOrder", { label: "Order" }),
+      column.date("createdAt", { label: "Created" }),
       column.actions([
         action.view<Category>({ onClick: onView }),
         action.edit<Category>({ onClick: onEdit }),

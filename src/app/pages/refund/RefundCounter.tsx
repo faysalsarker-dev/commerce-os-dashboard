@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Info } from "lucide-react";
-import { PageHeader } from "@/components/common/PageHeader";
+import { PageHeader } from "@/components/modules/Products/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SaleSearch } from "@/components/modules/refund/SaleSearch";

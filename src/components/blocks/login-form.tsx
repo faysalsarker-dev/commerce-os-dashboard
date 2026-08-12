@@ -61,7 +61,7 @@ export function LoginCard() {
         <CardContent className="p-7 sm:p-8">
           <div className="mb-7 flex flex-col items-center text-center">
             <div className="mb-4 grid size-18 shrink-0 place-items-center rounded-xl border border-border/60 bg-background">
-              <img src="/commerce-os.png" alt="Northbay" className="size-14 object-contain" />
+              <img src="/commerce-os.png" alt="Northbay" className="size-14 rounded-xl object-contain" />
             </div>
             <h1 className="text-xl font-semibold tracking-tight text-foreground">
             CommerceOS

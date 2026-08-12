@@ -276,7 +276,14 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
                     <FormItem>
                       <FormLabel>Display order</FormLabel>
                       <FormControl>
-                        <Input type="number" min={0} {...field} />
+                        <Input
+                          type="number"
+                          min={0}
+                          {...field}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            field.onChange(Number(e.target.value))
+                          }
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

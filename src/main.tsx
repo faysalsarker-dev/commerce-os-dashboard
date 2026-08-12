@@ -7,19 +7,20 @@ import { RouterProvider } from "react-router"
 import { Provider as ReduxProvider } from "react-redux"
 import { store } from "./redux/store"
 import { ThemeProvider } from "./providers/theme/theme-provider"
+import { SocketProvider } from "./providers/SocketProvider"
 import { router } from "./app/router"
 import { Toaster } from "sonner"
-
-
-
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ReduxProvider store={store}>
       <ThemeProvider>
-        <RouterProvider router={router} />
-        <Toaster />
+        <SocketProvider>
+          <RouterProvider router={router} />
+          <Toaster position="top-right" />
+        </SocketProvider>
       </ThemeProvider>
     </ReduxProvider>
   </StrictMode>
 )
+

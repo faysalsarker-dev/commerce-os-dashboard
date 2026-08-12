@@ -17,7 +17,7 @@ export function SearchFilter({ config, value, onChange }: Props) {
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
         placeholder={config.placeholder ?? config.label ?? "Search..."}
-        className="h-10 rounded-xl border-border/60 bg-muted/40 pl-10 pr-9 text-sm shadow-none transition-colors placeholder:text-muted-foreground focus-visible:bg-background"
+        className="h-13 rounded-xl border-border/60 bg-muted/40 pl-10 pr-9 text-sm shadow-none transition-colors placeholder:text-muted-foreground focus-visible:bg-background"
       />
       {value ? (
         <Button

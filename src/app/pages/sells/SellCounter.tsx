@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/common/PageHeader";
-import { Card , Input , Label ,Separator , Badge } from "@/components/ui";
+import { PageHeader } from "@/components/modules/Products/PageHeader";
+import { Card, Input, Label, Separator, Badge } from "@/components/ui";
 
-import { ProductScanner , ProductList , CustomerLookup , BillSummary, PaymentMethodSelector , DueDatePicker ,CompleteSaleButton } from "@/components/modules/sell-counter";
+import { ProductScanner, ProductList, CustomerLookup, BillSummary, PaymentMethodSelector, DueDatePicker, CompleteSaleButton } from "@/components/modules/sell-counter";
 import {
   PAYMENT_METHODS,
 } from "@/components/modules/sell-counter/types";

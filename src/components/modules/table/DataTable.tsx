@@ -320,17 +320,17 @@ export function DataTable<TData, TValue>({
       <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm ring-1 ring-black/2">
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader className="[&_tr]:border-b [&_tr]:border-border/60">
+            <TableHeader className="[&_tr]:border-b [&_tr]:border-border/60 border-b-2 border-b-primary/30">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
                   key={headerGroup.id}
-                  className="bg-muted/40 hover:bg-muted/40"
+                  className="bg-muted/50 hover:bg-muted/80 "
                 >
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
                       className={cn(
-                        "h-12 px-5 text-[11px] font-semibold tracking-[0.08em] whitespace-nowrap text-muted-foreground uppercase",
+                        "h-14 px-5 text-[11px] font-semibold tracking-[0.08em] whitespace-nowrap text-muted-foreground uppercase",
                         header.column.columnDef.meta?.className
                       )}
                     >
@@ -388,7 +388,7 @@ export function DataTable<TData, TValue>({
                       data-state={row.getIsSelected() ? "selected" : undefined}
                       onClick={() => onRowClick?.(row.original)}
                       className={cn(
-                        "group border-border/50 transition-colors",
+                        "group border-b-2 transition-colors",
                         "hover:bg-muted/50 data-[state=selected]:bg-primary/5",
                         onRowClick && "cursor-pointer"
                       )}

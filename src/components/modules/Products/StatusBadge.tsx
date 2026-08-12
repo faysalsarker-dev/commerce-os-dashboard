@@ -33,7 +33,7 @@ export function StatusBadge({ tone = "neutral", children, className, dot }: Stat
 }
 
 export function StockBadge({ qty }: { qty: number }) {
-  const level = "out";
+  const level = qty === 0 ? "out" : qty <= 3 ? "low" : "success";
   const tone: Tone = level === "out" ? "danger" : level === "low" ? "warning" : "success";
   const label = level === "out" ? "Out of stock" : level === "low" ? "Low stock" : "In stock";
   return (

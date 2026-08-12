@@ -177,9 +177,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/hooks/auth/useAuth"
+import { LogoutDialog } from "./logout-dialog"
+import { useState } from "react"
 
 export function UserMenu() {
-  const { user, clearAuth } = useAuth()
+  const { user } = useAuth()
+ const [openLogoutDialog, setOpenLogoutDialog] = useState<boolean>(false)
 
   const name = user?.name ?? "User"
   const initials = name
@@ -250,13 +253,19 @@ export function UserMenu() {
         <DropdownMenuSeparator className="my-1.5" />
 
         <DropdownMenuItem
-          onClick={() => clearAuth?.()}
+          onClick={() => setOpenLogoutDialog(true)}
           className="gap-2.5 rounded-lg px-2.5 py-2 text-sm text-destructive focus:bg-destructive/10 focus:text-destructive"
         >
           <LogOutIcon className="size-4" />
           Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
+
+      <LogoutDialog
+        open={openLogoutDialog}
+        onOpenChange={setOpenLogoutDialog}
+      
+      />
     </DropdownMenu>
   )
 }

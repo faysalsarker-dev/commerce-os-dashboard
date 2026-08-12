@@ -14,7 +14,7 @@ import { VariantSheet, type VariantFormValues } from "./VariantSheet";
 import { QrPreviewDialog, type QrLabel } from "./QrPreviewDialog";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { EmptyState } from "@/components/common/EmptyState";
-import { StockBadge } from "@/components/common/StatusBadge";
+import { StockBadge } from "@/components/modules/Products/StatusBadge";
 
 interface ColorCardProps {
   productName: string;

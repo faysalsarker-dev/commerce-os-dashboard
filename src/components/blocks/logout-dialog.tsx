@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Loader2, LogOut } from "lucide-react";
+import { motion } from "framer-motion";
 
 import {
   AlertDialog,
@@ -24,15 +25,12 @@ export function LogoutDialog({
   onOpenChange,
 }: LogoutDialogProps) {
   const { logout } = useLogout();
-
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
     try {
       setIsLoading(true);
-
       await logout();
-
       onOpenChange(false);
     } finally {
       setIsLoading(false);
@@ -41,24 +39,37 @@ export function LogoutDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="sm:max-w-md rounded-2xl">
-        <AlertDialogHeader className="items-center text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-            <LogOut className="size-8 text-destructive" />
-          </div>
+      <AlertDialogContent className="sm:max-w-112.5 rounded-2xl p-6">
+      <AlertDialogHeader className="flex flex-col items-center text-center">
+<div className="flex w-full justify-center mb-4">
+  <motion.div
+    initial={{ opacity: 0, scale: 0.8 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{
+      type: "spring",
+      stiffness: 300,
+      damping: 20,
+    }}
+    className="flex size-14 items-center justify-center rounded-xl bg-primary/10 text-primary"
+  >
+    <LogOut className="size-6" strokeWidth={2} />
+  </motion.div>
+</div>
 
-          <AlertDialogTitle className="text-xl">
-            Log out?
-          </AlertDialogTitle>
+  <AlertDialogTitle className="w-full text-center text-lg font-semibold tracking-tight">
+    Sign out?
+  </AlertDialogTitle>
 
-          <AlertDialogDescription className="max-w-xs">
-            Are you sure you want to log out of your account?
-            You'll need to sign in again to continue.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+  <AlertDialogDescription className="mt-2 w-full max-w-75 text-center text-sm leading-5">
+    Are you sure you want to sign out of your account?
+  </AlertDialogDescription>
+</AlertDialogHeader>
 
-        <AlertDialogFooter className="mt-2">
-          <AlertDialogCancel disabled={isLoading}>
+        <AlertDialogFooter className="mt-6 grid grid-cols-2 gap-2 sm:space-x-0">
+          <AlertDialogCancel
+            disabled={isLoading}
+            className="mt-0 h-10 rounded-lg border-border bg-secondary text-secondary-foreground shadow-none hover:bg-secondary/80"
+          >
             Cancel
           </AlertDialogCancel>
 
@@ -68,17 +79,17 @@ export function LogoutDialog({
               e.preventDefault();
               handleLogout();
             }}
-            className="bg-destructive hover:bg-destructive/90"
+            className="h-10 rounded-lg bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
           >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                Logging out...
+                Signing out
               </>
             ) : (
               <>
                 <LogOut className="mr-2 size-4" />
-                Logout
+                Sign out
               </>
             )}
           </AlertDialogAction>
