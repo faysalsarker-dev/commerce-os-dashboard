@@ -1,8 +1,7 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import slugify from "slugify";
-import { Loader2, RefreshCw, Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -19,7 +18,6 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormDescription,
   FormMessage,
 } from "@/components/ui";
 
@@ -39,11 +37,8 @@ import { categoryFormSchema, DEFAULT_VALUES, type CategoryFormValues } from "@/t
 
 
 
-const toSlug = (value: string) => slugify(value, { lower: true, strict: true, trim: true });
-
 const categoryToFormValues = (category: Category): CategoryFormValues => ({
   name: category.name,
-  slug: category.slug,
   description: category.description ?? "",
   isActive: category.isActive,
   displayOrder: category.displayOrder,
@@ -57,7 +52,6 @@ function buildCategoryFormData(
   const formData = new FormData();
 
   formData.append("name", values.name);
-  formData.append("slug", values.slug);
   formData.append("description", (values.description ?? "").trim());
   formData.append("isActive", String(values.isActive));
   formData.append("displayOrder", String(values.displayOrder));
@@ -96,49 +90,46 @@ export interface CategoryDialogProps {
 
 export function CategoryDialog({ category, trigger, open, onOpenChange }: CategoryDialogProps) {
   const isEditMode = Boolean(category);
-
   const [internalOpen, setInternalOpen] = React.useState(false);
   const isControlled = open !== undefined;
   const dialogOpen = isControlled ? open : internalOpen;
   const setDialogOpen = isControlled ? onOpenChange! : setInternalOpen;
 
-  const [slugTouched, setSlugTouched] = React.useState(false);
   const [imageResult, setImageResult] = React.useState<ImageUploaderResult | null>(null);
 
   const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation();
   const [updateCategory, { isLoading: isUpdating }] = useUpdateCategoryMutation();
   const isSubmitting = isCreating || isUpdating;
 
+
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categoryFormSchema),
     defaultValues: DEFAULT_VALUES,
   });
 
-  
+  const handleDialogOpenChange = React.useCallback(
+    (nextOpen: boolean) => {
+      setImageResult(null);
+
+      if (isControlled) {
+        onOpenChange?.(nextOpen);
+        return;
+      }
+
+      setInternalOpen(nextOpen);
+    },
+    [isControlled, onOpenChange]
+  );
+
   React.useEffect(() => {
     if (!dialogOpen) return;
 
     if (category) {
       form.reset(categoryToFormValues(category));
-      setSlugTouched(true);
     } else {
       form.reset(DEFAULT_VALUES);
-      setSlugTouched(false);
     }
-    setImageResult(null);
-  }, [dialogOpen, category, form]);
-
-  // Auto-derive the slug from the name until the user edits the slug manually
-  const nameValue = form.watch("name");
-  React.useEffect(() => {
-    if (slugTouched) return;
-    form.setValue("slug", toSlug(nameValue), { shouldValidate: true });
-  }, [nameValue, slugTouched, form]);
-
-  const regenerateSlug = React.useCallback(() => {
-    form.setValue("slug", toSlug(form.getValues("name")), { shouldValidate: true });
-    setSlugTouched(false);
-  }, [form]);
+  }, [dialogOpen, category]);
 
   const onSubmit = React.useCallback(
     async (values: CategoryFormValues) => {
@@ -155,14 +146,10 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
         setDialogOpen(false);
       } catch (err) {
         const message = getErrorMessage(err);
-        if (message.toLowerCase().includes("slug")) {
-          form.setError("slug", { message });
-        } else {
-          toast.error(message);
-        }
+        toast.error(message);
       }
     },
-    [imageResult, isEditMode, category, updateCategory, createCategory, setDialogOpen, form]
+    [imageResult, isEditMode, category, updateCategory, createCategory, setDialogOpen]
   );
 
   const guardEnterSubmit = React.useCallback((e: React.KeyboardEvent<HTMLFormElement>) => {
@@ -181,7 +168,7 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
     );
 
   return (
-    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+    <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
       {defaultTrigger && <DialogTrigger>{defaultTrigger}</DialogTrigger>}
 
       <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
@@ -208,39 +195,6 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
                     <FormControl>
                       <Input placeholder="e.g. Outerwear" {...field} />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="slug"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Slug</FormLabel>
-                    <div className="flex gap-2">
-                      <FormControl>
-                        <Input
-                          {...field}
-                          onChange={(e) => {
-                            setSlugTouched(true);
-                            field.onChange(toSlug(e.target.value));
-                          }}
-                          className="font-mono text-sm"
-                        />
-                      </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={regenerateSlug}
-                        title="Regenerate from name"
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <FormDescription>Used in the URL — lowercase, hyphenated.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

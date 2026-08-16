@@ -70,6 +70,21 @@ FormData>
 
       keepUnusedDataFor: 60 * 5,
     }),
+    getCategoriesForSelect: builder.query<ApiResponse<Category>, string>({
+      query: () => ({
+        url: `${BASE_URL}/select`,
+        method: "GET",
+      }),
+
+      providesTags: (_, __, id) => [
+        {
+          type: "CATEGORY",
+          id,
+        },
+      ],
+
+      keepUnusedDataFor: 60 * 5,
+    }),
 
         getCategoryForSeletect: builder.query<ApiResponse<Category>, string>({
       query: () => ({
@@ -137,6 +152,7 @@ export const {
   useGetCategoriesQuery,
   useLazyGetCategoriesQuery,
   useGetCategoryForSeletectQuery,
+  useGetCategoriesForSelectQuery,
 
   // Get One
   useGetCategoryQuery,

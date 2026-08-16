@@ -14,6 +14,7 @@ import {
 } from "@/components/ui";
 
 import { useLogout } from "@/hooks/auth/useLogout";
+import logoutIcon from "@/assets/commerce-os-logout.png";
 
 interface LogoutDialogProps {
   open: boolean;
@@ -50,9 +51,9 @@ export function LogoutDialog({
       stiffness: 300,
       damping: 20,
     }}
-    className="flex size-14 items-center justify-center rounded-xl bg-primary/10 text-primary"
+    className="flex  items-center justify-center rounded-xl  text-primary"
   >
-    <LogOut className="size-6" strokeWidth={2} />
+   <img src={logoutIcon} alt="Logout Icon" className="" />
   </motion.div>
 </div>
 

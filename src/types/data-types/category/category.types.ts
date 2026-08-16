@@ -13,7 +13,6 @@ export interface Category {
 
 export interface CreateCategoryPayload {
   name: string;
-  slug: string;
   description?: string;
   image?: string;
   isActive?: boolean;
@@ -22,17 +21,14 @@ export interface CreateCategoryPayload {
 
 export interface UpdateCategoryPayload {
   name?: string;
-  slug?: string;
   description?: string;
   image?: string;
   isActive?: boolean;
   displayOrder?: number;
 }
 
-
 export interface CategoryFormValues {
   name: string;
-  slug: string;
   description: string;
   image: string;
   isActive: boolean;

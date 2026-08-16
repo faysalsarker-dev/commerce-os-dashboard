@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { socket } from "@/lib/apis/socket";
-import { useGetProfileQuery } from "@/redux/features/auth/auth.api";
 import { useAppDispatch } from "@/redux/hooks";
 import { baseApi } from "@/redux/baseApi";
 import { toast } from "sonner";
@@ -42,7 +41,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const dispatch = useAppDispatch();
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [onlineUsers, setOnlineUsers] = useState<Map<string, UserPresencePayload>>(new Map());
-const {user,isAuthenticated}=useAuth()
+const {isAuthenticated}=useAuth()
 
 
   useEffect(() => {
@@ -50,7 +49,6 @@ const {user,isAuthenticated}=useAuth()
       if (socket.connected) {
         socket.disconnect();
       }
-      setIsConnected(false);
       return;
     }
 

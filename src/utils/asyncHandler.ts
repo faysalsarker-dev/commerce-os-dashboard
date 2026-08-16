@@ -1,11 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { toast } from "sonner";
 import type { ApiError } from "@/types/shared";
 
 export interface AsyncMutationOptions<T = any> {
   /** Custom success message string or a function receiving the response data */
   successMessage?: string | ((data: T) => string);
+  successDescription?: string;
   /** Custom error fallback message if error response doesn't contain a message */
   errorMessage?: string;
+  errorDescription?: string;
   /** Optional loading message to display while the promise is pending */
   loadingMessage?: string;
   /** Callback fired on successful execution */
@@ -16,6 +19,7 @@ export interface AsyncMutationOptions<T = any> {
   onFinally?: () => void;
   /** Whether to display a toast on success (default: true if message is available) */
   showSuccessToast?: boolean;
+
   /** Whether to display a toast on error (default: true) */
   showErrorToast?: boolean;
 }
@@ -73,7 +77,9 @@ export async function handleAsyncMutation<T = any>(
 ): Promise<AsyncMutationResult<T>> {
   const {
     successMessage,
+    successDescription = "Additional details about the successful operation.",
     errorMessage = "Operation failed",
+    errorDescription = "Additional details about the error.",
     loadingMessage,
     onSuccess,
     onError,
@@ -106,7 +112,9 @@ export async function handleAsyncMutation<T = any>(
 
     if (toastId !== undefined) {
       if (msgToDisplay && showSuccessToast) {
-        toast.success(msgToDisplay, { id: toastId });
+        toast.success(msgToDisplay, {
+          description: successDescription,
+          id: toastId });
       } else {
         toast.dismiss(toastId);
       }
@@ -124,12 +132,12 @@ export async function handleAsyncMutation<T = any>(
 
     if (toastId !== undefined) {
       if (showErrorToast) {
-        toast.error(extractedMessage, { id: toastId });
+        toast.error(extractedMessage, {description: errorDescription, id: toastId });
       } else {
         toast.dismiss(toastId);
       }
     } else if (showErrorToast) {
-      toast.error(extractedMessage);
+      toast.error(extractedMessage );
     }
 
     if (onError) {

@@ -44,14 +44,12 @@ export const CATEGORY_FILTER_CONFIG = [
 ]
 
 type CategoryTableHandlers = {
-  onView: (category: Category) => void
   onEdit: (category: Category) => void
   onDelete: (category: Category) => void
 }
 
 // The config owns the table shape; the page injects its API/navigation handlers.
 export const createCategoryTableColumns = ({
-  onView,
   onEdit,
   onDelete,
 }: CategoryTableHandlers) =>
@@ -76,7 +74,6 @@ export const createCategoryTableColumns = ({
       column.number("displayOrder", { label: "Order" }),
       column.date("createdAt", { label: "Created" }),
       column.actions([
-        action.view<Category>({ onClick: onView }),
         action.edit<Category>({ onClick: onEdit }),
         action.delete<Category>({
           confirmTitle: "Delete Category",

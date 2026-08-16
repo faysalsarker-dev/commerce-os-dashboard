@@ -34,7 +34,6 @@ export default function AllCategory() {
 
   const { data: response, isLoading } = useGetCategoriesQuery(queryParams)
   const [deleteCategory] = useDeleteCategoryMutation()
-
   const openCreateDialog = () => {
     setSelectedCategory(undefined)
     setIsDialogOpen(true)
@@ -43,7 +42,6 @@ export default function AllCategory() {
   const columns = useMemo(
     () =>
       createCategoryTableColumns({
-        onView: (category) => console.log("View", category.id),
         onEdit: (category) => {
           setSelectedCategory(category)
           setIsDialogOpen(true)
@@ -51,7 +49,9 @@ export default function AllCategory() {
         onDelete: (category) =>
           handleAsyncMutation(() => deleteCategory(category.id).unwrap(), {
             successMessage: "Category deleted",
+            successDescription: "The category has been successfully deleted.",
             errorMessage: "Unable to delete category",
+            errorDescription: "An error occurred while deleting the category.",
           }),
       }),
     [deleteCategory],

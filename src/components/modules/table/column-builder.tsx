@@ -1,4 +1,3 @@
-
 /**
  * column-builder.tsx
  *
@@ -27,11 +26,17 @@
 import * as React from "react"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { LucideIcon } from "lucide-react"
-import { MoreHorizontal, Pencil, Trash2, Eye, Copy, Archive, ImageOff, TriangleAlert, Loader2 } from "lucide-react"
-import type {
-    Action,
-    Resource,
-} from "@/types/permissions/permissions.types"
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
+  Copy,
+  Archive,
+  ImageOff,
+  Loader2,
+} from "lucide-react"
+import type { Action, Resource } from "@/types/permissions/permissions.types"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -39,22 +44,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-
 import { DataTableColumnHeader } from "./DataTableColumnHeader"
-import { Avatar, AvatarFallback, AvatarImage, StatusBadge } from "@/components/ui"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  StatusBadge,
+} from "@/components/ui"
 import { Can } from "@/components/shared/permissions/Can"
 import { cn } from "@/lib/utils"
-
+import { ItemDelete } from "@/components/ui/item-delete"
 
 // Import YOUR app's real CASL union types here. Defaulting the generics to
 // these (instead of `string`) is what makes `can`/`resource` type-safe
@@ -76,7 +75,9 @@ function humanize(key: string): string {
 function formatCurrency(value: unknown, currency = "USD"): string {
   const n = typeof value === "number" ? value : Number(value)
   if (Number.isNaN(n)) return "-"
-  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(n)
+  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(
+    n
+  )
 }
 
 function formatNumber(value: unknown): string {
@@ -89,18 +90,26 @@ function formatDate(value: unknown): string {
   if (!value) return "-"
   const date = value instanceof Date ? value : new Date(value as string)
   if (Number.isNaN(date.getTime())) return "-"
-  return new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric" }).format(date)
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(date)
 }
 
 /** Resolves a boolean-or-callback prop (used by `hidden` / `disabled`). */
-function resolveFlag<T>(value: boolean | ((row: T) => boolean) | undefined, row: T): boolean {
+function resolveFlag<T>(
+  value: boolean | ((row: T) => boolean) | undefined,
+  row: T
+): boolean {
   return typeof value === "function" ? value(row) : !!value
 }
 
 /** Supports dot-path keys ("customer.name") in addition to plain keys. */
 function getValueByPath(obj: unknown, path: string): unknown {
   return path.split(".").reduce<unknown>((acc, part) => {
-    if (acc && typeof acc === "object") return (acc as Record<string, unknown>)[part]
+    if (acc && typeof acc === "object")
+      return (acc as Record<string, unknown>)[part]
     return undefined
   }, obj)
 }
@@ -126,11 +135,10 @@ interface CurrencyColumnOptions<T> extends BaseColumnOptions<T> {
 }
 
 interface ImageColumnOptions<T> extends BaseColumnOptions<T> {
-  size?: number;
-  rounded?: "none" | "sm" | "md" | "lg" | "full";
-  fallback?: string;
+  size?: number
+  rounded?: "none" | "sm" | "md" | "lg" | "full"
+  fallback?: string
 }
-
 
 // Add new column types here as you extend the builder (e.g. "avatar" | "badge").
 type ColumnType = "text" | "currency" | "number" | "date" | "status" | "image"
@@ -140,9 +148,7 @@ interface DataColumnConfig<T> {
   type: ColumnType
   key: keyof T & string
   options:
-  | BaseColumnOptions<T>
-  | CurrencyColumnOptions<T>
-  | ImageColumnOptions<T>;
+    BaseColumnOptions<T> | CurrencyColumnOptions<T> | ImageColumnOptions<T>
 }
 
 interface ActionsColumnConfig<T, TAction extends string> {
@@ -150,10 +156,13 @@ interface ActionsColumnConfig<T, TAction extends string> {
   actions: ActionConfig<T, TAction>[]
 }
 
-type ColumnConfig<T, TAction extends string> = DataColumnConfig<T> | ActionsColumnConfig<T, TAction>
+type ColumnConfig<T, TAction extends string> =
+  DataColumnConfig<T> | ActionsColumnConfig<T, TAction>
 
-type ActionVariant = "default" | "outline" | "ghost" | "destructive" | "secondary" | "link"
-type ActionType = "view" | "edit" | "delete" | "duplicate" | "archive" | "custom"
+type ActionVariant =
+  "default" | "outline" | "ghost" | "destructive" | "secondary" | "link"
+type ActionType =
+  "view" | "edit" | "delete" | "duplicate" | "archive" | "custom"
 
 interface ActionConfig<T, TAction extends string> {
   type: ActionType
@@ -183,7 +192,11 @@ type ConfirmHandler<T, TAction extends string> = (params: {
   row: T
 }) => boolean | Promise<boolean>
 
-interface CreateColumnsConfig<T, TAction extends string = Action, TResource extends string = Resource> {
+interface CreateColumnsConfig<
+  T,
+  TAction extends string = Action,
+  TResource extends string = Resource,
+> {
   /** Omit for pages with no permission-gated actions. */
   resource?: TResource
   columns: ColumnConfig<T, TAction>[]
@@ -204,14 +217,13 @@ interface CreateColumnsConfig<T, TAction extends string = Action, TResource exte
 //   })
 // }
 
-
 function makeDataColumn<
   T,
   TOptions extends BaseColumnOptions<T> = BaseColumnOptions<T>,
 >(type: ColumnType) {
   return (
     key: keyof T & string,
-    options: TOptions = {} as TOptions,
+    options: TOptions = {} as TOptions
   ): DataColumnConfig<T> => ({
     kind: "data",
     type,
@@ -220,12 +232,15 @@ function makeDataColumn<
   })
 }
 
-function baseColumn<T>(key: keyof T & string, options?: BaseColumnOptions<T>): DataColumnConfig<T> {
+function baseColumn<T>(
+  key: keyof T & string,
+  options?: BaseColumnOptions<T>
+): DataColumnConfig<T> {
   return makeDataColumn<T>("text")(key, options)
 }
 
 function actionsColumn<T, TAction extends string = Action>(
-  actions: ActionConfig<T, TAction>[],
+  actions: ActionConfig<T, TAction>[]
 ): ActionsColumnConfig<T, TAction> {
   return { kind: "actions", actions }
 }
@@ -240,30 +255,20 @@ function actionsColumn<T, TAction extends string = Action>(
 // })
 
 export const column = Object.assign(baseColumn, {
-  currency: <T,>(
-    key: keyof T & string,
-    options?: CurrencyColumnOptions<T>,
-  ) => makeDataColumn<T, CurrencyColumnOptions<T>>("currency")(key, options),
+  currency: <T,>(key: keyof T & string, options?: CurrencyColumnOptions<T>) =>
+    makeDataColumn<T, CurrencyColumnOptions<T>>("currency")(key, options),
 
-  number: <T,>(
-    key: keyof T & string,
-    options?: BaseColumnOptions<T>,
-  ) => makeDataColumn<T, BaseColumnOptions<T>>("number")(key, options),
+  number: <T,>(key: keyof T & string, options?: BaseColumnOptions<T>) =>
+    makeDataColumn<T, BaseColumnOptions<T>>("number")(key, options),
 
-  date: <T,>(
-    key: keyof T & string,
-    options?: BaseColumnOptions<T>,
-  ) => makeDataColumn<T, BaseColumnOptions<T>>("date")(key, options),
+  date: <T,>(key: keyof T & string, options?: BaseColumnOptions<T>) =>
+    makeDataColumn<T, BaseColumnOptions<T>>("date")(key, options),
 
-  status: <T,>(
-    key: keyof T & string,
-    options?: BaseColumnOptions<T>,
-  ) => makeDataColumn<T, BaseColumnOptions<T>>("status")(key, options),
+  status: <T,>(key: keyof T & string, options?: BaseColumnOptions<T>) =>
+    makeDataColumn<T, BaseColumnOptions<T>>("status")(key, options),
 
-  image: <T,>(
-    key: keyof T & string,
-    options?: ImageColumnOptions<T>,
-  ) => makeDataColumn<T, ImageColumnOptions<T>>("image")(key, options),
+  image: <T,>(key: keyof T & string, options?: ImageColumnOptions<T>) =>
+    makeDataColumn<T, ImageColumnOptions<T>>("image")(key, options),
 
   actions: actionsColumn,
 })
@@ -287,9 +292,16 @@ interface ActionPresetOptions<T, TAction extends string> {
 
 function makeAction<TAction extends string>(
   type: ActionType,
-  defaults: { label: string; icon: LucideIcon; variant: ActionVariant; confirm?: boolean },
+  defaults: {
+    label: string
+    icon: LucideIcon
+    variant: ActionVariant
+    confirm?: boolean
+  }
 ) {
-  return <T,>(options: ActionPresetOptions<T, TAction>): ActionConfig<T, TAction> => ({
+  return <T,>(
+    options: ActionPresetOptions<T, TAction>
+  ): ActionConfig<T, TAction> => ({
     type,
     label: options.label ?? defaults.label,
     icon: options.icon ?? defaults.icon,
@@ -305,23 +317,42 @@ function makeAction<TAction extends string>(
 }
 
 export const action = {
-  view: makeAction<Action>("view", { label: "View", icon: Eye, variant: "ghost" }),
-  edit: makeAction<Action>("edit", { label: "Edit", icon: Pencil, variant: "ghost" }),
+  view: makeAction<Action>("view", {
+    label: "View",
+    icon: Eye,
+    variant: "ghost",
+  }),
+  edit: makeAction<Action>("edit", {
+    label: "Edit",
+    icon: Pencil,
+    variant: "ghost",
+  }),
   delete: makeAction<Action>("delete", {
     label: "Delete",
     icon: Trash2,
     variant: "destructive",
     confirm: true,
   }),
-  duplicate: makeAction<Action>("duplicate", { label: "Duplicate", icon: Copy, variant: "ghost" }),
-  archive: makeAction<Action>("archive", { label: "Archive", icon: Archive, variant: "ghost" }),
+  duplicate: makeAction<Action>("duplicate", {
+    label: "Duplicate",
+    icon: Copy,
+    variant: "ghost",
+  }),
+  archive: makeAction<Action>("archive", {
+    label: "Archive",
+    icon: Archive,
+    variant: "ghost",
+  }),
   custom: <T,>(
-    options: ActionPresetOptions<T, Action> & { label: string; icon: LucideIcon },
+    options: ActionPresetOptions<T, Action> & {
+      label: string
+      icon: LucideIcon
+    }
   ): ActionConfig<T, Action> => ({
     type: "custom",
     label: options.label,
     icon: options.icon,
-    variant: options.variant ?? "ghost", 
+    variant: options.variant ?? "ghost",
     onClick: options.onClick,
     can: options.can,
     confirm: options.confirm ?? false,
@@ -337,12 +368,10 @@ export const action = {
 /* --------------------------------------------------------------------- */
 
 interface RendererContext<T> {
-  value: unknown;
-  row: T;
+  value: unknown
+  row: T
   options:
-    | BaseColumnOptions<T>
-    | CurrencyColumnOptions<T>
-    | ImageColumnOptions<T>;
+    BaseColumnOptions<T> | CurrencyColumnOptions<T> | ImageColumnOptions<T>
 }
 
 const renderers: Record<
@@ -370,9 +399,9 @@ const renderers: Record<
   status: ({ value }) => <StatusBadge value={value as string} />,
 
   image: ({ value, options }) => {
-    const imageOptions = options as ImageColumnOptions<unknown>;
+    const imageOptions = options as ImageColumnOptions<unknown>
 
-    const size = imageOptions.size ?? 40;
+    const size = imageOptions.size ?? 40
 
     const rounded = {
       none: "",
@@ -380,19 +409,16 @@ const renderers: Record<
       md: "rounded-md",
       lg: "rounded-lg",
       full: "rounded-full",
-    };
+    }
 
     const src =
       typeof value === "string" && value.length > 0
         ? value
-        : imageOptions.fallback;
+        : imageOptions.fallback
 
     return (
       <Avatar
-        className={cn(
-          rounded[imageOptions.rounded ?? "none"],
-          "border"
-        )}
+        className={cn(rounded[imageOptions.rounded ?? "none"], "border")}
         style={{
           width: size,
           height: size,
@@ -400,12 +426,12 @@ const renderers: Record<
       >
         <AvatarImage src={src} />
         <AvatarFallback>
-  <ImageOff className="h-4 w-4" />
-</AvatarFallback>
+          <ImageOff className="h-4 w-4" />
+        </AvatarFallback>
       </Avatar>
-    );
+    )
   },
-};
+}
 
 /* --------------------------------------------------------------------- */
 /* Internal: RowActionsMenu (not exported)                               */
@@ -423,8 +449,10 @@ function RowActionsMenu<T, TAction extends string, TResource extends string>({
   resource?: TResource
   confirmHandler?: ConfirmHandler<T, TAction>
 }) {
-  const [pendingAction, setPendingAction] = React.useState<ActionConfig<T, TAction> | null>(null)
-  const [isProcessing, setIsProcessing] = React.useState(false)
+  const [pendingAction, setPendingAction] = React.useState<ActionConfig<
+    T,
+    TAction
+  > | null>(null)
   const visibleActions = actions.filter((act) => !resolveFlag(act.hidden, row))
 
   const trigger = async (act: ActionConfig<T, TAction>) => {
@@ -444,97 +472,73 @@ function RowActionsMenu<T, TAction extends string, TResource extends string>({
 
   return (
     <>
-    <DropdownMenu>
-<DropdownMenuTrigger render={<Button variant="ghost" className="h-8 w-8 p-0 flex  justify-end" />}>
-    <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4 " />
-  </DropdownMenuTrigger>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button variant="ghost" className="flex h-8 w-8 justify-end p-0" />
+          }
+        >
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </DropdownMenuTrigger>
 
+        <DropdownMenuContent align="end">
+          {visibleActions.map((act, index) => {
+            const Icon = act.icon
+            const isDisabled = resolveFlag(act.disabled, row)
+            const actionLoading =
+              typeof act.loading === "function"
+                ? act.loading(row)
+                : !!act.loading
 
-     
-      <DropdownMenuContent align="end">
-        {visibleActions.map((act, index) => {
-          const Icon = act.icon
-          const isDisabled = resolveFlag(act.disabled, row)
-          const actionLoading = typeof act.loading === "function" ? act.loading(row) : !!act.loading
+            const item = (
+              <DropdownMenuItem
+                key={index}
+                disabled={isDisabled || actionLoading}
+                onClick={() => !isDisabled && !actionLoading && trigger(act)}
+                className={
+                  act.variant === "destructive"
+                    ? "text-destructive focus:text-destructive"
+                    : undefined
+                }
+              >
+                {actionLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Icon className="mr-2 h-4 w-4" />
+                )}
+                {act.label}
+              </DropdownMenuItem>
+            )
 
-          const item = (
-            <DropdownMenuItem
-              key={index}
-              disabled={isDisabled || actionLoading}
-              onClick={() => !isDisabled && !actionLoading && trigger(act)}
-              className={act.variant === "destructive" ? "text-destructive focus:text-destructive" : undefined}
-            >
-              {actionLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Icon className="mr-2 h-4 w-4" />
-              )}
-              {act.label}
-            </DropdownMenuItem>
-          )
+            if (!act.can) return item
+            if (!resource) return item // no resource configured -> can't scope permission, render as-is
 
-          if (!act.can) return item
-          if (!resource) return item // no resource configured -> can't scope permission, render as-is
-
-          return (
-            <Can I={act.can as Action} a={resource as Resource} key={index}>
-              {item}
-            </Can>
-          )
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-      <AlertDialog open={pendingAction !== null} onOpenChange={(open) => !open && setPendingAction(null)}>
-        <AlertDialogContent className="sm:max-w-md">
-          <AlertDialogHeader className="items-center text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-500">
-              <TriangleAlert className="h-6 w-6" />
-            </div>
-            <AlertDialogTitle>
-              {pendingAction?.confirmTitle ?? "Delete this item?"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {pendingAction?.confirmDescription ?? "This action cannot be undone."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
-            {(() => {
-              const pendingExternalLoading = pendingAction
-                ? (typeof pendingAction.loading === "function" ? pendingAction.loading(row) : !!pendingAction.loading)
-                : false
-
-              const busy = isProcessing || pendingExternalLoading
-
-              return (
-                <AlertDialogAction
-                  className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-                  disabled={busy}
-                  onClick={async () => {
-                    if (!pendingAction) return
-                    setIsProcessing(true)
-                    try {
-                      // Support both sync and async handlers
-                      await Promise.resolve(pendingAction.onClick(row) as unknown)
-                    } finally {
-                      setIsProcessing(false)
-                      setPendingAction(null)
-                    }
-                  }}
-                >
-                  {busy ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="mr-2 h-4 w-4" />
-                  )}
-                  {busy ? "Deleting..." : "Delete"}
-                </AlertDialogAction>
-              )
-            })()}
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            return (
+              <Can I={act.can as Action} a={resource as Resource} key={index}>
+                {item}
+              </Can>
+            )
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <ItemDelete
+        open={pendingAction !== null}
+        onOpenChange={(open) => !open && setPendingAction(null)}
+        title={pendingAction?.confirmTitle}
+        description={pendingAction?.confirmDescription}
+        loading={
+          pendingAction
+            ? typeof pendingAction.loading === "function"
+              ? pendingAction.loading(row)
+              : !!pendingAction.loading
+            : false
+        }
+        onDelete={async () => {
+          if (!pendingAction) return
+          await Promise.resolve(pendingAction.onClick(row) as unknown)
+        }}
+      />
     </>
   )
 }
@@ -543,26 +547,18 @@ function RowActionsMenu<T, TAction extends string, TResource extends string>({
 /* createColumns()                                                       */
 /* --------------------------------------------------------------------- */
 
-
-
-
-
-
-
-export function createColumns<T, TAction extends string = Action, TResource extends string = Resource>(
-  config: CreateColumnsConfig<T, TAction, TResource>,
-): ColumnDef<T>[] {
+export function createColumns<
+  T,
+  TAction extends string = Action,
+  TResource extends string = Resource,
+>(config: CreateColumnsConfig<T, TAction, TResource>): ColumnDef<T>[] {
   const { resource, columns, confirm } = config
 
   return columns.map((col): ColumnDef<T> => {
     if (col.kind === "actions") {
       return {
         id: "actions",
-        header: () => (
-  <div className="flex justify-center">
-    Actions
-  </div>
-),
+        header: () => <div className="flex justify-center">Actions</div>,
         enableSorting: false,
         enableHiding: false,
         cell: ({ row }) => (
@@ -580,54 +576,59 @@ export function createColumns<T, TAction extends string = Action, TResource exte
     const label = options.label ?? humanize(key)
     const sortable = options.sortable ?? false
     const hideable = options.hideable ?? true
-    const align: Align = options.align ?? (type === "currency" || type === "number" ? "right" : "left")
-    const alignClass = align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left"
+    const align: Align =
+      options.align ??
+      (type === "currency" || type === "number" ? "right" : "left")
+    const alignClass =
+      align === "right"
+        ? "text-right"
+        : align === "center"
+          ? "text-center"
+          : "text-left"
     const renderCell = renderers[type]
-
 
     return {
       id: key,
       accessorFn: (row) => getValueByPath(row, key),
       enableSorting: sortable,
       enableHiding: hideable,
-      size: options.width ,
+      size: options.width,
       header: ({ column: c }) =>
         sortable ? (
-          <DataTableColumnHeader column={c} title={label} className={alignClass} />
+          <DataTableColumnHeader
+            column={c}
+            title={label}
+            className={alignClass}
+          />
         ) : (
           <div className={alignClass}>{label}</div>
         ),
-    cell: ({ row, getValue }) => {
-  const original = row.original;
+      cell: ({ row, getValue }) => {
+        const original = row.original
 
-  let value = getValue();
+        let value = getValue()
 
-  // Transform the value first
-  if (options.formatter) {
-    value = options.formatter(value, original);
-  }
+        // Transform the value first
+        if (options.formatter) {
+          value = options.formatter(value, original)
+        }
 
-  // Full custom render always wins
-  if (options.render) {
-    return (
-      <div className={alignClass}>
-        {options.render(original)}
-      </div>
-    );
-  }
+        // Full custom render always wins
+        if (options.render) {
+          return <div className={alignClass}>{options.render(original)}</div>
+        }
 
-  // Default renderer receives the transformed value
-  return (
-    <div className={alignClass}>
-      {renderCell({
-        value,
-        row: original,
-        options,
-      })}
-    </div>
-  );
-},
+        // Default renderer receives the transformed value
+        return (
+          <div className={alignClass}>
+            {renderCell({
+              value,
+              row: original,
+              options,
+            })}
+          </div>
+        )
+      },
     }
   })
 }
-

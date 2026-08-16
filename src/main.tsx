@@ -17,7 +17,7 @@ createRoot(document.getElementById("root")!).render(
       <ThemeProvider>
         <SocketProvider>
           <RouterProvider router={router} />
-          <Toaster position="top-right" />
+          <Toaster position="top-right" richColors  />
         </SocketProvider>
       </ThemeProvider>
     </ReduxProvider>
