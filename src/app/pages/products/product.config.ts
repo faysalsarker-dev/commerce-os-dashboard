@@ -58,11 +58,6 @@ export const createProductTableColumns = ({
         label: "Category",
         formatter: (_, row) => row?.category?.name ?? "-",
       }),
-      column.currency("costPrice", {
-        label: "Cost Price",
-        sortable: false,
-        currency: "BDT",
-      }),
       column.currency("sellingPrice", {
         label: "Selling Price",
         sortable: false,

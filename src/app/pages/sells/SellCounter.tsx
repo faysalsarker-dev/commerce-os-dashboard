@@ -1,93 +1,136 @@
-import { useEffect, useMemo, useReducer, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { toast } from "sonner";
-import { PageHeader } from "@/components/modules/Products/PageHeader";
-import { Card, Input, Label, Separator, Badge } from "@/components/ui";
+import { useMemo, useReducer } from "react"
+import { AnimatePresence, motion } from "framer-motion"
+import { toast } from "sonner"
+import { PageHeader } from "@/components/modules/Products/PageHeader"
+import { Card, Input, Label, Separator, Badge } from "@/components/ui"
 
-import { ProductScanner, ProductList, CustomerLookup, BillSummary, PaymentMethodSelector, DueDatePicker, CompleteSaleButton } from "@/components/modules/sell-counter";
 import {
-  PAYMENT_METHODS,
-} from "@/components/modules/sell-counter/types";
-import { formatCurrency } from "@/lib/formatCurrency";
-import { PageContainer } from "@/components/shared/common";
+  ProductScanner,
+  ProductList,
+  CustomerLookup,
+  BillSummary,
+  PaymentMethodSelector,
+  DueDatePicker,
+  CompleteSaleButton,
+} from "@/components/modules/sell-counter"
+import { PAYMENT_METHODS } from "@/components/modules/sell-counter/types"
+import { formatCurrency } from "@/lib/formatCurrency"
+import { PageContainer } from "@/components/shared/common"
 import {
   useScanProductMutation,
   useCheckoutMutation,
   useCreateCustomerMutation,
-  useGetCustomerByPhoneQuery,
-} from "@/redux/hooks";
-import { sellCounterReducer, initialState } from "@/logics/sellCounterReducer";
-import { useNavigate } from "react-router";
+  useLazyGetCustomerByPhoneQuery,
+} from "@/redux/hooks"
+import { sellCounterReducer, initialState } from "@/logics/sellCounterReducer"
+import { useNavigate } from "react-router"
 
 export function SellCounter() {
-  const [state, dispatch] = useReducer(sellCounterReducer, initialState);
-  const { lines, customer, notFoundPhone, discount, paymentMethodId, amountReceived, dueDate } = state;
-  const [searchedPhone, setSearchedPhone] = useState<string | null>(null);
+  const [state, dispatch] = useReducer(sellCounterReducer, initialState)
+  const {
+    lines,
+    customer,
+    notFoundPhone,
+    discount,
+    paymentMethodId,
+    amountReceived,
+    dueDate,
+  } = state
   const navigate = useNavigate()
-  const [scanProduct, { isLoading: isScanning }] = useScanProductMutation();
-  const [checkout, { isLoading: isCheckingOut }] = useCheckoutMutation();
-  const { data: searchedCustomerResponse, isSuccess: isCustomerSearchSuccess, isError: customerSearchError } = useGetCustomerByPhoneQuery(searchedPhone ?? "", {
-    skip: !searchedPhone,
-  });
-  const [createCustomer] = useCreateCustomerMutation();
+  const [scanProduct, { isLoading: isScanning }] = useScanProductMutation()
+  const [checkout, { isLoading: isCheckingOut }] = useCheckoutMutation()
+  const [getCustomerByPhone, { isFetching: isCustomerSearching }] =
+    useLazyGetCustomerByPhoneQuery()
+  const [createCustomer] = useCreateCustomerMutation()
 
   const subtotal = useMemo(
     () => lines.reduce((sum, l) => sum + l.sellingPrice * l.quantity, 0),
-    [lines],
-  );
-  const total = Math.max(0, subtotal - discount);
-  const due = Math.max(0, total - amountReceived);
+    [lines]
+  )
+  const total = Math.max(0, subtotal - discount)
+  const due = Math.max(0, total - amountReceived)
 
   const handleScanProduct = async (code: string) => {
-    if (!code.trim()) return;
+    if (!code.trim()) return
     try {
-      const res = await scanProduct({ code: code.trim() }).unwrap();
-      const scanned = res.data;
-      const existing = lines.find((l) => l.id === scanned.variantId);
+      const res = await scanProduct({ code: code.trim() }).unwrap()
+      const scanned = res.data
+      const existing = lines.find((l) => l.id === scanned.variantId)
 
       if (existing) {
         if (existing.quantity + 1 > scanned.stockQty) {
           toast.warning("Not enough stock", {
             description: `Only ${scanned.stockQty} of ${scanned.productName} available.`,
-          });
-          return;
+          })
+          return
         }
-        dispatch({ type: "INCREMENT_LINE", id: scanned.variantId });
-        return;
+        dispatch({ type: "INCREMENT_LINE", id: scanned.variantId })
+        return
       }
 
       if (scanned.stockQty < 1) {
         toast.warning("Out of stock", {
           description: `${scanned.productName} has no stock available.`,
-        });
-        return;
+        })
+        return
       }
 
-      dispatch({ type: "ADD_LINE", line: { ...scanned, id: scanned.variantId, quantity: 1 } });
+      dispatch({
+        type: "ADD_LINE",
+        line: { ...scanned, id: scanned.variantId, quantity: 1 },
+      })
     } catch {
       toast.error("Product not found", {
         description: `No product matched "${code}". Check the barcode or SKU and try again.`,
-      });
+      })
     }
-  };
+  }
 
   const handleQuantityChange = (id: string, quantity: number) =>
-    dispatch({ type: "SET_QUANTITY", id, quantity });
+    dispatch({ type: "SET_QUANTITY", id, quantity })
 
-  const handleRemoveLine = (id: string) => dispatch({ type: "REMOVE_LINE", id });
+  const handleRemoveLine = (id: string) => dispatch({ type: "REMOVE_LINE", id })
 
-  const handleSearchCustomer = (phone: string) => {
-    const normalized = phone.trim();
-    if (!normalized) return;
+  const handleSearchCustomer = async (phone: string) => {
+    const normalized = phone.trim()
+    if (!normalized) return
 
-    setSearchedPhone(normalized);
-    dispatch({ type: "SET_CUSTOMER", customer: null, notFoundPhone: null });
-  };
+    dispatch({ type: "SET_CUSTOMER", customer: null, notFoundPhone: null })
+
+    try {
+      const response = await getCustomerByPhone(normalized).unwrap()
+      const foundCustomer = response.data
+
+      if (!foundCustomer) {
+        dispatch({
+          type: "SET_CUSTOMER",
+          customer: null,
+          notFoundPhone: normalized,
+        })
+        return
+      }
+
+      dispatch({
+        type: "SET_CUSTOMER",
+        customer: {
+          id: foundCustomer.id,
+          name: foundCustomer.name,
+          phone: foundCustomer.phone ?? normalized,
+          totalDue: foundCustomer.totalDue ?? 0,
+          totalOrders: foundCustomer.totalOrders ?? 0,
+          totalSpent: foundCustomer.totalSpent ?? 0,
+        },
+        notFoundPhone: null,
+      })
+    } catch {
+      toast.error("Failed to search for customer. Please try again.")
+    }
+  }
 
   const handleCreateCustomer = async (name: string, phone: string) => {
     try {
-      const res = await createCustomer({ name, phone }).unwrap();
-      const createdCustomer = res.data;
+      const res = await createCustomer({ name, phone }).unwrap()
+      const createdCustomer = res.data
 
       dispatch({
         type: "SET_CUSTOMER",
@@ -100,64 +143,31 @@ export function SellCounter() {
           totalSpent: createdCustomer.totalSpent ?? 0,
         },
         notFoundPhone: null,
-      });
-      setSearchedPhone(null);
-      toast.success("Customer created successfully.");
+      })
+      toast.success("Customer created successfully.")
     } catch {
-      toast.error("Failed to create customer. Please try again.");
+      toast.error("Failed to create customer. Please try again.")
     }
-  };
-
-  useEffect(() => {
-    if (!searchedPhone) return;
-
-    if (customerSearchError) {
-      toast.error("Failed to search for customer. Please try again.");
-      return;
-    }
-
-    if (!searchedCustomerResponse) return;
-
-    const responseCustomer = searchedCustomerResponse?.data;
-    if (responseCustomer) {
-      dispatch({
-        type: "SET_CUSTOMER",
-        customer: {
-          id: responseCustomer.id,
-          name: responseCustomer.name,
-          phone: responseCustomer.phone ?? searchedPhone,
-          totalDue: responseCustomer.totalDue ?? 0,
-          totalOrders: responseCustomer.totalOrders ?? 0,
-          totalSpent: responseCustomer.totalSpent ?? 0,
-        },
-        notFoundPhone: null,
-      });
-      return;
-    }
-
-    if (isCustomerSearchSuccess) {
-      dispatch({ type: "SET_CUSTOMER", customer: null, notFoundPhone: searchedPhone });
-    }
-  }, [searchedPhone, searchedCustomerResponse, customerSearchError, isCustomerSearchSuccess, dispatch]);
+  }
 
   const handleCompleteSale = async () => {
     if (!paymentMethodId) {
-      toast.warning("Select a payment method before completing the sale.");
-      return;
+      toast.warning("Select a payment method before completing the sale.")
+      return
     }
-    const isFullPayment = due <= 0;
+    const isFullPayment = due <= 0
 
     if (!isFullPayment && !customer) {
-      toast.warning("Select a customer before completing a sale with a due balance.");
-      return;
+      toast.warning(
+        "Select a customer before completing a sale with a due balance."
+      )
+      return
     }
 
     if (!isFullPayment && due > 0 && !dueDate) {
-      toast.warning("Set a due date for the remaining balance.");
-      return;
+      toast.warning("Set a due date for the remaining balance.")
+      return
     }
-
-
 
     try {
       const res = await checkout({
@@ -168,20 +178,21 @@ export function SellCounter() {
         isFullPayment,
         paidAmount: isFullPayment ? undefined : amountReceived,
         dueDate: !isFullPayment && dueDate ? dueDate.toISOString() : undefined,
-      }).unwrap();
+      }).unwrap()
 
       toast.success("Sale completed!", {
         description: `Invoice #${res.data.invoice.invoiceNo} — ${formatCurrency(res.data.invoice.total)}`,
-      });
+      })
 
-      dispatch({ type: "RESET_SALE" });
-      navigate("/invoice", { state: { invoice: res.data.invoice } });
+      dispatch({ type: "RESET_SALE" })
+      navigate("/invoice", { state: { invoice: res.data.invoice } })
     } catch {
       toast.error("Checkout failed", {
-        description: "Something went wrong processing the sale. Please try again.",
-      });
+        description:
+          "Something went wrong processing the sale. Please try again.",
+      })
     }
-  };
+  }
 
   return (
     <PageContainer>
@@ -213,6 +224,7 @@ export function SellCounter() {
             <CustomerLookup
               customer={customer}
               notFoundPhone={notFoundPhone}
+              isSearching={isCustomerSearching}
               onSearch={handleSearchCustomer}
               onCreate={handleCreateCustomer}
               onClear={() => dispatch({ type: "CLEAR_CUSTOMER" })}
@@ -222,7 +234,9 @@ export function SellCounter() {
               subtotal={subtotal}
               discount={discount}
               total={total}
-              onDiscountChange={(value) => dispatch({ type: "SET_DISCOUNT", discount: value })}
+              onDiscountChange={(value) =>
+                dispatch({ type: "SET_DISCOUNT", discount: value })
+              }
             />
 
             <Card className="space-y-4 p-4">
@@ -245,7 +259,10 @@ export function SellCounter() {
                   placeholder="0"
                   value={amountReceived === 0 ? "" : amountReceived}
                   onChange={(e) =>
-                    dispatch({ type: "SET_AMOUNT_RECEIVED", amount: Math.max(0, Number(e.target.value) || 0) })
+                    dispatch({
+                      type: "SET_AMOUNT_RECEIVED",
+                      amount: Math.max(0, Number(e.target.value) || 0),
+                    })
                   }
                   className="numeric"
                 />
@@ -253,7 +270,9 @@ export function SellCounter() {
 
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Due</span>
-                <span className="numeric font-semibold">{formatCurrency(due)}</span>
+                <span className="numeric font-semibold">
+                  {formatCurrency(due)}
+                </span>
               </div>
 
               <AnimatePresence initial={false}>
@@ -268,7 +287,9 @@ export function SellCounter() {
                   >
                     <DueDatePicker
                       date={dueDate}
-                      onChange={(date) => dispatch({ type: "SET_DUE_DATE", date })}
+                      onChange={(date) =>
+                        dispatch({ type: "SET_DUE_DATE", date })
+                      }
                     />
                   </motion.div>
                 ) : null}
@@ -284,7 +305,7 @@ export function SellCounter() {
         </div>
       </div>
     </PageContainer>
-  );
+  )
 }
 
-export default SellCounter;
+export default SellCounter

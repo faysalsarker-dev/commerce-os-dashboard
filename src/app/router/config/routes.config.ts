@@ -6,6 +6,7 @@ import AllCategory from "@/app/pages/category/AllCategory"
 import ProductDetailPage from "@/app/pages/products/ProductDetailPage"
 import SellCounter from "@/app/pages/sells/SellCounter"
 import RefundCounter from "@/app/pages/refund/RefundCounter"
+import ProfilePage from "@/app/pages/profile/ProfilePage"
 
 
 
@@ -70,12 +71,26 @@ export const routeGroups: RouteGroup[] = [
         page: "product",
         isVisible: false,
       },
+      {
+        path: "profile",
+        name: "Profile",
+        Component: ProfilePage,
+        page: "profile",
+        isVisible: false,
+      }
 
     ]
-  }
+  },
+ 
 
 
 ]
+
+
+
+
+
+
 
 export const routes: RouteConfig[] = routeGroups.flatMap((group) => group.items)
 

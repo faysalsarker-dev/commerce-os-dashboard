@@ -21,6 +21,7 @@ import {
 } from "./product.config"
 import { productFormConfig } from "@/components/modules/Products/Product.config"
 import { productSchema } from "@/types/validations/product/product"
+import { handleAsyncMutation } from "@/utils/asyncHandler"
 
 export default function AllProduct() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false)
@@ -31,9 +32,14 @@ export default function AllProduct() {
     () =>
       createProductTableColumns({
         onOpen: (product) => navigate(`/app/products/${product.id}`),
-        onDelete: (product) => {
-          void deleteProduct({ id: product.id })
-        },
+          onDelete: (product) =>
+                  handleAsyncMutation(() => deleteProduct({ id: product.id }).unwrap(), {
+                    successMessage: "Product deleted",
+                    successDescription: "The product has been successfully deleted.",
+                    errorMessage: "Unable to delete product",
+                    errorDescription: "An error occurred while deleting the product.",
+                  }),
+      
       }),
     [deleteProduct, navigate],
   )
@@ -78,7 +84,6 @@ export default function AllProduct() {
         submitLabel={PRODUCT_PAGE_CONFIG.createDialog.submitLabel}
         onSubmit={(data) => createProduct(data).unwrap()}
       />
-
       <FilterBar filter={filter} filters={PRODUCT_FILTER_CONFIG} />
       <DataTable
         columns={columns}

@@ -19,7 +19,6 @@ export interface CreateRefundPayload {
   items: RefundItemPayload[];
   method?: RefundMethod;
   reason?: string;
-  processedById?: string;
 }
 
 export interface RefundItem {

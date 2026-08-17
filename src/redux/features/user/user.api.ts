@@ -57,6 +57,16 @@ export const userApi = baseApi.injectEndpoints({
       keepUnusedDataFor: 60 * 5,
     }),
 
+
+    getUserProfile: builder.query<ApiResponse<User>, void>({
+      query: () => ({
+        url: `${BASE_URL}/profile`, 
+        method: "GET",
+         providesTags: () => [{ type: "USER", id: "PROFILE" }],
+      keepUnusedDataFor: 60 * 5,
+      }),
+    }),
+
     /**
      * Update User (SUPER_ADMIN)
      */
@@ -95,6 +105,7 @@ export const {
   useCreateUserMutation,
   useGetUsersQuery,
   useLazyGetUsersQuery,
+  useGetUserProfileQuery,
   useGetUserQuery,
   useLazyGetUserQuery,
   useUpdateUserMutation,

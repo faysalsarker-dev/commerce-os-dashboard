@@ -171,10 +171,10 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
     <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
       {defaultTrigger && <DialogTrigger>{defaultTrigger}</DialogTrigger>}
 
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
+      <DialogContent className="sm:max-w-md gap-0 overflow-hidden">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} onKeyDown={guardEnterSubmit}>
-            <DialogHeader className="px-6 pt-6 pb-4 border-b space-y-1">
+            <DialogHeader className=" pb-4 border-b space-y-1">
               <DialogTitle className="text-base">
                 {isEditMode ? "Edit category" : "New category"}
               </DialogTitle>
@@ -185,7 +185,7 @@ export function CategoryDialog({ category, trigger, open, onOpenChange }: Catego
               </DialogDescription>
             </DialogHeader>
 
-            <div className="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
+            <div className="px-2 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
               <FormField
                 control={form.control}
                 name="name"
