@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MoreHorizontal, Pencil, Plus, QrCode, Trash2, Layers } from "lucide-react";
+import { MoreHorizontal, Pencil, Plus, Barcode, Trash2, Layers } from "lucide-react";
 import { Card, CardContent, CardHeader , Button,
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +39,7 @@ export function ColorCard({
 }: ColorCardProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null);
-  const [qrLabel, setQrLabel] = useState<QrLabel | null>(null);
+  const [barcodeLabel, setBarcodeLabel] = useState<QrLabel | null>(null);
   const [deleteColorOpen, setDeleteColorOpen] = useState(false);
   const [deletingVariant, setDeletingVariant] = useState<ProductVariant | null>(null);
 
@@ -135,7 +135,7 @@ export function ColorCard({
                 compact
                 icon={Layers}
                 title="No sizes yet"
-                description="Add a size to start tracking stock and printing QR labels."
+                description="Add a size to start tracking stock and printing barcode labels."
                 action={
                   <Button size="sm" variant="outline" onClick={() => openVariantSheet(null)}>
                     <Plus /> Add size
@@ -172,10 +172,10 @@ export function ColorCard({
     <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={`QR label for ${variant.sku}`}
+                                aria-label={`Print barcode label for ${variant.sku}`}
                                 onClick={() =>
-                                  setQrLabel({
-                                    qrCode: variant.qrCode,
+                                  setBarcodeLabel({
+                                    barcode: variant.qrCode,
                                     sku: variant.sku,
                                     size: variant.size,
                                     colorName: color.colorName,
@@ -185,10 +185,10 @@ export function ColorCard({
                              />
                             }>
                           
-                                <QrCode />
+                                <Barcode />
                              
                             </TooltipTrigger>
-                            <TooltipContent>QR label</TooltipContent>
+                            <TooltipContent>Print barcode labels</TooltipContent>
                           </Tooltip>
                           <Tooltip>
                             <TooltipTrigger 
@@ -246,9 +246,10 @@ export function ColorCard({
       />
 
       <QrPreviewDialog
-        open={Boolean(qrLabel)}
-        onOpenChange={(open) => !open && setQrLabel(null)}
-        label={qrLabel}
+        key={barcodeLabel?.sku ?? "empty"}
+        open={Boolean(barcodeLabel)}
+        onOpenChange={(open) => !open && setBarcodeLabel(null)}
+        label={barcodeLabel}
       />
 
       <ConfirmDialog
