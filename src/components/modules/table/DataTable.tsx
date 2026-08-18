@@ -28,6 +28,7 @@ import "@/types/table/table.types"
 import { DataTablePagination } from "./DataTablePagination"
 import { cn } from "@/lib/utils"
 import type { DataTableProps } from "@/types/table/table.types"
+import EmptyState from "./EmptyState"
 
 const MotionRow = motion(TableRow)
 
@@ -47,7 +48,6 @@ export function DataTable<TData, TValue>({
   columnVisibility: columnVisibilityProp,
   onColumnVisibilityChange: onColumnVisibilityChangeProp,
   defaultColumnVisibility,
-  emptyState,
   onRowClick,
   className,
   toolbar,
@@ -160,14 +160,18 @@ export function DataTable<TData, TValue>({
                     </TableRow>
                   ))
                 ) : rows.length === 0 ? (
-                  <TableRow className="hover:bg-transparent">
-                    <TableCell
-                      colSpan={columnCount}
-                      className="h-56 px-5 text-center text-sm text-muted-foreground"
-                    >
-                      {emptyState ?? "No results."}
-                    </TableCell>
-                  </TableRow>
+               
+
+
+<TableRow className="hover:bg-transparent">
+  <TableCell colSpan={columnCount} className="h-56 px-5">
+    <EmptyState
+      title="No results found"
+      description="There is no data available to display."
+    />
+  </TableCell>
+</TableRow>
+
                 ) : (
                   <AnimatePresence initial={false} mode="popLayout">
                     {rows.map((row) => (

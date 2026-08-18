@@ -1,6 +1,6 @@
 import type { ScannedProduct } from "@/types/data-types/sales/sales.types";
-import cash from "@/assets/cash_payment.png";
-import bkash from "@/assets/bkash_payment.png";
+import cash from "@/assets/system/cash_payment.png";
+import bkash from "@/assets/system/bkash_payment.png";
 
 export interface CartLine extends ScannedProduct {
   id: string; // = variantId, kept as `id` since list rendering/keys expect it

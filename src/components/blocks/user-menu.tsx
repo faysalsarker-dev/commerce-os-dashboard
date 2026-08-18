@@ -166,22 +166,25 @@ import {
   UserIcon,
 } from "lucide-react"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import {
+import { Avatar, AvatarFallback, AvatarImage, Button ,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui"
 import { useAuth } from "@/hooks/auth/useAuth"
 import { LogoutDialog } from "./logout-dialog"
 import { useState } from "react"
+import userImage from "@/assets/system/commerce-os-user.png"
+import { useNavigate } from "react-router"
+
+
 
 export function UserMenu() {
   const { user } = useAuth()
+  const navigate = useNavigate()
  const [openLogoutDialog, setOpenLogoutDialog] = useState<boolean>(false)
 
   const name = user?.name ?? "User"
@@ -201,7 +204,7 @@ export function UserMenu() {
         >
           <span className="relative">
             <Avatar className="size-8 ring-2 ring-background">
-              <AvatarImage src={user?.image ?? ""} alt={name} />
+              <AvatarImage src={user?.image ?? userImage} alt={name} />
               <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
                 {initials}
               </AvatarFallback>
@@ -220,7 +223,7 @@ export function UserMenu() {
       <DropdownMenuContent align="end" sideOffset={10} className="w-64 rounded-2xl p-1.5">
         <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
           <Avatar className="size-10">
-            <AvatarImage src={user?.image as string ?? ""} alt={name} />
+            <AvatarImage src={user?.image as string ?? userImage} alt={name} />
             <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
               {initials}
             </AvatarFallback>
@@ -235,14 +238,15 @@ export function UserMenu() {
 
         <DropdownMenuGroup>
           {[
-            { icon: UserIcon, label: "Profile" },
-            { icon: CreditCardIcon, label: "Billing" },
-            { icon: BellIcon, label: "Notifications" },
-            { icon: SettingsIcon, label: "Settings" },
-          ].map(({ icon: Icon, label }) => (
+            { icon: UserIcon, label: "Profile" , path:"/app/profile"},
+            { icon: CreditCardIcon, label: "Billing" , path:"/app/profile"},
+            { icon: BellIcon, label: "Notifications" , path:"/app/profile"},
+            { icon: SettingsIcon, label: "Settings" , path:"/app/profile"},
+          ].map(({ icon: Icon, label, path }) => (
             <DropdownMenuItem
               key={label}
               className="gap-2.5 rounded-lg px-2.5 py-2 text-sm focus:bg-muted"
+              onClick={() => navigate(path)}
             >
               <Icon className="size-4 text-muted-foreground" />
               {label}

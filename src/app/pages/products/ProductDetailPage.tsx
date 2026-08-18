@@ -1,19 +1,18 @@
 import { useNavigate, useParams } from "react-router"
 import { useState } from "react"
-import { ArrowLeft, Boxes, Pencil } from "lucide-react"
+import { ArrowLeft, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { EntityFormDialog } from "@/components/modules/form/EntityFormDialog"
 import { useGetProductQuery, useUpdateProductMutation } from "@/redux/features/product/product.api"
 import { PageContainer } from "@/components/shared/common"
 import { Metric } from "@/components/modules/Products/PageHeader"
-import { EmptyState } from "@/components/common/EmptyState"
 import { PageHeader } from "@/components/modules/Products/PageHeader"
 import { ProductDetailSkeleton } from "@/components/modules/Products/ProductDetailSkeleton"
 import { ProductColorsSection } from "@/components/modules/Products/ProductColorSection"
 import { productFormConfig } from "@/components/modules/Products/Product.config"
 import { productSchema, type ProductFormValues } from "@/types/validations/product/product"
 import { formatCurrency } from "@/lib/formatCurrency"
-
+import PageEmptyState from "@/components/shared/common/PageEmptyState"
 
 
 export default function ProductDetailPage() {
@@ -35,16 +34,12 @@ export default function ProductDetailPage() {
   if (isError || !product) {
     return (
       <PageContainer className="mx-auto max-w-6xl">
-        <EmptyState
-          icon={Boxes}
-          title="Product not found"
-          description="This product may have been deleted or the link is no longer valid."
-          action={
-            <Button variant="outline" onClick={() => navigate("/products")}>
-              <ArrowLeft /> Back to products
-            </Button>
-          }
-        />
+      <PageEmptyState
+      title="Product not found"
+      description="The product you're looking for doesn't exist or may have been removed."
+      buttonText="Back to Products"
+      navigateTo="/app/products"
+    />
       </PageContainer>
     )
   }
