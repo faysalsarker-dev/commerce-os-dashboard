@@ -593,6 +593,11 @@ export function createColumns<
       enableSorting: sortable,
       enableHiding: hideable,
       size: options.width,
+      meta: {
+        columnType: type,
+        label,
+        className: options.align ? alignClass : undefined,
+      },
       header: ({ column: c }) =>
         sortable ? (
           <DataTableColumnHeader

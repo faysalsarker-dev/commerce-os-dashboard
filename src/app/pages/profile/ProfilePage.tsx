@@ -292,7 +292,7 @@ function ProfileSkeleton() {
 }
 
 function ProfilePage() {
-  const { data, isLoading, isError } = useGetUserProfileQuery({})
+  const { data, isLoading, isError } = useGetUserProfileQuery(undefined)
 const user = data?.data as User | undefined
   const [imageOpen, setImageOpen] = useState(false)
 

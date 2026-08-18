@@ -1,327 +1,45 @@
 
-// import { ChevronLeft, ChevronRight } from "lucide-react"
 
-// import { cn } from "@/lib/utils"
-// import {
-//   Pagination,
-//   PaginationContent,
-//   PaginationEllipsis,
-//   PaginationItem,
-//   PaginationLink,
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui"
-// import { getPaginationRange } from "./getPaginationRange"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
-
-// interface DataTablePaginationProps {
-//   page: number
-//   pageCount: number
-
-//   pageSize: number
-//   totalRows?: number
-
-//   resourceName?: string
-
-//   onPageChange: (page: number) => void
-//   onPageSizeChange?: (size: number) => void
-
-//   pageSizeOptions?: number[]
-//   siblingCount?: number
-// }
-
-// export function DataTablePagination({
-//   page,
-//   pageCount,
-//   pageSize,
-//   totalRows = 0,
-//   resourceName,
-
-//   onPageChange,
-//   onPageSizeChange,
-
-//   pageSizeOptions = [10, 20, 50],
-
-//   siblingCount = 1,
-// }: DataTablePaginationProps) {
-//   const pages = getPaginationRange(page, pageCount, siblingCount)
-
-//   const from = totalRows === 0 ? 0 : (page - 1) * pageSize + 1
-
-//   const to =
-//     totalRows === 0
-//       ? 0
-//       : Math.min(page * pageSize, totalRows)
-
-//   return (
-//     <div className="rounded border bg-card px-5 py-4 shadow">
-//       {/* Desktop */}
-
-//       <div className="hidden md:flex items-center justify-between gap-6">
-//         {/* Left */}
-
-//         <div className="text-sm text-muted-foreground whitespace-nowrap">
-//           Showing{" "}
-//           <span className="font-semibold text-foreground">
-//             {from}-{to}
-//           </span>{" "}
-//           of{" "}
-//           <span className="font-semibold text-foreground">
-//             {totalRows}
-//           </span>{" "}
-//           {resourceName}
-//         </div>
-
-//         {/* Right */}
-
-//         <div className="flex items-center gap-6">
-//           {onPageSizeChange && (
-//             <div className="flex items-center gap-2">
-//               <span className="text-sm text-muted-foreground">
-//                 Show
-//               </span>
-
-//               <Select
-//                 value={String(pageSize)}
-//                 onValueChange={(value) =>
-//                   onPageSizeChange(Number(value))
-//                 }
-//               >
-//                 <SelectTrigger className="h-9 w-[78px]">
-//                   <SelectValue />
-//                 </SelectTrigger>
-
-//                 <SelectContent side="top">
-//                   {pageSizeOptions.map((size) => (
-//                     <SelectItem
-//                       key={size}
-//                       value={String(size)}
-//                     >
-//                       {size}
-//                     </SelectItem>
-//                   ))}
-//                 </SelectContent>
-//               </Select>
-
-//               <span className="text-sm text-muted-foreground">
-//                 entries
-//               </span>
-//             </div>
-//           )}
-
-//           <div className="text-sm whitespace-nowrap text-muted-foreground">
-//             Page{" "}
-//             <span className="font-semibold text-foreground">
-//               {page}
-//             </span>{" "}
-//             of{" "}
-//             <span className="font-semibold text-foreground">
-//               {pageCount}
-//             </span>
-//           </div>
-
-//           <Pagination className="mx-0 w-auto">
-//             <PaginationContent>
-//               {/* Previous */}
-
-//               <PaginationItem className="mr-3">
-//                 <PaginationLink
-//                   aria-label="Previous Page"
-//                   onClick={(e) => {
-//                     e.preventDefault()
-
-//                     if (page > 1)
-//                       onPageChange(page - 1)
-//                   }}
-//                   className={cn(
-//                     "h-9 px-3 transition-all",
-//                     page <= 1 &&
-//                       "pointer-events-none opacity-40"
-//                   )}
-//                 >
-//                   <ChevronLeft className="mr-1 h-4 w-4" />
-//                   Prev
-//                 </PaginationLink>
-//               </PaginationItem>
-
-//               {/* Numbers */}
-
-//               {pages.map((item, index) =>
-//                 item === "ellipsis" ? (
-//                   <PaginationItem key={index}>
-//                     <PaginationEllipsis />
-//                   </PaginationItem>
-//                 ) : (
-//                   <PaginationItem key={item}>
-//                     <PaginationLink
-//                       href="#"
-//                       isActive={item === page}
-//                       onClick={(e) => {
-//                         e.preventDefault()
-
-//                         onPageChange(item)
-//                       }}
-//                       className={cn(
-//                         "h-9 min-w-9 rounded-md transition-all",
-
-//                         item === page &&
-//                           "bg-primary text-primary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground"
-//                       )}
-//                     >
-//                       {item}
-//                     </PaginationLink>
-//                   </PaginationItem>
-//                 )
-//               )}
-
-//               {/* Next */}
-
-//               <PaginationItem>
-//                 <PaginationLink
-//                   href="#"
-//                   aria-label="Next Page"
-//                   onClick={(e) => {
-//                     e.preventDefault()
-
-//                     if (page < pageCount)
-//                       onPageChange(page + 1)
-//                   }}
-//                   className={cn(
-//                     "h-9 px-3 transition-all",
-//                     page >= pageCount &&
-//                       "pointer-events-none opacity-40"
-//                   )}
-//                 >
-//                   Next
-//                   <ChevronRight className="ml-1 h-4 w-4" />
-//                 </PaginationLink>
-//               </PaginationItem>
-//             </PaginationContent>
-//           </Pagination>
-//         </div>
-//       </div>
-
-//       {/* Mobile */}
-
-//       <div className="flex flex-col gap-4 md:hidden">
-//         <div className="flex items-center justify-between text-sm">
-//           <span className="text-muted-foreground">
-//             {from}-{to} of {totalRows}
-//           </span>
-
-//           <span className="font-medium">
-//             {page}/{pageCount}
-//           </span>
-//         </div>
-
-//         <div className="flex items-center justify-between">
-//           <PaginationLink
-//             href="#"
-//             onClick={(e) => {
-//               e.preventDefault()
-
-//               if (page > 1)
-//                 onPageChange(page - 1)
-//             }}
-//             className={cn(
-//               page <= 1 &&
-//                 "pointer-events-none opacity-40"
-//             )}
-//           >
-//             <ChevronLeft className="mr-1 h-4 w-4" />
-//             Prev
-//           </PaginationLink>
-
-//           <PaginationLink
-//             href="#"
-//             onClick={(e) => {
-//               e.preventDefault()
-
-//               if (page < pageCount)
-//                 onPageChange(page + 1)
-//             }}
-//             className={cn(
-//               page >= pageCount &&
-//                 "pointer-events-none opacity-40"
-//             )}
-//           >
-//             Next
-//             <ChevronRight className="ml-1 h-4 w-4" />
-//           </PaginationLink>
-//         </div>
-
-//         {onPageSizeChange && (
-//           <div className="flex justify-center">
-//             <Select
-//               value={String(pageSize)}
-//               onValueChange={(value) =>
-//                 onPageSizeChange(Number(value))
-//               }
-//             >
-//               <SelectTrigger className="w-[120px]">
-//                 <SelectValue />
-//               </SelectTrigger>
-
-//               <SelectContent>
-//                 {pageSizeOptions.map((size) => (
-//                   <SelectItem
-//                     key={size}
-//                     value={String(size)}
-//                   >
-//                     {size} rows
-//                   </SelectItem>
-//                 ))}
-//               </SelectContent>
-//             </Select>
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   )
-// }
-
-import { ChevronLeft, ChevronRight } from "lucide-react"
-
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui"
-import { getPaginationRange } from "./getPaginationRange"
+} from "@/components/ui/select";
+import { getPaginationRange } from "./getPaginationRange";
 
 interface DataTablePaginationProps {
-  page: number
-  pageCount: number
+  page: number;
+  pageCount: number;
 
-  pageSize: number
-  totalRows?: number
+  pageSize: number;
+  totalRows?: number;
 
-  resourceName?: string
+  resourceName?: string;
 
-  onPageChange: (page: number) => void
-  onPageSizeChange?: (size: number) => void
+  onPageChange: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
 
-  pageSizeOptions?: number[]
-  siblingCount?: number
+  pageSizeOptions?: number[];
+  siblingCount?: number;
 }
+
+const navBtn =
+  "inline-flex h-9 select-none items-center justify-center gap-1.5 rounded-lg border border-border/60 bg-background px-3 text-sm font-medium text-muted-foreground shadow-xs transition-all hover:bg-muted hover:text-foreground active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
+
+const edgeBtn =
+  "inline-flex size-9 shrink-0 select-none items-center justify-center rounded-lg border border-border/60 bg-background text-muted-foreground shadow-xs transition-all hover:bg-muted hover:text-foreground active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
 
 export function DataTablePagination({
   page,
   pageCount,
   pageSize,
   totalRows = 0,
-  
+  resourceName = "results",
 
   onPageChange,
   onPageSizeChange,
@@ -330,210 +48,227 @@ export function DataTablePagination({
 
   siblingCount = 1,
 }: DataTablePaginationProps) {
-   const pages = getPaginationRange(page, pageCount, siblingCount)
-  
- 
-  const from = totalRows === 0 ? 0 : (page - 1) * pageSize + 1
+  if (!pageCount || pageCount <= 1) {
+    return null;
+  }
 
-  const to = totalRows === 0 ? 0 : Math.min(page * pageSize, totalRows)
+  const pages = getPaginationRange(page, pageCount, siblingCount);
+  const mobilePages = getPaginationRange(page, pageCount, 0);
 
-  const navLink =
-    "h-9 rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+  const from = totalRows === 0 ? 0 : (page - 1) * pageSize + 1;
+  const to = totalRows === 0 ? 0 : Math.min(page * pageSize, totalRows);
 
-  return (
-    <div className="rounded-2xl border border-border/60 bg-card px-4 py-3 shadow-sm ring-1 ring-black/2 sm:px-5">
-      {/* Desktop */}
+  const isFirst = page <= 1;
+  const isLast = page >= pageCount;
 
-      <div className="hidden items-center justify-between gap-6 md:flex">
-        {/* Left */}
-<div className="flex items-center gap-6">
- <div className="hidden text-sm whitespace-nowrap text-muted-foreground lg:block">
-            Page <span className="font-semibold text-foreground">{page}</span>{" "}
-            of <span className="font-semibold text-foreground">{pageCount}</span>
-          </div>
+  const restoreScroll = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
-   {onPageSizeChange && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Rows</span>
+  const handlePageChange = (nextPage: number) => {
+    if (nextPage !== page) {
+      restoreScroll();
+    }
+    onPageChange(nextPage);
+  };
 
-              <Select
-                value={String(pageSize)}
-                onValueChange={(value) => onPageSizeChange(Number(value))}
-              >
-                <SelectTrigger className="h-9 w-19 rounded-lg border-border/60 bg-muted/40 text-sm font-medium">
-                  <SelectValue />
-                </SelectTrigger>
+  const handlePageSizeChange = (nextSize: number) => {
+    restoreScroll();
+    onPageSizeChange?.(nextSize);
+  };
 
-                <SelectContent side="top" className="rounded-xl">
-                  {pageSizeOptions.map((size) => (
-                    <SelectItem
-                      key={size}
-                      value={String(size)}
-                      className="rounded-lg"
-                    >
-                      {size}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+  const goPrev = () => {
+    if (!isFirst) handlePageChange(page - 1);
+  };
+  const goNext = () => {
+    if (!isLast) handlePageChange(page + 1);
+  };
 
-         
-</div>
-
-        {/* Right */}
-
-       <Pagination className="mx-0 w-auto">
-  <PaginationContent className="gap-0">
-    {/* Previous */}
-    <PaginationItem className="mr-4">
-      <PaginationLink
-        aria-label="Previous Page"
-        onClick={(e) => {
-          e.preventDefault();
-
-          if (page > 1) onPageChange(page - 1);
-        }}
-        className={cn(
-          navLink,
-          "h-9 gap-1.5 rounded-lg border border-border/60 bg-background px-3",
-          page <= 1 && "pointer-events-none opacity-40",
-        )}
-      >
-        <ChevronLeft className="size-4" />
-        Prev
-      </PaginationLink>
-    </PaginationItem>
-
-    {/* Page Numbers */}
-    <div className="flex items-center gap-1 rounded-xl bg-muted/40 p-1">
-      {pages.map((item, index) =>
+  const renderNumbers = (items: ReturnType<typeof getPaginationRange>, compact = false) => (
+    <div
+      className={cn(
+        "flex items-center gap-1 rounded-xl bg-muted/50 p-1",
+        compact && "gap-0.5",
+      )}
+    >
+      {items.map((item, index) =>
         item === "ellipsis" ? (
-          <PaginationItem key={index}>
-            <PaginationEllipsis className="size-9 text-muted-foreground" />
-          </PaginationItem>
+          <span
+            key={`e-${index}`}
+            aria-hidden
+            className="flex size-9 items-center justify-center text-sm text-muted-foreground/70"
+          >
+            &#8230;
+          </span>
         ) : (
-          <PaginationItem key={item}>
-            <PaginationLink
-              href="#"
-              isActive={item === page}
-              onClick={(e) => {
-                e.preventDefault();
-                onPageChange(item);
-              }}
-              className={cn(
-                "size-9 rounded-lg text-sm font-medium transition-all",
-                item === page
-                  ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground"
-                  : "text-muted-foreground hover:bg-background hover:text-foreground",
-              )}
-            >
-              {item}
-            </PaginationLink>
-          </PaginationItem>
+          <button
+            key={item}
+            type="button"
+            aria-label={`Page ${item}`}
+            aria-current={item === page ? "page" : undefined}
+            onClick={() => handlePageChange(item)}
+            className={cn(
+              "inline-flex size-9 items-center justify-center rounded-lg text-sm font-medium tabular-nums transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+              item === page
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:bg-background hover:text-foreground hover:shadow-xs active:scale-[0.95]",
+            )}
+          >
+            {item}
+          </button>
         ),
       )}
     </div>
+  );
 
-    {/* Next */}
-    <PaginationItem className="ml-4">
-      <PaginationLink
-        href="#"
-        aria-label="Next Page"
-        onClick={(e) => {
-          e.preventDefault();
-
-          if (page < pageCount) onPageChange(page + 1);
-        }}
-        className={cn(
-          navLink,
-          "h-9 gap-1.5 rounded-lg border border-border/60 bg-background px-3",
-          page >= pageCount && "pointer-events-none opacity-40",
-        )}
+  const rowsSelect = (labelSuffix = "") =>
+    onPageSizeChange ? (
+      <Select
+        value={String(pageSize)}
+        onValueChange={(value) => handlePageSizeChange(Number(value))}
       >
-        Next
-        <ChevronRight className="size-4" />
-      </PaginationLink>
-    </PaginationItem>
-  </PaginationContent>
-</Pagination>
-      </div>
+        <SelectTrigger
+          aria-label="Rows per page"
+          className="h-9 w-auto min-w-[4.5rem] gap-1.5 rounded-lg border-border/60 bg-muted/40 text-sm font-medium"
+        >
+          <SelectValue />
+        </SelectTrigger>
 
-      {/* Mobile */}
+        <SelectContent side="top" className="rounded-xl">
+          {pageSizeOptions.map((size) => (
+            <SelectItem key={size} value={String(size)} className="rounded-lg">
+              {size}
+              {labelSuffix}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    ) : null;
 
-      <div className="flex flex-col gap-3 md:hidden">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">
-            {from}-{to} of {totalRows}
-          </span>
+  return (
+    <nav
+      aria-label="Pagination"
+      className="rounded-2xl border border-border/60 bg-card px-3 py-3 shadow-sm sm:px-5 sm:py-4"
+    >
+      {/* ---------- Desktop / tablet ---------- */}
+      <div className="hidden items-center justify-between gap-4 md:flex">
+        <div className="flex min-w-0 items-center gap-4 lg:gap-6">
+          {onPageSizeChange && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm whitespace-nowrap text-muted-foreground">
+                Rows
+              </span>
+              {rowsSelect()}
+            </div>
+          )}
 
-          <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold">
-            {page}/{pageCount}
-          </span>
+          <p className="hidden text-sm whitespace-nowrap text-muted-foreground lg:block">
+            Showing{" "}
+            <span className="font-semibold tabular-nums text-foreground">
+              {from}&#8211;{to}
+            </span>{" "}
+            of{" "}
+            <span className="font-semibold tabular-nums text-foreground">
+              {totalRows}
+            </span>{" "}
+            {resourceName}
+          </p>
         </div>
 
-        <div className="flex items-center justify-between gap-2">
-          <PaginationLink
-            href="#"
-            onClick={(e) => {
-              e.preventDefault()
-
-              if (page > 1) onPageChange(page - 1)
-            }}
-            className={cn(
-              navLink,
-              "flex-1 gap-1 border border-border/60",
-              page <= 1 && "pointer-events-none opacity-40"
-            )}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label="First page"
+            disabled={isFirst}
+            onClick={() => handlePageChange(1)}
+            className={cn(edgeBtn, "hidden lg:inline-flex", isFirst && "pointer-events-none opacity-40")}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronsLeft className="size-4" />
+          </button>
+
+          <button
+            type="button"
+            aria-label="Previous page"
+            disabled={isFirst}
+            onClick={goPrev}
+            className={cn(navBtn, isFirst && "pointer-events-none opacity-40")}
+          >
+            <ChevronLeft className="size-4" />
             Prev
-          </PaginationLink>
+          </button>
 
-          <PaginationLink
-            href="#"
-            onClick={(e) => {
-              e.preventDefault()
+          <div className="mx-1">{renderNumbers(pages)}</div>
 
-              if (page < pageCount) onPageChange(page + 1)
-            }}
-            className={cn(
-              navLink,
-              "flex-1 gap-1 border border-border/60",
-              page >= pageCount && "pointer-events-none opacity-40"
-            )}
+          <button
+            type="button"
+            aria-label="Next page"
+            disabled={isLast}
+            onClick={goNext}
+            className={cn(navBtn, isLast && "pointer-events-none opacity-40")}
           >
             Next
-            <ChevronRight className="h-4 w-4" />
-          </PaginationLink>
+            <ChevronRight className="size-4" />
+          </button>
+
+          <button
+            type="button"
+            aria-label="Last page"
+            disabled={isLast}
+            onClick={() => handlePageChange(pageCount)}
+            className={cn(edgeBtn, "hidden lg:inline-flex", isLast && "pointer-events-none opacity-40")}
+          >
+            <ChevronsRight className="size-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* ---------- Mobile ---------- */}
+      <div className="flex flex-col gap-3 md:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <span className="min-w-0 truncate text-xs text-muted-foreground">
+            <span className="font-semibold tabular-nums text-foreground">
+              {from}&#8211;{to}
+            </span>{" "}
+            of{" "}
+            <span className="font-semibold tabular-nums text-foreground">
+              {totalRows}
+            </span>{" "}
+            {resourceName}
+          </span>
+
+          {rowsSelect(" / page")}
         </div>
 
-        {onPageSizeChange && (
-          <div className="flex justify-center">
-            <Select
-              value={String(pageSize)}
-              onValueChange={(value) => onPageSizeChange(Number(value))}
-            >
-              <SelectTrigger className="h-9 w-32.5 rounded-lg border-border/60 bg-muted/40 text-sm font-medium">
-                <SelectValue />
-              </SelectTrigger>
+        <div className="flex items-center justify-center">
+          {renderNumbers(mobilePages, true)}
+        </div>
 
-              <SelectContent className="rounded-xl">
-                {pageSizeOptions.map((size) => (
-                  <SelectItem
-                    key={size}
-                    value={String(size)}
-                    className="rounded-lg"
-                  >
-                    {size} rows
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            aria-label="Previous page"
+            disabled={isFirst}
+            onClick={goPrev}
+            className={cn(navBtn, "h-10 w-full", isFirst && "pointer-events-none opacity-40")}
+          >
+            <ChevronLeft className="size-4" />
+            Prev
+          </button>
+
+          <button
+            type="button"
+            aria-label="Next page"
+            disabled={isLast}
+            onClick={goNext}
+            className={cn(navBtn, "h-10 w-full", isLast && "pointer-events-none opacity-40")}
+          >
+            Next
+            <ChevronRight className="size-4" />
+          </button>
+        </div>
       </div>
-    </div>
-  )
+    </nav>
+  );
 }

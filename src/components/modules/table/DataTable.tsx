@@ -29,6 +29,8 @@ import { DataTablePagination } from "./DataTablePagination"
 import { cn } from "@/lib/utils"
 import type { DataTableProps } from "@/types/table/table.types"
 import EmptyState from "./EmptyState"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { DataTableCard } from "./DataTableCard"
 
 const MotionRow = motion(TableRow)
 
@@ -100,6 +102,8 @@ export function DataTable<TData, TValue>({
   const currentPage = paginationState.pageIndex + 1
   const totalRows = manualPagination ? (meta?.total ?? data.length) : data.length
   const columnCount = table.getVisibleLeafColumns().length
+  const isMobile = useIsMobile()
+  const loadingCount = Math.min(paginationState.pageSize, 10)
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -109,111 +113,130 @@ export function DataTable<TData, TValue>({
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm ring-1 ring-black/2">
-        <ScrollArea className="w-full overflow-hidden" >
-          <div className="min-w-max">
-            <Table>
-              <TableHeader className="[&_tr]:border-b [&_tr]:border-border/60 border-b-2 border-b-primary/30">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow
-                    key={headerGroup.id}
-                    className="bg-muted/50 hover:bg-muted/80 "
-                  >
-                    {headerGroup.headers.map((header) => (
-                      <TableHead
-                        key={header.id}
-                        className={cn(
-                          "h-14 px-5 text-[11px] font-semibold tracking-[0.08em] whitespace-nowrap text-muted-foreground uppercase",
-                          header.column.columnDef.meta?.className
-                        )}
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-
-              <TableBody>
-                {isLoading ? (
-                  Array.from({
-                    length: Math.min(paginationState.pageSize, 10),
-                  }).map((_, i) => (
+      {/* ---- Mobile: card layout ---- */}
+      {isMobile ? (
+        <>
+          {!isLoading && rows.length === 0 ? (
+            <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm ring-1 ring-black/2">
+              <EmptyState
+                title="No results found"
+                description="There is no data available to display."
+              />
+            </div>
+          ) : (
+            <DataTableCard
+              rows={rows}
+              columns={table.getVisibleLeafColumns()}
+              isLoading={isLoading}
+              loadingCount={loadingCount}
+              onRowClick={onRowClick}
+            />
+          )}
+        </>
+      ) : (
+        /* ---- Desktop: table layout (unchanged) ---- */
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm ring-1 ring-black/2">
+          <ScrollArea className="w-full overflow-hidden" >
+            <div className="min-w-max">
+              <Table>
+                <TableHeader className="[&_tr]:border-b [&_tr]:border-border/60 border-b-2 border-b-primary/30">
+                  {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow
-                      key={`skeleton-${i}`}
-                      className="border-border/50 hover:bg-transparent"
+                      key={headerGroup.id}
+                      className="bg-muted/50 hover:bg-muted/80 "
                     >
-                      {columns.map((_, j) => (
-                        <TableCell key={j} className="px-5 py-4">
-                          <Skeleton
-                            className={`h-3.5 rounded-full ${
-                              ["w-2/3", "w-full", "w-3/4", "w-1/2"][j % 4]
-                            }`}
-                          />
-                        </TableCell>
+                      {headerGroup.headers.map((header) => (
+                        <TableHead
+                          key={header.id}
+                          className={cn(
+                            "h-14 px-5 text-[11px] font-semibold tracking-[0.08em] whitespace-nowrap text-muted-foreground uppercase",
+                            header.column.columnDef.meta?.className
+                          )}
+                        >
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
                       ))}
                     </TableRow>
-                  ))
-                ) : rows.length === 0 ? (
-               
+                  ))}
+                </TableHeader>
 
-
-<TableRow className="hover:bg-transparent">
-  <TableCell colSpan={columnCount} className="h-56 px-5">
-    <EmptyState
-      title="No results found"
-      description="There is no data available to display."
-    />
-  </TableCell>
-</TableRow>
-
-                ) : (
-                  <AnimatePresence initial={false} mode="popLayout">
-                    {rows.map((row) => (
-                      <MotionRow
-                        key={row.id}
-                        layout
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        data-state={row.getIsSelected() ? "selected" : undefined}
-                        onClick={() => onRowClick?.(row.original)}
-                        className={cn(
-                          "group border-b-2 transition-colors ",
-                          "hover:bg-muted/50 data-[state=selected]:bg-primary/5",
-                          onRowClick && "cursor-pointer"
-                        )}
+                <TableBody>
+                  {isLoading ? (
+                    Array.from({ length: loadingCount }).map((_, i) => (
+                      <TableRow
+                        key={`skeleton-${i}`}
+                        className="border-border/50 hover:bg-transparent"
                       >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell
-                            key={cell.id}
-                            className={cn(
-                              "px-5 py-3.5 text-sm font-medium text-foreground/90",
-                              cell.column.columnDef.meta?.className
-                            )}
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
+                        {columns.map((_, j) => (
+                          <TableCell key={j} className="px-5 py-4">
+                            <Skeleton
+                              className={`h-3.5 rounded-full ${
+                                ["w-2/3", "w-full", "w-3/4", "w-1/2"][j % 4]
+                              }`}
+                            />
                           </TableCell>
                         ))}
-                      </MotionRow>
-                    ))}
-                  </AnimatePresence>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
-      </div>
+                      </TableRow>
+                    ))
+                  ) : rows.length === 0 ? (
+
+                    <TableRow className="hover:bg-transparent">
+                      <TableCell colSpan={columnCount} className="h-56 px-5">
+                        <EmptyState
+                          title="No results found"
+                          description="There is no data available to display."
+                        />
+                      </TableCell>
+                    </TableRow>
+
+                  ) : (
+                    <AnimatePresence initial={false} mode="popLayout">
+                      {rows.map((row) => (
+                        <MotionRow
+                          key={row.id}
+                          layout
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                          data-state={row.getIsSelected() ? "selected" : undefined}
+                          onClick={() => onRowClick?.(row.original)}
+                          className={cn(
+                            "group border-b-2 transition-colors ",
+                            "hover:bg-muted/50 data-[state=selected]:bg-primary/5",
+                            onRowClick && "cursor-pointer"
+                          )}
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell
+                              key={cell.id}
+                              className={cn(
+                                "px-5 py-3.5 text-sm font-medium text-foreground/90",
+                                cell.column.columnDef.meta?.className
+                              )}
+                            >
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </TableCell>
+                          ))}
+                        </MotionRow>
+                      ))}
+                    </AnimatePresence>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </div>
+      )}
 
       <DataTablePagination
         page={currentPage}

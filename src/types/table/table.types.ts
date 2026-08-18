@@ -7,6 +7,8 @@ declare module "@tanstack/react-table" {
   interface ColumnMeta<TData, TValue> {
     label?: string
     className?: string
+    /** Used internally by DataTableCard to auto-derive mobile card layout. */
+    columnType?: string
   }
 }
 
