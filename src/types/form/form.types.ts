@@ -102,6 +102,8 @@ export interface ImageUploadFieldConfig<
   maxSizeMb?: number
   /** e.g. ["image/png", "image/jpeg"] */
   accept?: string[]
+  /** Hide the drop area after the maximum number of images has been selected. */
+  hideUploaderWhenMaxed?: boolean
 }
 
 export type FieldConfig<T extends FieldValues> =

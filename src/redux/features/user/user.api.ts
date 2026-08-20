@@ -14,7 +14,7 @@ export const userApi = baseApi.injectEndpoints({
     /**
      * Create User (SUPER_ADMIN)
      */
-    createUser: builder.mutation<ApiResponse<User>, CreateUserPayload>({
+    createUser: builder.mutation<ApiResponse<User>, CreateUserPayload | FormData>({
       query: (data) => ({
         url: BASE_URL,
         method: "POST",

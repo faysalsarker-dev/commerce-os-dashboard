@@ -19,6 +19,7 @@ import {
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 import type { EntityFormConfig } from "@/types/form/form.types"
 import { EntityFormField } from "./EntityFormField"
 import { handleAsyncMutation } from "@/utils/asyncHandler"
@@ -33,6 +34,8 @@ interface EntityFormDialogProps<TValues extends FieldValues, TResult> {
   defaultValues?: DefaultValues<TValues>
   onSubmit: (data: TValues) => Promise<TResult>
   submitLabel?: string
+  /** Optional sizing/layout override for forms that need more room. */
+  contentClassName?: string
 }
 
 /**
@@ -50,6 +53,7 @@ export function EntityFormDialog<TValues extends FieldValues, TResult>({
   defaultValues,
   onSubmit,
   submitLabel = "Save",
+  contentClassName,
 }: EntityFormDialogProps<TValues, TResult>) {
   const form = useForm<TValues>({
     resolver: zodResolver(schema as never) as Resolver<TValues>,
@@ -77,7 +81,12 @@ export function EntityFormDialog<TValues extends FieldValues, TResult>({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent
+        className={cn(
+          "max-h-[90vh] overflow-y-auto sm:max-w-lg",
+          contentClassName
+        )}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}

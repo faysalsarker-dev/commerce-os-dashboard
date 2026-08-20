@@ -1,4 +1,4 @@
-import { PackageIcon, LayoutGridIcon, ScanBarcodeIcon, Undo } from "lucide-react"
+import { PackageIcon, LayoutGridIcon, ScanBarcodeIcon, Undo, UsersRound } from "lucide-react"
 
 import type { RouteConfig } from "@/types/routes/route.types"
 import AllProduct from "@/app/pages/products/AllProduct"
@@ -7,6 +7,7 @@ import ProductDetailPage from "@/app/pages/products/ProductDetailPage"
 import SellCounter from "@/app/pages/sells/SellCounter"
 import RefundCounter from "@/app/pages/refund/RefundCounter"
 import ProfilePage from "@/app/pages/profile/ProfilePage"
+import AllUser from "@/app/pages/user/AllUser"
 
 
 
@@ -63,6 +64,13 @@ export const routeGroups: RouteGroup[] = [
         Component: AllCategory,
         icon: LayoutGridIcon,
         page: "category",
+      },
+      {
+        path: "users",
+        name: "Users",
+        Component: AllUser,
+        icon: UsersRound,
+        page: "users",
       },
       {
         path: "products/:id",

@@ -36,6 +36,8 @@ export function ImageUploadField({
     return field.value ? [field.value] : []
   }, [field.value])
   const [error, setError] = useState<string | null>(null)
+  const maxFiles = config.maxFiles ?? Infinity
+  const isAtMaxFiles = values.length >= maxFiles
 
   // revoke local object URLs on unmount to avoid memory leaks
   useEffect(() => {
@@ -91,29 +93,31 @@ export function ImageUploadField({
 
   return (
     <div className="space-y-3">
-      <div
-        {...getRootProps()}
-        className={cn(
-          "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 text-center transition-colors",
-          isDragActive
-            ? "border-primary bg-primary/5"
-            : "border-muted-foreground/25",
-          config.disabled && "pointer-events-none opacity-50"
-        )}
-      >
-        <input {...getInputProps()} />
-        <ImagePlus className="mb-2 h-6 w-6 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">
-          {isDragActive
-            ? "Drop images here"
-            : "Drag & drop, or click to browse"}
-        </p>
-        {config.maxFiles && (
-          <p className="mt-1 text-xs text-muted-foreground">
-            Up to {config.maxFiles} image(s), max {config.maxSizeMb ?? 5}MB each
+      {!(config.hideUploaderWhenMaxed && isAtMaxFiles) && (
+        <div
+          {...getRootProps()}
+          className={cn(
+            "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 text-center transition-colors",
+            isDragActive
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25",
+            config.disabled && "pointer-events-none opacity-50"
+          )}
+        >
+          <input {...getInputProps()} />
+          <ImagePlus className="mb-2 h-6 w-6 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            {isDragActive
+              ? "Drop images here"
+              : "Drag & drop, or click to browse"}
           </p>
-        )}
-      </div>
+          {config.maxFiles && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Up to {config.maxFiles} image(s), max {config.maxSizeMb ?? 5}MB each
+            </p>
+          )}
+        </div>
+      )}
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 

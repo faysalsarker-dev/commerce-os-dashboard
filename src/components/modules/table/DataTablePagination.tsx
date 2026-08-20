@@ -131,7 +131,7 @@ export function DataTablePagination({
       >
         <SelectTrigger
           aria-label="Rows per page"
-          className="h-9 w-auto min-w-[4.5rem] gap-1.5 rounded-lg border-border/60 bg-muted/40 text-sm font-medium"
+          className="h-9 w-auto min-w-18 gap-1.5 rounded-lg border-border/60 bg-muted/40 text-sm font-medium"
         >
           <SelectValue />
         </SelectTrigger>
