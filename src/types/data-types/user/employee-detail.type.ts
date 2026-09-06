@@ -8,6 +8,7 @@ export interface EmployeeDetail {
   baseSalary: number;
 
   nidNumber: string | null;
+  birthCertificateNumber:string | null
   address: string | null;
   emergencyContact: string | null;
 

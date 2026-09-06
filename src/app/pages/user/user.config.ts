@@ -1,5 +1,5 @@
 import { search, select } from "@/components/modules/filter"
-import { column, createColumns } from "@/components/modules/table/column-builder"
+import { action, column, createColumns } from "@/components/modules/table/column-builder"
 import { EmployeeStatus, Role } from "@/types/data-types/enums"
 import type { User } from "@/types/data-types/user/user.type"
 import { createForm } from "@/components/modules/form/createForm"
@@ -138,21 +138,27 @@ export const userFormConfig = createForm<UserFormValues>()
 const humanize = (value: string | null | undefined) =>
   value ? value.replaceAll("_", " ") : "-"
 
-export const USER_TABLE_COLUMNS = createColumns<User>({
-  resource: "users",
-  columns: [
-    column.image("image", {
-      label: "Photo",
-      size: 40,
-      rounded: "full",
-    }),
-    column("name"),
-    column("email"),
-    column("phone"),
-    column("role", { formatter: (value) => humanize(value as string) }),
-    column.status("status", {
-      formatter: (value) => humanize(value as string),
-    }),
-    column.date("createdAt", { label: "Joined" }),
-  ],
-})
+export const createUserTableColumns = ({
+  onOpen,
+}: {
+  onOpen: (user: User) => void
+}) =>
+  createColumns<User>({
+    resource: "users",
+    columns: [
+      column.image("image", {
+        label: "Photo",
+        size: 40,
+        rounded: "full",
+      }),
+      column("name"),
+      column("email"),
+      column("phone"),
+      column("role", { formatter: (value) => humanize(value as string) }),
+      column.status("status", {
+        formatter: (value) => humanize(value as string),
+      }),
+      column.date("createdAt", { label: "Joined" }),
+      column.actions([action.view<User>({ onClick: onOpen })]),
+    ],
+  })

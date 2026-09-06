@@ -5,18 +5,27 @@ import { createRole, createSuperRole } from "./createRole";
 
 export const ROLE_PERMISSIONS: RolePermissions = {
   [Role.SUPER_ADMIN]: createSuperRole(),
-
-  [Role.ONLINE_SALESMAN]: createRole({
-    product: ["view", "edit"],
-    inventory: ["view"],
+  [Role.ADMIN]: createSuperRole(),
+  [Role.MANAGER]: createRole({
+    product: ["view", "create", "edit"],
+    inventory: ["view", "edit"],
+    orders: ["view", "manage"],
+    category: ["view", "create", "edit"],
+    sell: ["view", "create"],
+    refund: ["view", "refund"],
+    reports: ["view"],
+    users: ["view"],
   }),
-
-  [Role.OFFLINE_SALESMAN]: createRole({
-    product: ["view"],
-    inventory: ["view"],
-  }),
-
   [Role.MARKETER]: createRole({
     product: ["view"],
+    category: ["view"],
+    reports: ["view"],
+  }),
+  [Role.SALESMAN]: createRole({
+    product: ["view"],
+    category: ["view"],
+    sell: ["view", "create"],
+    refund: ["view", "refund"],
+    inventory: ["view"],
   }),
 }

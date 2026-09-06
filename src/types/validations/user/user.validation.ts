@@ -42,7 +42,7 @@ export const USER_FORM_DEFAULT_VALUES: UserFormValues = {
   phone: "",
   password: "",
   confirmPassword: "",
-  role: Role.OFFLINE_SALESMAN,
+  role: Role.SALESMAN,
   status: EmployeeStatus.ACTIVE,
   image: [],
   designation: "",

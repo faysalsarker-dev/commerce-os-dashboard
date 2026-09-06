@@ -24,11 +24,19 @@ interface QrPreviewDialogProps {
   label: QrLabel | null;
 }
 
+const INCH_TO_MM = 25.4;
+const roundMm = (value: number) => Number(value.toFixed(1));
+const DEFAULT_STICKER_SIZE = {
+  width: roundMm(1.5 * INCH_TO_MM),
+  height: roundMm(1 * INCH_TO_MM),
+};
+
 const LABEL_PRESETS = {
+  sticker: { name: "1.5 × 1 in sticker", width: DEFAULT_STICKER_SIZE.width, height: DEFAULT_STICKER_SIZE.height },
   small: { name: "Small", width: 30, height: 20 },
   medium: { name: "Medium", width: 40, height: 25 },
   large: { name: "Large", width: 50, height: 30 },
-  custom: { name: "Custom", width: 40, height: 25 },
+  custom: { name: "Custom", width: DEFAULT_STICKER_SIZE.width, height: DEFAULT_STICKER_SIZE.height },
 } as const;
 
 type LabelPreset = keyof typeof LABEL_PRESETS;
@@ -59,7 +67,7 @@ const FIELD_LABELS = {
 type FieldKey = keyof typeof FIELD_LABELS;
 type FieldVisibility = Record<FieldKey, boolean>;
 
-const DEFAULT_FIELDS: FieldVisibility = { name: true, codeValue: true, sku: true, size: true };
+const DEFAULT_FIELDS: FieldVisibility = { name: true, codeValue: false, sku: true, size: true };
 
 const escapeHtml = (value: string) =>
   value.replace(/[&<>'"]/g, (character) => {
@@ -69,10 +77,10 @@ const escapeHtml = (value: string) =>
 
 export function QrPreviewDialog({ open, onOpenChange, label }: QrPreviewDialogProps) {
   const [quantity, setQuantity] = useState(1);
-  const [preset, setPreset] = useState<LabelPreset>("medium");
-  const [width, setWidth] = useState<number>(LABEL_PRESETS.medium.width);
-  const [height, setHeight] = useState<number>(LABEL_PRESETS.medium.height);
-  const [rotate90, setRotate90] = useState<boolean>(true);
+  const [preset, setPreset] = useState<LabelPreset>("sticker");
+  const [width, setWidth] = useState<number>(roundMm(DEFAULT_STICKER_SIZE.width));
+  const [height, setHeight] = useState<number>(roundMm(DEFAULT_STICKER_SIZE.height));
+  const [rotate90, setRotate90] = useState<boolean>(false);
   const [codeType, setCodeType] = useState<CodeType>("barcode"); // barcode selected by default, QR is opt-in
   const [fields, setFields] = useState<FieldVisibility>(DEFAULT_FIELDS);
   const [qrPreviewUrl, setQrPreviewUrl] = useState<string | null>(null);
@@ -119,8 +127,10 @@ export function QrPreviewDialog({ open, onOpenChange, label }: QrPreviewDialogPr
   // into the printer needs its dimensions swapped to match — otherwise a
   // "40 x 25" preset would still print on 40mm-wide stock even though the
   // rotated content is now 25mm wide x 40mm tall.
-  const pageWidth = rotate90 ? height : width;
-  const pageHeight = rotate90 ? width : height;
+  const normalizedWidth = roundMm(width);
+  const normalizedHeight = roundMm(height);
+  const pageWidth = rotate90 ? normalizedHeight : normalizedWidth;
+  const pageHeight = rotate90 ? normalizedWidth : normalizedHeight;
 
   const previewStyle = useMemo(
     () => ({ aspectRatio: `${pageWidth} / ${pageHeight}`, width: `${Math.min(280, Math.max(150, pageWidth * 6))}px` }),
@@ -130,15 +140,15 @@ export function QrPreviewDialog({ open, onOpenChange, label }: QrPreviewDialogPr
   const updatePreset = (value: LabelPreset) => {
     setPreset(value);
     if (value !== "custom") {
-      setWidth(LABEL_PRESETS[value].width);
-      setHeight(LABEL_PRESETS[value].height);
+      setWidth(roundMm(LABEL_PRESETS[value].width));
+      setHeight(roundMm(LABEL_PRESETS[value].height));
     }
   };
 
   const changeQuantity = (next: number) => setQuantity(Math.max(1, Math.min(MAX_QUANTITY, next)));
   const updateDimension = (setter: (value: number) => void, value: string) => {
     setPreset("custom");
-    setter(Number(value));
+    setter(roundMm(Number(value)));
   };
 
   const handlePrint = async () => {
@@ -198,8 +208,8 @@ export function QrPreviewDialog({ open, onOpenChange, label }: QrPreviewDialogPr
         }
         .label:last-child { break-after: auto; page-break-after: auto; }
         .label-content {
-          padding: 1.2mm 1.5mm; display: flex; flex-direction: column; align-items: center;
-          text-align: center; overflow: hidden;
+          padding: 1.8mm 2.2mm; display: flex; flex-direction: column; align-items: center;
+          text-align: center; overflow: hidden; gap: 1.1mm;
         }
         /* Normal (unrotated) label: content fills the page's own box. */
         .label:not(.rotated) .label-content { width: 100%; height: 100%; justify-content: center; }
@@ -208,18 +218,24 @@ export function QrPreviewDialog({ open, onOpenChange, label }: QrPreviewDialogPr
            page is already swapped to height x width above, the rotated
            bounding box fits it exactly. */
         .label.rotated .label-content {
-          width: ${width}mm; height: ${height}mm;
+          width: ${normalizedWidth}mm; height: ${normalizedHeight}mm;
           justify-content: center;
           transform: rotate(90deg);
         }
-        .product-name { width: 100%; overflow: hidden; font-size: clamp(6pt, 2.5vw, 9pt); font-weight: 700; line-height: 1.1; white-space: nowrap; text-overflow: ellipsis; }
-        .code-box { width: 100%; display: flex; align-items: center; justify-content: center; margin: .5mm 0; }
-        .code-box.barcode { height: 9mm; min-height: 7mm; }
+        .product-name {
+          width: 100%; overflow: hidden; font-size: clamp(8pt, 3vw, 12pt); font-weight: 800;
+          line-height: 1.15; letter-spacing: 0.01em; white-space: nowrap; text-overflow: ellipsis;
+        }
+        .code-box {
+          width: 100%; display: flex; align-items: center; justify-content: center; padding: 0; margin: 0;
+          border: none; border-radius: 0; background: transparent; box-shadow: none;
+        }
+        .code-box.barcode { height: 10mm; min-height: 8mm; }
         .code-box.barcode svg { width: 100%; height: 100%; display: block; }
-        .code-box.qrcode { height: 14mm; min-height: 10mm; }
-        .code-box.qrcode img { height: 100%; width: auto; display: block; }
-        .code-value { width: 100%; overflow: hidden; font-family: monospace; font-size: clamp(6pt, 2.2vw, 8pt); line-height: 1.1; letter-spacing: .04em; white-space: nowrap; }
-        .sku, .size { width: 100%; overflow: hidden; font-size: clamp(5pt, 1.8vw, 7pt); line-height: 1.1; white-space: nowrap; }
+        .code-box.qrcode { height: 16mm; min-height: 12mm; }
+        .code-box.qrcode img { height: 100%; width: auto; max-width: 90%; display: block; }
+        .code-value { width: 100%; overflow: hidden; font-family: monospace; font-size: clamp(7pt, 2.4vw, 9pt); line-height: 1.15; letter-spacing: .04em; white-space: nowrap; }
+        .sku, .size { width: 100%; overflow: hidden; font-size: clamp(6pt, 2vw, 8pt); line-height: 1.2; white-space: nowrap; font-weight: 600; }
       </style></head><body>${labels}<script>window.onload = function () { window.focus(); window.print(); window.close(); };</script></body></html>`);
     printWindow.document.close();
   };
@@ -338,28 +354,30 @@ export function QrPreviewDialog({ open, onOpenChange, label }: QrPreviewDialogPr
 
               <section className="space-y-2">
                 <p className="text-sm font-medium">Preview</p>
-                <div style={previewStyle} className="mx-auto flex max-w-full items-center justify-center overflow-hidden rounded border border-border bg-white p-2 text-black shadow-sm">
+                <div style={previewStyle} className="mx-auto flex max-w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-gradient-to-br from-white to-slate-50 p-3 text-slate-900 shadow-sm ring-1 ring-slate-200/70">
                   <div
-                    className="flex flex-col items-center justify-center text-center"
+                    className="flex flex-col items-center justify-center gap-1.5 rounded-[10px] bg-white px-2 py-2 text-center shadow-inner"
                     style={
                       rotate90
-                        ? { width: `${width}mm`, height: `${height}mm`, transform: "rotate(90deg)" }
+                        ? { width: `${normalizedWidth}mm`, height: `${normalizedHeight}mm`, transform: "rotate(90deg)" }
                         : { width: "100%", height: "100%" }
                     }
                   >
-                    {fields.name ? <p className="line-clamp-2 text-[10px] leading-tight font-bold">{label.productName}</p> : null}
+                    {fields.name ? <p className="max-w-full line-clamp-2 text-[11px] font-extrabold leading-[1.15] tracking-tight text-slate-900">{label.productName}</p> : null}
                     {codeType === "qrcode" ? (
                       qrPreviewUrl ? (
-                        <img src={qrPreviewUrl} alt={`QR code for ${label.barcode}`} className="my-1 h-12 w-12 shrink-0" />
+                        <img src={qrPreviewUrl} alt={`QR code for ${label.barcode}`} className="my-0.5 h-14 w-14 shrink-0 bg-white" />
                       ) : (
-                        <div className="my-1 h-12 w-12 shrink-0 animate-pulse rounded bg-muted" />
+                        <div className="my-0.5 h-14 w-14 shrink-0 animate-pulse rounded bg-muted" />
                       )
                     ) : (
-                      <svg ref={renderBarcode} className="my-1 h-12 w-full shrink-0" aria-label={`Barcode for ${label.barcode}`} />
+                      <div className="my-0.5 w-full bg-transparent p-0">
+                        <svg ref={renderBarcode} className="h-12 w-full shrink-0" aria-label={`Barcode for ${label.barcode}`} />
+                      </div>
                     )}
-                    {fields.codeValue ? <p className="truncate font-mono text-[9px] leading-tight tracking-wide">{label.barcode}</p> : null}
-                    {fields.sku && label.sku ? <p className="truncate text-[8px] leading-tight">SKU: {label.sku}</p> : null}
-                    {fields.size && label.size ? <p className="truncate text-[8px] leading-tight">Size: {label.size}</p> : null}
+                    {fields.codeValue ? <p className="max-w-full truncate font-mono text-[9px] font-semibold leading-tight tracking-[0.12em] text-slate-700">{label.barcode}</p> : null}
+                    {fields.sku && label.sku ? <p className="max-w-full truncate text-[8px] font-medium leading-tight text-slate-700">SKU: {label.sku}</p> : null}
+                    {fields.size && label.size ? <p className="max-w-full truncate text-[8px] font-medium leading-tight text-slate-700">Size: {label.size}</p> : null}
                   </div>
                 </div>
                 <p className="text-center text-xs text-muted-foreground">

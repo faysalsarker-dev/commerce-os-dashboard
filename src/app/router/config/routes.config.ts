@@ -8,6 +8,9 @@ import SellCounter from "@/app/pages/sells/SellCounter"
 import RefundCounter from "@/app/pages/refund/RefundCounter"
 import ProfilePage from "@/app/pages/profile/ProfilePage"
 import AllUser from "@/app/pages/user/AllUser"
+import CreateUser from "@/app/pages/user/CreateUser"
+import UserDetailsPage from "@/app/pages/user/UserDetails"
+import UserIdCard from "@/app/pages/user/UserIdCard"
 
 
 
@@ -71,6 +74,30 @@ export const routeGroups: RouteGroup[] = [
         Component: AllUser,
         icon: UsersRound,
         page: "users",
+        children: [
+          
+        ]
+      },
+      {
+        path: "users/create",
+        name: "Create User",
+        Component: CreateUser,
+        page: "users",
+        isVisible: false,
+      },
+      {
+        path: "users/:id",
+        name: "User Details",
+        Component: UserDetailsPage,
+        page: "users",
+        isVisible: false,
+      },
+      {
+        path: "users/:id/id-card",
+        name: "User ID Card",
+        Component: UserIdCard,
+        page: "users",
+        isVisible: false,
       },
       {
         path: "products/:id",
@@ -79,6 +106,7 @@ export const routeGroups: RouteGroup[] = [
         page: "product",
         isVisible: false,
       },
+     
       {
         path: "profile",
         name: "Profile",
