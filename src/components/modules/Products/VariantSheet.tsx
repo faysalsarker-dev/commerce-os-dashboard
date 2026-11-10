@@ -30,8 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { ProductVariant } from "@/types/data-types/product/product.types";
-import { SIZE_OPTIONS, variantSchema, type SizeOption } from "@/types/validations/product/product";
-
+import { variantSchema, type SizeOption } from "@/types/validations/product/product";
+import { useGetSizesForSelectQuery } from "@/redux/hooks";
 
 type VariantFormInput = z.input<typeof variantSchema>;
 export type VariantFormValues = z.output<typeof variantSchema>;
@@ -55,18 +55,28 @@ export function VariantSheet({
 }: VariantSheetProps) {
   const isEditing = Boolean(variant);
 
+  const { data: sizesResponse, isLoading: isSizesLoading } =
+    useGetSizesForSelectQuery();
+  const sizeOptions = sizesResponse?.data ?? [];
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const form = useForm<VariantFormInput, any, VariantFormValues>({
     resolver: zodResolver(variantSchema),
-    defaultValues: { size: undefined, sku: "", stockQty: 0 },
+    defaultValues: { size: "", sku: "", stockQty: 0 },
   });
 
   useEffect(() => {
     if (!open) return;
+    const initialSize = variant
+      ? typeof variant.size === "object" && variant.size !== null
+        ? variant.size.size
+        : (variant.size as unknown as string)
+      : "";
+
     form.reset(
       variant
-        ? { size: variant.size as SizeOption, sku: variant.sku, stockQty: variant.stockQty }
-        : { size: undefined, sku: `${skuPrefix}-`, stockQty: 0 },
+        ? { size: initialSize, sku: variant.sku, stockQty: variant.stockQty }
+        : { size: "", sku: `${skuPrefix}-`, stockQty: 0 },
     );
   }, [open, variant, skuPrefix, form]);
 
@@ -77,9 +87,9 @@ export function VariantSheet({
     let suffix = "";
     if (currentSku.startsWith(prefixWithDash)) {
       const remainder = currentSku.slice(prefixWithDash.length);
-      const matchingSize = SIZE_OPTIONS.find(
-        (s) => remainder.startsWith(`${s}-`) || remainder === s
-      );
+      const matchingSize = sizeOptions.find(
+        (s) => remainder.startsWith(`${s.size}-`) || remainder === s.size
+      )?.size;
       if (matchingSize) {
         suffix = remainder.startsWith(`${matchingSize}-`)
           ? remainder.slice(matchingSize.length + 1)
@@ -132,11 +142,22 @@ export function VariantSheet({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {SIZE_OPTIONS.map((size) => (
-                          <SelectItem key={size} value={size}>
-                            {size}
-                          </SelectItem>
-                        ))}
+                        {isSizesLoading ? (
+                          <div className="flex items-center justify-center p-3 text-sm text-muted-foreground">
+                            <Loader2 className="mr-2 size-4 animate-spin" />
+                            Loading sizes...
+                          </div>
+                        ) : sizeOptions.length === 0 ? (
+                          <div className="p-3 text-center text-sm text-muted-foreground">
+                            No sizes found. Please create sizes first.
+                          </div>
+                        ) : (
+                          sizeOptions.map((item) => (
+                            <SelectItem key={item.id} value={item.size}>
+                              {item.size}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormDescription>Shown on the shelf label and receipt.</FormDescription>
@@ -160,31 +181,31 @@ export function VariantSheet({
                 )}
               />
 
-        <FormField
-          control={form.control}
-          name="stockQty"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Stock on hand</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  min={0}
-                  className="numeric"
-                  value={field.value ?? 0}
-                  onChange={(e) => {
-                    const val = e.target.valueAsNumber;
-                    field.onChange(Number.isNaN(val) ? 0 : val);
-                  }}
-                  onBlur={field.onBlur}
-                  name={field.name}
-                  ref={field.ref}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+              <FormField
+                control={form.control}
+                name="stockQty"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Stock on hand</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={0}
+                        className="numeric"
+                        value={field.value ?? 0}
+                        onChange={(e) => {
+                          const val = e.target.valueAsNumber;
+                          field.onChange(Number.isNaN(val) ? 0 : val);
+                        }}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <SheetFooter className="flex-row justify-end gap-2 border-t border-border px-6 py-4">

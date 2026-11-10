@@ -1,10 +1,9 @@
 import type { Category } from "@/types/data-types/category/category.types"
+import type { Size } from "@/types/data-types/size/size.types"
 
 // ---- Enums ----
 export type StockMovementType =
   "IN" | "OUT" | "ADJUSTMENT" | "RETURN" | "DAMAGE"
-
-
 
 export interface Product {
   id: string
@@ -32,7 +31,8 @@ export interface ProductColor {
 export interface ProductVariant {
   id: string
   productColorId: string
-  size: string
+  sizeId?: string
+  size: Size
   sku: string
   stockQty: number
   costPriceOverride: number | null

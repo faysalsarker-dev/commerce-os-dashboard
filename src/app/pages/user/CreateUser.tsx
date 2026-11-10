@@ -99,7 +99,10 @@ export default function CreateUser() {
       hasPassword && watchedValues.password === watchedValues.confirmPassword
     )
     const hasRole = Boolean(watchedValues.role)
-    const hasSalary = Boolean(watchedValues.baseSalary && watchedValues.baseSalary >= 10)
+    const hasSalary =
+      typeof watchedValues.baseSalary === "number" &&
+      Number.isFinite(watchedValues.baseSalary) &&
+      watchedValues.baseSalary >= 0
     const hasJoinDate = Boolean(watchedValues.joinDate)
     const hasLegalId = Boolean(
       (watchedValues.nidNumber && watchedValues.nidNumber.trim()) ||
@@ -218,7 +221,7 @@ export default function CreateUser() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 sm:flex-initial min-w-[160px] shadow-sm font-medium gap-2 cursor-pointer"
+                  className="flex-1 sm:flex-initial min-w-40 shadow-sm font-medium gap-2 cursor-pointer"
                 >
                   {isLoading ? (
                     <>

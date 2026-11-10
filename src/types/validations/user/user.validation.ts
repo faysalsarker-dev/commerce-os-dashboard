@@ -13,7 +13,10 @@ export const userFormSchema = z
     image: z.array(z.instanceof(File)).max(1).default([]),
     designation: z.string().trim().max(100).optional(),
     joinDate: z.string().min(1, "Join date is required."),
-    baseSalary: z.number().min(10, "Base salary must be at least 10."),
+    baseSalary: z.preprocess(
+      (value) => (typeof value === "number" && Number.isNaN(value) ? undefined : value),
+      z.number({ error: "Base salary is required." }).nonnegative("Base salary cannot be negative.")
+    ),
     nidNumber: z.string().trim().max(50).optional(),
     birthCertificateNumber: z.string().trim().max(50).optional(),
     address: z.string().trim().max(500).optional(),

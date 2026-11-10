@@ -32,6 +32,7 @@ export function LoginCard() {
     defaultValues: {
       email: "",
       password: "",
+      remember: false,
     },
   });
 
@@ -125,13 +126,25 @@ export function LoginCard() {
 
               <div className="flex items-center justify-between pt-1">
                 <div className="flex items-center gap-2">
-                  <Checkbox id="remember" className="rounded-[5px]" />
-                  <label
-                    htmlFor="remember"
-                    className="text-sm font-medium leading-none text-muted-foreground"
-                  >
-                    Remember me
-                  </label>
+                  <FormField
+                    control={form.control}
+                    name="remember"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center gap-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            id="remember"
+                            className="rounded-[5px]"
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="text-sm font-medium leading-none text-muted-foreground">
+                          Remember me
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <a
                   href="#"

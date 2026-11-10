@@ -96,8 +96,8 @@ export function EmploymentSection({ register, errors }: EmploymentSectionProps) 
             <Input
               id="baseSalary"
               type="number"
-              min={10}
-              step={100}
+              min={0}
+              step="any"
               placeholder="e.g. 25000"
               className={cn(
                 "pl-8 font-mono",

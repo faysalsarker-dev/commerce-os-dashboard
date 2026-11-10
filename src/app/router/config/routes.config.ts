@@ -1,8 +1,9 @@
-import { PackageIcon, LayoutGridIcon, ScanBarcodeIcon, Undo, UsersRound } from "lucide-react"
+import { PackageIcon, LayoutGridIcon, ScanBarcodeIcon, Undo, UsersRound, Ruler, ReceiptText, Tag, MessageSquareMore } from "lucide-react"
 
 import type { RouteConfig } from "@/types/routes/route.types"
 import AllProduct from "@/app/pages/products/AllProduct"
 import AllCategory from "@/app/pages/category/AllCategory"
+import SizePage from "@/app/pages/size/SizePage"
 import ProductDetailPage from "@/app/pages/products/ProductDetailPage"
 import SellCounter from "@/app/pages/sells/SellCounter"
 import RefundCounter from "@/app/pages/refund/RefundCounter"
@@ -11,8 +12,9 @@ import AllUser from "@/app/pages/user/AllUser"
 import CreateUser from "@/app/pages/user/CreateUser"
 import UserDetailsPage from "@/app/pages/user/UserDetails"
 import UserIdCard from "@/app/pages/user/UserIdCard"
-
-
+import ExpenseCategoryPage from "@/app/pages/expense/ExpenseCategoryPage"
+import ExpensePage from "@/app/pages/expense/ExpensePage"
+import SocialInboxPage from "@/modules/social-inbox/pages/SocialInboxPage"
 
 export interface RouteGroup {
   label: string
@@ -20,7 +22,18 @@ export interface RouteGroup {
 }
 
 export const routeGroups: RouteGroup[] = [
-
+  {
+    label: "Engage",
+    items: [
+      {
+        path: "social-inbox",
+        name: "Social Inbox",
+        Component: SocialInboxPage,
+        icon: MessageSquareMore,
+        page: "social-inbox",
+      },
+    ],
+  },
   {
     label: "Sells",
     items: [
@@ -31,9 +44,6 @@ export const routeGroups: RouteGroup[] = [
         icon: ScanBarcodeIcon,
         page: "sell",
       },
-     
-
-
     ]
   },
   {
@@ -46,11 +56,8 @@ export const routeGroups: RouteGroup[] = [
         icon: Undo,
         page: "refund",
       }
-
-
     ]
-  }
-  ,
+  },
   {
     label: "Data Library",
     items: [
@@ -69,14 +76,33 @@ export const routeGroups: RouteGroup[] = [
         page: "category",
       },
       {
+        path: "size",
+        name: "Size",
+        Component: SizePage,
+        icon: Ruler,
+        page: "size",
+      },
+      {
+        path: "expense-categories",
+        name: "Expense Categories",
+        Component: ExpenseCategoryPage,
+        icon: Tag,
+        page: "expense",
+      },
+      {
+        path: "expenses",
+        name: "Expenses",
+        Component: ExpensePage,
+        icon: ReceiptText,
+        page: "expense",
+      },
+      {
         path: "users",
         name: "Users",
         Component: AllUser,
         icon: UsersRound,
         page: "users",
-        children: [
-          
-        ]
+        children: []
       },
       {
         path: "users/create",
@@ -106,7 +132,6 @@ export const routeGroups: RouteGroup[] = [
         page: "product",
         isVisible: false,
       },
-     
       {
         path: "profile",
         name: "Profile",
@@ -114,65 +139,8 @@ export const routeGroups: RouteGroup[] = [
         page: "profile",
         isVisible: false,
       }
-
     ]
   },
- 
-
-
 ]
 
-
-
-
-
-
-
 export const routes: RouteConfig[] = routeGroups.flatMap((group) => group.items)
-
-
-
-
-//  {
-//     label: "Data Library",
-//     items: [
-//       {
-//         path: "products",
-//         name: "Products",
-//         Component: Page,
-//         icon: BoxIcon,
-//         index: true,
-//         page: "products",
-//         children: [
-//           {
-//             path: "new",
-//             name: "New Product",
-//             Component: Page,
-//             page: "products",
-//             isVisible: false,
-//           },
-//           {
-//             path: ":id/edit",
-//             name: "Edit Product",
-//             Component: Page,
-//             page: "products",
-//             isVisible: false,
-//           },
-//         ],
-//       },
-//       {
-//         path: "orders",
-//         name: "Orders",
-//         Component: Page,
-//         icon: ListIcon,
-//         page: "orders",
-//       },
-//       {
-//         path: "inventory",
-//         name: "Inventory",
-//         Component: Page,
-//         icon: WarehouseIcon,
-//         page: "inventory",
-//       },
-//     ],
-//   },

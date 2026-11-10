@@ -1,11 +1,7 @@
 import { z } from "zod";
 
-export const SIZE_OPTIONS = ["S", "M", "L", "XL", "XXL"] as const;
-
 export const variantSchema = z.object({
-  size: z.enum(SIZE_OPTIONS, {
-    message: "Select a size",
-  }),
+  size: z.string().min(1, "Select a size"),
   sku: z
     .string()
     .min(3, "SKU must be at least 3 characters")
@@ -16,13 +12,16 @@ export const variantSchema = z.object({
     .min(0, "Stock cannot be negative"),
 });
 
-export type SizeOption = (typeof SIZE_OPTIONS)[number];
+export type SizeOption = string;
 
-
-
-export const productSchema = z.object({ name: z.string().min(1, "Name is required"), description: z.string().optional(), categoryId: z.string().optional(), costPrice: z.coerce.number().positive("Cost price must be positive"), sellingPrice: z.coerce.number().positive("Selling price must be positive") })
-export type ProductFormValues = z.infer<typeof productSchema>
-
+export const productSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
+  categoryId: z.string().optional(),
+  costPrice: z.coerce.number().positive("Cost price must be positive"),
+  sellingPrice: z.coerce.number().positive("Selling price must be positive"),
+});
+export type ProductFormValues = z.infer<typeof productSchema>;
 
 export const colorSchema = z.object({
   colorName: z.string().min(1, "Colour name is required").max(40),

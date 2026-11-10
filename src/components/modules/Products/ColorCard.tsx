@@ -157,7 +157,9 @@ export function ColorCard({
                 <TableBody>
                   {color.variants.map((variant) => (
                     <TableRow key={variant.id} className="group">
-                      <TableCell className="pl-4 font-medium sm:pl-5">{variant.size}</TableCell>
+                      <TableCell className="pl-4 font-medium sm:pl-5">
+                        {typeof variant.size === "object" ? variant.size?.size : variant.size}
+                      </TableCell>
                       <TableCell className="font-mono text-xs text-muted-foreground">
                         {variant.sku}
                       </TableCell>
@@ -177,7 +179,7 @@ export function ColorCard({
                                   setBarcodeLabel({
                                     barcode: variant.qrCode,
                                     sku: variant.sku,
-                                    size: variant.size,
+                                    size: typeof variant.size === "object" ? variant.size?.size : variant.size,
                                     colorName: color.colorName,
                                     productName,
                                   })
