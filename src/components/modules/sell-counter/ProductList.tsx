@@ -1,5 +1,6 @@
 import { AnimatePresence } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
+import trollyImg from "@/assets/system/trolly.png";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ProductListItem } from "./ProductListItem";
@@ -24,6 +25,8 @@ export function ProductList({ lines, onQuantityChange, onRemove }: ProductListPr
       {lines.length === 0 ? (
         <div className="p-4">
           <EmptyState
+            image={trollyImg}
+            imageClassName="w-[85%] max-w-md max-h-[360px]"
             icon={ShoppingCart}
             title="No products yet"
             description="Scan a barcode or type a SKU above to start building this sale."

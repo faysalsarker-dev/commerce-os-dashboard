@@ -3,7 +3,9 @@ import type { LucideProps } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface EmptyStateProps {
-  icon: ComponentType<LucideProps>;
+  icon?: ComponentType<LucideProps>;
+  image?: string;
+  imageClassName?: string;
   title: string;
   description?: string;
   action?: ReactNode;
@@ -13,6 +15,8 @@ interface EmptyStateProps {
 
 export function EmptyState({
   icon: Icon,
+  image,
+  imageClassName,
   title,
   description,
   action,
@@ -27,9 +31,17 @@ export function EmptyState({
         className,
       )}
     >
-      <div className="grid size-9 place-items-center rounded-md border border-border bg-card text-muted-foreground shadow-card">
-        <Icon className="size-4" />
-      </div>
+      {image ? (
+        <img
+          src={image}
+          alt={title}
+          className={cn("w-[85%] max-w-md h-auto object-contain", imageClassName)}
+        />
+      ) : Icon ? (
+        <div className="grid size-9 place-items-center rounded-md border border-border bg-card text-muted-foreground shadow-card">
+          <Icon className="size-4" />
+        </div>
+      ) : null}
       <div className="space-y-1">
         <p className="text-sm font-medium text-foreground">{title}</p>
         {description ? (
