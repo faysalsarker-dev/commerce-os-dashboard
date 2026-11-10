@@ -1,3 +1,8 @@
+import type {
+  PaymentEntry,
+  PaymentMethod,
+} from "@/types/data-types/payment.types";
+
 export type SaleChannel = "OFFLINE" | "ONLINE";
 
 export type SaleStatus =
@@ -10,8 +15,6 @@ export type SaleStatus =
   | "RETURNED";
 
 export type PaymentStatus = "UNPAID" | "PARTIAL" | "PAID" | "REFUNDED" | "PARTIALLY_REFUNDED";
-
-export type PaymentMethod = "CASH" | "BKASH" | "NAGAD" | "ROCKET" | "CARD" | "BANK_TRANSFER";
 
 export interface InvoiceItem {
   productName: string;
@@ -50,6 +53,7 @@ export interface Invoice {
   dueAmount: number;
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod | null;
+  payments?: PaymentEntry[];
   dueDate: string | null;
   notes: string | null;
 }
@@ -61,14 +65,7 @@ export const SHOP = {
   thankYou: "Thank you for shopping with us",
 } as const;
 
-export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
-  CASH: "Cash",
-  BKASH: "bKash",
-  NAGAD: "Nagad",
-  ROCKET: "Rocket",
-  CARD: "Card",
-  BANK_TRANSFER: "Bank Transfer",
-};
+export { PAYMENT_METHOD_LABEL } from "@/types/data-types/payment.types";
 
 export const PAYMENT_STATUS_LABEL: Record<PaymentStatus, string> = {
   UNPAID: "Unpaid",

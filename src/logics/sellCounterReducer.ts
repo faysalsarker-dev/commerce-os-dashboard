@@ -1,4 +1,10 @@
 import type { CartLine } from "@/components/modules/sell-counter/types";
+import {
+  createEmptyTenderAmounts,
+  type PaymentMethod,
+  type TenderAmounts,
+  type TenderMethod,
+} from "@/types/data-types/payment.types";
 import type { Customer } from "@/types/data-types/customer/customer.types";
 
 interface SellCounterState {
@@ -6,8 +12,8 @@ interface SellCounterState {
   customer: Customer | null;
   notFoundPhone: string | null;
   discount: number;
-  paymentMethodId: string | null;
-  amountReceived: number;
+  paymentMethod: PaymentMethod;
+  payments: TenderAmounts;
   dueDate: Date | undefined;
 }
 
@@ -16,8 +22,8 @@ const initialState: SellCounterState = {
   customer: null,
   notFoundPhone: null,
   discount: 0,
-  paymentMethodId: null,
-  amountReceived: 0,
+  paymentMethod: "CASH",
+  payments: createEmptyTenderAmounts(),
   dueDate: undefined,
 };
 
@@ -29,8 +35,9 @@ type Action =
   | { type: "SET_CUSTOMER"; customer: Customer | null; notFoundPhone: string | null }
   | { type: "CLEAR_CUSTOMER" }
   | { type: "SET_DISCOUNT"; discount: number }
-  | { type: "SET_PAYMENT_METHOD"; id: string }
-  | { type: "SET_AMOUNT_RECEIVED"; amount: number }
+  | { type: "SET_PAYMENT_METHOD"; method: PaymentMethod }
+  | { type: "SET_PAYMENT_AMOUNT"; method: TenderMethod; amount: string }
+  | { type: "SET_PAYMENT_REFERENCE"; method: TenderMethod; reference: string }
   | { type: "SET_DUE_DATE"; date: Date | undefined }
   | { type: "RESET_SALE" };
 
@@ -68,11 +75,80 @@ function sellCounterReducer(state: SellCounterState, action: Action): SellCounte
     case "SET_DISCOUNT":
       return { ...state, discount: action.discount };
 
-    case "SET_PAYMENT_METHOD":
-      return { ...state, paymentMethodId: action.id };
+    case "SET_PAYMENT_METHOD": {
+      const nextMethod = action.method;
+      let nextPayments = { ...state.payments };
 
-    case "SET_AMOUNT_RECEIVED":
-      return { ...state, amountReceived: action.amount };
+      if (nextMethod === "CASH") {
+        const fallbackAmount =
+          state.payments.BKASH.amount || state.payments.BANK_TRANSFER.amount;
+        nextPayments = {
+          CASH: {
+            amount: state.payments.CASH.amount || fallbackAmount || "",
+            reference: "",
+          },
+          BKASH: { amount: "", reference: "" },
+          BANK_TRANSFER: { amount: "", reference: "" },
+        };
+      } else if (nextMethod === "BKASH") {
+        const fallbackAmount =
+          state.payments.CASH.amount || state.payments.BANK_TRANSFER.amount;
+        nextPayments = {
+          CASH: { amount: "", reference: "" },
+          BKASH: {
+            amount: state.payments.BKASH.amount || fallbackAmount || "",
+            reference: state.payments.BKASH.reference,
+          },
+          BANK_TRANSFER: { amount: "", reference: "" },
+        };
+      } else if (nextMethod === "BANK_TRANSFER") {
+        const fallbackAmount =
+          state.payments.CASH.amount || state.payments.BKASH.amount;
+        nextPayments = {
+          CASH: { amount: "", reference: "" },
+          BKASH: { amount: "", reference: "" },
+          BANK_TRANSFER: {
+            amount: state.payments.BANK_TRANSFER.amount || fallbackAmount || "",
+            reference: state.payments.BANK_TRANSFER.reference,
+          },
+        };
+      } else if (nextMethod === "MIX") {
+        nextPayments = {
+          ...nextPayments,
+          BANK_TRANSFER: { amount: "", reference: "" },
+        };
+      }
+
+      return {
+        ...state,
+        paymentMethod: nextMethod,
+        payments: nextPayments,
+      };
+    }
+
+    case "SET_PAYMENT_AMOUNT":
+      return {
+        ...state,
+        payments: {
+          ...state.payments,
+          [action.method]: {
+            ...state.payments[action.method],
+            amount: action.amount,
+          },
+        },
+      };
+
+    case "SET_PAYMENT_REFERENCE":
+      return {
+        ...state,
+        payments: {
+          ...state.payments,
+          [action.method]: {
+            ...state.payments[action.method],
+            reference: action.reference,
+          },
+        },
+      };
 
     case "SET_DUE_DATE":
       return { ...state, dueDate: action.date };

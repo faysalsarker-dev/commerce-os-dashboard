@@ -1,6 +1,7 @@
 import { baseApi } from "@/redux/baseApi";
 import type {
   CreateRefundPayload,
+  CreateRefundResponse,
   Refund,
   RefundFilters,
 } from "@/types/data-types/refund/refund.types";
@@ -14,7 +15,7 @@ export const refundApi = baseApi.injectEndpoints({
      * Process / Create a Refund
      */
     createRefund: builder.mutation<
-      ApiResponse<Refund>,
+      ApiResponse<CreateRefundResponse>,
       CreateRefundPayload
     >({
       query: (data) => ({

@@ -1,6 +1,8 @@
 import { useMemo, useReducer } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Info } from "lucide-react"
+import { Info, RotateCcw } from "lucide-react"
+import trollyImg from "@/assets/system/trolly.png"
+import { EmptyState } from "@/components/common/EmptyState"
 import { PageHeader } from "@/components/modules/Products/PageHeader"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,6 +12,10 @@ import { RefundItemList } from "@/components/modules/refund/RefundItemList"
 import { RefundConfirmPanel } from "@/components/modules/refund/RefundConfirmPanel"
 import { ineligibleReason, type Sale } from "@/components/modules/refund/types"
 import { PageContainer } from "@/components/shared/common"
+import {
+  getTenderPayments,
+  sumTenderAmounts,
+} from "@/types/data-types/payment.types"
 import {
   initialRefundCounterState,
   refundCounterReducer,
@@ -26,7 +32,15 @@ export function RefundCounter() {
     refundCounterReducer,
     initialRefundCounterState
   )
-  const { sale, searched, quantities, method, reason, error } = state
+  const {
+    sale,
+    searched,
+    quantities,
+    paymentMethod,
+    payments,
+    reason,
+    error,
+  } = state
   const navigate = useNavigate()
   const [getSaleByInvoice, { isFetching: isSearching }] =
     useLazyGetSaleByInvoiceQuery()
@@ -46,7 +60,8 @@ export function RefundCounter() {
       }))
   }, [sale, quantities])
 
-  const amount = selectedItems.reduce((sum, i) => sum + i.amount, 0)
+  const amount =
+    Math.round(selectedItems.reduce((sum, i) => sum + i.amount, 0) * 100) / 100
   const exceedsPaid = Boolean(sale && amount > sale.paidAmount)
 
   const handleSearch = async (query: string) => {
@@ -65,7 +80,15 @@ export function RefundCounter() {
   }
 
   const handleSubmit = async () => {
-    if (!sale || !method) return
+    const paymentEntries = getTenderPayments(payments)
+    if (
+      !sale ||
+      paymentEntries.length === 0 ||
+      Math.round(sumTenderAmounts(payments) * 100) !== Math.round(amount * 100)
+    ) {
+      return
+    }
+
     dispatch({ type: "SET_ERROR", error: null })
     try {
       const response = await createRefund({
@@ -77,16 +100,19 @@ export function RefundCounter() {
             amount: itemAmount,
           })
         ),
-        method,
+        method: paymentMethod,
+        payments: paymentEntries,
         reason: reason.trim() || undefined,
       }).unwrap()
+      const refund = response.data.refund
       navigate("/refund-receipt", {
         state: {
           refund: {
-            id: response.data.refundNumber ?? response.data.id,
-            amount: Number(response.data.totalAmount),
-            method,
-            createdAt: response.data.createdAt,
+            id: refund.id,
+            amount: Number(refund.amount),
+            method: refund.method,
+            payments: refund.payments ?? paymentEntries,
+            createdAt: refund.createdAt,
           },
         },
       })
@@ -118,7 +144,7 @@ export function RefundCounter() {
               />
 
               {searched && !sale && !isSearching ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-destructive font-medium">
                   No sale found for that invoice number.
                 </p>
               ) : null}
@@ -128,17 +154,22 @@ export function RefundCounter() {
               </AnimatePresence>
             </Card>
 
-            <AnimatePresence initial={false}>
+            <AnimatePresence initial={false} mode="wait">
               {sale ? (
                 <motion.div
                   key={`items-${sale.id}`}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.22, ease: "easeOut" }}
                 >
                   <Card className="space-y-4 p-4">
-                    <StepLabel index={2} title="Select items to refund" />
+                    <div className="flex items-center justify-between border-b border-border pb-3">
+                      <StepLabel index={2} title="Select items to refund" />
+                      <span className="numeric text-xs text-muted-foreground">
+                        {sale.items.length} item(s)
+                      </span>
+                    </div>
                     {blockedReason ? (
                       <div className="flex gap-2 rounded-md border border-border bg-muted/50 p-3 text-sm text-muted-foreground">
                         <Info className="mt-0.5 size-4 shrink-0" />
@@ -153,7 +184,41 @@ export function RefundCounter() {
                     )}
                   </Card>
                 </motion.div>
-              ) : null}
+              ) : (
+                <motion.div
+                  key="empty-items"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                >
+                  <Card className="overflow-hidden p-0">
+                    <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                      <StepLabel index={2} title="Select items to refund" />
+                      <span className="numeric text-xs text-muted-foreground">
+                        0 item(s)
+                      </span>
+                    </div>
+                    <div className="p-4">
+                      <EmptyState
+                        image={trollyImg}
+                        imageClassName="w-[85%] max-w-md max-h-[300px]"
+                        icon={RotateCcw}
+                        title={
+                          searched && !isSearching
+                            ? "No sale found"
+                            : "No items yet"
+                        }
+                        description={
+                          searched && !isSearching
+                            ? "No sale matched that invoice number. Check the invoice number and search again."
+                            : "Search for an invoice above to view purchased items and select what to refund."
+                        }
+                      />
+                    </div>
+                  </Card>
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
 
@@ -175,13 +240,24 @@ export function RefundCounter() {
                   <RefundConfirmPanel
                     amount={amount}
                     itemCount={selectedItems.length}
-                    method={method}
+                    paymentMethod={paymentMethod}
+                    payments={payments}
                     reason={reason}
                     exceedsPaid={exceedsPaid}
                     isSubmitting={isSubmitting}
                     error={error}
-                    onMethodChange={(method) =>
-                      dispatch({ type: "SET_METHOD", method })
+                    onPaymentMethodChange={(method) =>
+                      dispatch({ type: "SET_PAYMENT_METHOD", method })
+                    }
+                    onPaymentAmountChange={(method, amount) =>
+                      dispatch({ type: "SET_PAYMENT_AMOUNT", method, amount })
+                    }
+                    onPaymentReferenceChange={(method, reference) =>
+                      dispatch({
+                        type: "SET_PAYMENT_REFERENCE",
+                        method,
+                        reference,
+                      })
                     }
                     onReasonChange={(reason) =>
                       dispatch({ type: "SET_REASON", reason })
@@ -226,6 +302,7 @@ function toRefundSale(sale: SaleByInvoice): Sale {
     paidAmount: Number(sale.paidAmount),
     dueAmount: Number(sale.dueAmount),
     paymentStatus: sale.paymentStatus,
+    payments: sale.payments,
     createdAt: sale.createdAt,
     items: sale.items.map((item) => ({
       ...item,

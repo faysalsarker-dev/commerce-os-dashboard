@@ -8,9 +8,9 @@ import {
   formatDueDate,
   formatInvoiceDate,
   type Invoice,
-  type PaymentMethod,
 } from "./types";
 import { formatCurrency } from "@/lib/formatCurrency";
+import type { PaymentMethod } from "@/types/data-types/payment.types";
 
 const METHOD_ICON: Record<PaymentMethod, typeof Wallet> = {
   CASH: Banknote,
@@ -19,6 +19,7 @@ const METHOD_ICON: Record<PaymentMethod, typeof Wallet> = {
   ROCKET: Smartphone,
   CARD: CreditCard,
   BANK_TRANSFER: Landmark,
+  MIX: Wallet,
 };
 
 function statusTone(invoice: Invoice) {
@@ -35,6 +36,7 @@ function statusTone(invoice: Invoice) {
 
 export function InvoiceCard({ invoice }: { invoice: Invoice }) {
   const MethodIcon = invoice.paymentMethod ? METHOD_ICON[invoice.paymentMethod] : Wallet;
+  const payments = invoice.payments ?? [];
 
   return (
     <article
@@ -141,13 +143,47 @@ export function InvoiceCard({ invoice }: { invoice: Invoice }) {
 
       <Separator />
 
-      {/* Payment method */}
-      <div className="flex items-center justify-between px-6 py-3 text-sm">
-        <span className="text-muted-foreground">Payment method</span>
-        <span className="inline-flex items-center gap-1.5 font-medium">
-          <MethodIcon className="size-4" aria-hidden />
-          {invoice.paymentMethod ? PAYMENT_METHOD_LABEL[invoice.paymentMethod] : "Payment Pending"}
-        </span>
+      {/* Payment breakdown */}
+      <div className="space-y-2 px-6 py-3 text-sm">
+        <p className="text-muted-foreground">Payment breakdown</p>
+        {payments.length ? (
+          payments.map((payment, index) => {
+            const Icon = METHOD_ICON[payment.method] ?? Wallet;
+            return (
+              <div
+                key={`${payment.method}-${index}`}
+                className="flex items-start justify-between gap-3"
+              >
+                <span className="inline-flex items-center gap-1.5 font-medium">
+                  <Icon className="mt-0.5 size-4 shrink-0" aria-hidden />
+                  <span>
+                    {PAYMENT_METHOD_LABEL[payment.method] ?? payment.method}
+                    {payment.reference ? (
+                      <span className="block text-xs font-normal text-muted-foreground">
+                        Ref: {payment.reference}
+                      </span>
+                    ) : null}
+                  </span>
+                </span>
+                <span className="numeric font-medium">
+                  {formatCurrency(Number(payment.amount))}
+                </span>
+              </div>
+            );
+          })
+        ) : (
+          <div className="flex items-center justify-between gap-3">
+            <span className="inline-flex items-center gap-1.5 font-medium">
+              <MethodIcon className="size-4" aria-hidden />
+              {invoice.paymentMethod
+                ? PAYMENT_METHOD_LABEL[invoice.paymentMethod]
+                : "Payment Pending"}
+            </span>
+            <span className="numeric font-medium">
+              {formatCurrency(invoice.paidAmount)}
+            </span>
+          </div>
+        )}
       </div>
 
       <Separator />

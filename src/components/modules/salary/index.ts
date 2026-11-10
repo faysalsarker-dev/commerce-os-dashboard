@@ -1,0 +1,1 @@
+export { SalaryRecordDialog } from "./SalaryRecordDialog";

@@ -14,6 +14,7 @@ export const baseApi = createApi({
     "SIZE",
     "EXPENSE",
     "EXPENSE_CATEGORY",
+    "SALARY",
   ],
   keepUnusedDataFor: 60 * 60,
   refetchOnMountOrArgChange: false,

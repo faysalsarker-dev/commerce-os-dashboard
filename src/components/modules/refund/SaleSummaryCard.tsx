@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { PAYMENT_METHOD_LABEL } from "@/types/data-types/payment.types";
 import type { Sale } from "./types";
 
 interface SaleSummaryCardProps {
@@ -43,6 +44,25 @@ export function SaleSummaryCard({ sale }: SaleSummaryCardProps) {
           <Figure label="Paid" value={formatCurrency(sale.paidAmount)} />
           <Figure label="Due" value={formatCurrency(sale.dueAmount)} />
         </dl>
+        {sale.payments?.length ? (
+          <div className="mt-3 space-y-1 border-t border-border pt-3">
+            <p className="text-xs text-muted-foreground">Original payment breakdown</p>
+            {sale.payments.map((payment, index) => (
+              <div
+                key={`${payment.method}-${index}`}
+                className="flex justify-between gap-3 text-xs"
+              >
+                <span>
+                  {PAYMENT_METHOD_LABEL[payment.method] ?? payment.method}
+                  {payment.reference ? ` · ${payment.reference}` : ""}
+                </span>
+                <span className="numeric font-medium">
+                  {formatCurrency(Number(payment.amount))}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </Card>
     </motion.div>
   );

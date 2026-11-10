@@ -1,4 +1,4 @@
-import { PackageIcon, LayoutGridIcon, ScanBarcodeIcon, Undo, UsersRound, Ruler, ReceiptText, Tag, MessageSquareMore } from "lucide-react"
+import { PackageIcon, LayoutGridIcon, ScanBarcodeIcon, Undo, UsersRound, Ruler, ReceiptText, Tag, MessageSquareMore, Wallet } from "lucide-react"
 
 import type { RouteConfig } from "@/types/routes/route.types"
 import AllProduct from "@/app/pages/products/AllProduct"
@@ -14,6 +14,7 @@ import UserDetailsPage from "@/app/pages/user/UserDetails"
 import UserIdCard from "@/app/pages/user/UserIdCard"
 import ExpenseCategoryPage from "@/app/pages/expense/ExpenseCategoryPage"
 import ExpensePage from "@/app/pages/expense/ExpensePage"
+import SalaryPage from "@/app/pages/salary/SalaryPage"
 import SocialInboxPage from "@/modules/social-inbox/pages/SocialInboxPage"
 
 export interface RouteGroup {
@@ -95,6 +96,13 @@ export const routeGroups: RouteGroup[] = [
         Component: ExpensePage,
         icon: ReceiptText,
         page: "expense",
+      },
+      {
+        path: "salary",
+        name: "Payroll",
+        Component: SalaryPage,
+        icon: Wallet,
+        page: "salary",
       },
       {
         path: "users",

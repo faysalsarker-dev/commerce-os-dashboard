@@ -2,18 +2,33 @@ import { useMemo, useReducer } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { toast } from "sonner"
 import { PageHeader } from "@/components/modules/Products/PageHeader"
-import { Card, Input, Label, Separator, Badge } from "@/components/ui"
+import {
+  Card,
+  Separator,
+  Badge,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui"
 
 import {
   ProductScanner,
   ProductList,
   CustomerLookup,
   BillSummary,
-  PaymentMethodSelector,
   DueDatePicker,
   CompleteSaleButton,
 } from "@/components/modules/sell-counter"
-import { PAYMENT_METHODS } from "@/components/modules/sell-counter/types"
+import {
+  getTenderPayments,
+  sumTenderAmounts,
+  type PaymentMethod,
+  type TenderMethod,
+} from "@/types/data-types/payment.types"
 import { formatCurrency } from "@/lib/formatCurrency"
 import { PageContainer } from "@/components/shared/common"
 import {
@@ -32,8 +47,8 @@ export function SellCounter() {
     customer,
     notFoundPhone,
     discount,
-    paymentMethodId,
-    amountReceived,
+    paymentMethod,
+    payments,
     dueDate,
   } = state
   const navigate = useNavigate()
@@ -48,7 +63,10 @@ export function SellCounter() {
     [lines]
   )
   const total = Math.max(0, subtotal - discount)
+  const amountReceived = sumTenderAmounts(payments)
   const due = Math.max(0, total - amountReceived)
+  const isOverpaid =
+    Math.round(amountReceived * 100) > Math.round(total * 100)
 
   const handleScanProduct = async (code: string) => {
     if (!code.trim()) return
@@ -150,12 +168,54 @@ export function SellCounter() {
     }
   }
 
+  const handleAmountChange = (method: TenderMethod, rawAmount: string) => {
+    const num = Number(rawAmount)
+    dispatch({
+      type: "SET_PAYMENT_AMOUNT",
+      method,
+      amount:
+        rawAmount === "" || (Number.isFinite(num) && num >= 0) ? rawAmount : "",
+    })
+  }
+
+  const handleFillExact = () => {
+    if (paymentMethod === "MIX") {
+      const cashNum = Number(payments.CASH.amount) || 0
+      if (cashNum > 0 && cashNum < total) {
+        const remaining = Math.round((total - cashNum) * 100) / 100
+        dispatch({
+          type: "SET_PAYMENT_AMOUNT",
+          method: "BKASH",
+          amount: String(remaining),
+        })
+      } else {
+        dispatch({
+          type: "SET_PAYMENT_AMOUNT",
+          method: "CASH",
+          amount: String(total),
+        })
+        dispatch({
+          type: "SET_PAYMENT_AMOUNT",
+          method: "BKASH",
+          amount: "",
+        })
+      }
+    } else {
+      dispatch({
+        type: "SET_PAYMENT_AMOUNT",
+        method: paymentMethod as TenderMethod,
+        amount: String(total),
+      })
+    }
+  }
+
   const handleCompleteSale = async () => {
-    if (!paymentMethodId) {
-      toast.warning("Select a payment method before completing the sale.")
+    if (isOverpaid) {
+      toast.warning("Payment amounts cannot exceed the sale total.")
       return
     }
-    const isFullPayment = due <= 0
+    const isFullPayment =
+      Math.round(amountReceived * 100) === Math.round(total * 100)
 
     if (!isFullPayment && !customer) {
       toast.warning(
@@ -170,9 +230,11 @@ export function SellCounter() {
     }
 
     try {
+      const paymentEntries = getTenderPayments(payments)
       const res = await checkout({
         items: lines.map((l) => ({ variantId: l.id, quantity: l.quantity })),
-        paymentMethod: paymentMethodId.toUpperCase(),
+        paymentMethod,
+        payments: paymentEntries.length ? paymentEntries : undefined,
         discount: discount > 0 ? discount : undefined,
         customerId: customer?.id,
         isFullPayment,
@@ -240,43 +302,205 @@ export function SellCounter() {
             />
 
             <Card className="space-y-4 p-4">
-              <PaymentMethodSelector
-                methods={PAYMENT_METHODS}
-                selectedId={paymentMethodId}
-                onSelect={(id) => dispatch({ type: "SET_PAYMENT_METHOD", id })}
-              />
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label
+                      htmlFor="payment-method-select"
+                      className="text-xs font-medium uppercase tracking-wider text-muted-foreground"
+                    >
+                      Payment method
+                    </Label>
+                    {total > 0 && amountReceived !== total && (
+                      <button
+                        type="button"
+                        onClick={handleFillExact}
+                        className="text-xs font-medium text-primary hover:underline cursor-pointer"
+                      >
+                        Exact ({formatCurrency(total)})
+                      </button>
+                    )}
+                  </div>
+                  <Select
+                    value={paymentMethod}
+                    onValueChange={(val) =>
+                      dispatch({
+                        type: "SET_PAYMENT_METHOD",
+                        method: val as PaymentMethod,
+                      })
+                    }
+                  >
+                    <SelectTrigger id="payment-method-select" className="w-full">
+                      <SelectValue placeholder="Select payment method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CASH">Cash</SelectItem>
+                      <SelectItem value="BKASH">bKash</SelectItem>
+                      <SelectItem value="BANK_TRANSFER">Bank transfer</SelectItem>
+                      <SelectItem value="MIX">Mix (Cash + bKash)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* If user select mix then open 2 inputs (one for cash, one for bkash) */}
+                {paymentMethod === "MIX" ? (
+                  <div className="space-y-3 pt-1">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="mix-cash-amount" className="text-xs">
+                        Cash amount
+                      </Label>
+                      <Input
+                        id="mix-cash-amount"
+                        type="text"
+                        inputMode="decimal"
+                        value={payments.CASH.amount}
+                        onChange={(e) =>
+                          handleAmountChange("CASH", e.target.value)
+                        }
+                        className="numeric"
+                        placeholder="0.00"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="mix-bkash-amount" className="text-xs">
+                        bKash amount
+                      </Label>
+                      <Input
+                        id="mix-bkash-amount"
+                        type="text"
+                        inputMode="decimal"
+                        value={payments.BKASH.amount}
+                        onChange={(e) =>
+                          handleAmountChange("BKASH", e.target.value)
+                        }
+                        className="numeric"
+                        placeholder="0.00"
+                      />
+                    </div>
+
+                    {Number(payments.BKASH.amount) > 0 && (
+                      <div className="space-y-1.5">
+                        <Label
+                          htmlFor="mix-bkash-reference"
+                          className="text-xs"
+                        >
+                          bKash TrxID{" "}
+                          <span className="text-muted-foreground">(optional)</span>
+                        </Label>
+                        <Input
+                          id="mix-bkash-reference"
+                          value={payments.BKASH.reference}
+                          onChange={(e) =>
+                            dispatch({
+                              type: "SET_PAYMENT_REFERENCE",
+                              method: "BKASH",
+                              reference: e.target.value,
+                            })
+                          }
+                          placeholder="Transaction ID"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Otherwise normally only 1 input */
+                  <div className="space-y-3 pt-1">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="single-tender-amount" className="text-xs">
+                        {paymentMethod === "CASH"
+                          ? "Cash amount"
+                          : paymentMethod === "BKASH"
+                            ? "bKash amount"
+                            : "Bank transfer amount"}
+                      </Label>
+                      <Input
+                        id="single-tender-amount"
+                        type="text"
+                        inputMode="decimal"
+                        value={
+                          paymentMethod === "CASH"
+                            ? payments.CASH.amount
+                            : paymentMethod === "BKASH"
+                              ? payments.BKASH.amount
+                              : payments.BANK_TRANSFER.amount
+                        }
+                        onChange={(e) =>
+                          handleAmountChange(
+                            paymentMethod as TenderMethod,
+                            e.target.value,
+                          )
+                        }
+                        className="numeric"
+                        placeholder="0.00"
+                      />
+                    </div>
+
+                    {paymentMethod !== "CASH" &&
+                      Number(
+                        paymentMethod === "BKASH"
+                          ? payments.BKASH.amount
+                          : payments.BANK_TRANSFER.amount,
+                      ) > 0 && (
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="single-tender-reference"
+                            className="text-xs"
+                          >
+                            Transaction reference{" "}
+                            <span className="text-muted-foreground">(optional)</span>
+                          </Label>
+                          <Input
+                            id="single-tender-reference"
+                            value={
+                              paymentMethod === "BKASH"
+                                ? payments.BKASH.reference
+                                : payments.BANK_TRANSFER.reference
+                            }
+                            onChange={(e) =>
+                              dispatch({
+                                type: "SET_PAYMENT_REFERENCE",
+                                method: paymentMethod as TenderMethod,
+                                reference: e.target.value,
+                              })
+                            }
+                            placeholder={
+                              paymentMethod === "BKASH"
+                                ? "Transaction ID"
+                                : "Bank reference / Slip ID"
+                            }
+                          />
+                        </div>
+                      )}
+                  </div>
+                )}
+              </div>
 
               <Separator />
 
-              <div className="space-y-1.5">
-                <Label htmlFor="amount-received" className="text-xs">
-                  Amount received
-                </Label>
-                <Input
-                  id="amount-received"
-                  type="number"
-                  min={0}
-                  placeholder="0"
-                  value={amountReceived === 0 ? "" : amountReceived}
-                  onChange={(e) =>
-                    dispatch({
-                      type: "SET_AMOUNT_RECEIVED",
-                      amount: Math.max(0, Number(e.target.value) || 0),
-                    })
-                  }
-                  className="numeric"
-                />
-              </div>
-
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Due</span>
+                <span className="text-muted-foreground">Received</span>
                 <span className="numeric font-semibold">
-                  {formatCurrency(due)}
+                  {formatCurrency(amountReceived)}
                 </span>
               </div>
 
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {isOverpaid ? "Overpayment" : "Due"}
+                </span>
+                <span className="numeric font-semibold">
+                  {formatCurrency(isOverpaid ? amountReceived - total : due)}
+                </span>
+              </div>
+              {isOverpaid ? (
+                <p className="text-xs text-destructive">
+                  Tender amounts cannot exceed the total.
+                </p>
+              ) : null}
+
               <AnimatePresence initial={false}>
-                {due > 0 ? (
+                {!isOverpaid && due > 0 ? (
                   <motion.div
                     key="due-date"
                     initial={{ opacity: 0, height: 0 }}
@@ -296,7 +520,7 @@ export function SellCounter() {
               </AnimatePresence>
 
               <CompleteSaleButton
-                disabled={lines.length === 0 || isCheckingOut}
+                disabled={lines.length === 0 || isCheckingOut || isOverpaid}
                 isLoading={isCheckingOut}
                 onComplete={handleCompleteSale}
               />

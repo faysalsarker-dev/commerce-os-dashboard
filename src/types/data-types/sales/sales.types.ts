@@ -1,3 +1,9 @@
+import type {
+  PaymentEntry,
+  PaymentMethod,
+  TenderPayment,
+} from "@/types/data-types/payment.types";
+
 export interface ScanProductPayload {
   code: string
 }
@@ -77,15 +83,12 @@ export interface SaleByInvoice {
   paymentStatus: PaymentStatus
   createdAt: string
   items: SaleByInvoiceItem[]
+  payments?: PaymentEntry[]
   customer?: { name: string; phone: string | null } | null
 }
 
 // ---- Payment method must match your Prisma enum exactly — no free-form string escape hatch ----
-export type PaymentMethod =
-  "CASH" | "BKASH" | "NAGAD" | "ROCKET" | "CARD" | "BANK_TRANSFER"
-// "MOBILE_PAYMENT" doesn't exist in your schema's PaymentMethod enum — BKASH/NAGAD/ROCKET are
-// your actual mobile payment methods. And the `| string` fallback defeats the whole point of a
-// union type — it lets TypeScript pass through any typo silently. Drop it.
+export type { PaymentMethod };
 
 export type SaleChannel = "OFFLINE" | "ONLINE"
 export type SaleStatus =
@@ -112,7 +115,8 @@ export interface CheckoutPayload {
   items: CheckoutItemPayload[]
   discount?: number // order-level discount in taka
   shippingFee?: number
-  paymentMethod: PaymentMethod | string
+  paymentMethod?: PaymentMethod
+  payments?: TenderPayment[]
   isFullPayment: boolean // required now — this is what was silently defaulting to true before
   paidAmount?: number // send only when isFullPayment is false
   dueDate?: string // ISO string, send only when there's a due
@@ -161,6 +165,7 @@ export interface InvoiceReceipt {
   dueAmount: number
   paymentStatus: PaymentStatus
   paymentMethod: PaymentMethod | null
+  payments: PaymentEntry[]
   dueDate: string | null
 
   notes: string | null

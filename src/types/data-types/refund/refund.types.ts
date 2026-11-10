@@ -1,3 +1,9 @@
+import type {
+  PaymentEntry,
+  PaymentMethod,
+  TenderPayment,
+} from "@/types/data-types/payment.types";
+
 export type RefundMethod =
   | "CASH"
   | "BKASH"
@@ -6,7 +12,8 @@ export type RefundMethod =
   | "CARD"
   | "BANK_TRANSFER"
   | "BANK"
-  | "OTHER";
+  | "OTHER"
+  | "MIX";
 
 export interface RefundItemPayload {
   saleItemId: string;
@@ -18,6 +25,7 @@ export interface CreateRefundPayload {
   saleId: string;
   items: RefundItemPayload[];
   method?: RefundMethod;
+  payments?: TenderPayment[];
   reason?: string;
 }
 
@@ -49,7 +57,8 @@ export interface Refund {
   refundNumber: string;
   saleId: string;
   totalAmount: number;
-  refundMethod: string;
+  refundMethod: PaymentMethod | string;
+  payments?: PaymentEntry[];
   reason: string | null;
   processedById: string | null;
   createdAt: string;
@@ -70,6 +79,19 @@ export interface Refund {
     name: string;
     email: string;
   } | null;
+}
+
+export interface CreatedRefund {
+  id: string;
+  amount: number | string;
+  method: PaymentMethod;
+  payments?: PaymentEntry[];
+  createdAt: string;
+}
+
+export interface CreateRefundResponse {
+  refund: CreatedRefund;
+  sale: { id: string };
 }
 
 export interface RefundFilters {

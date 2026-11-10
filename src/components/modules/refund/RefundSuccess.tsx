@@ -3,7 +3,8 @@ import { Check, Printer, RotateCcw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/formatCurrency";
-import { REFUND_METHODS, type RefundResult } from "./types";
+import { PAYMENT_METHOD_LABEL } from "@/types/data-types/payment.types";
+import type { RefundResult } from "./types";
 
 interface RefundSuccessProps {
   result: RefundResult;
@@ -13,8 +14,6 @@ interface RefundSuccessProps {
 
 export function RefundSuccess({ result, onReset, onPrint }: RefundSuccessProps) {
   const reduce = useReducedMotion();
-  const methodLabel =
-    REFUND_METHODS.find((m) => m.value === result.method)?.label ?? result.method;
 
   return (
     <Card className="mx-auto max-w-md p-8 text-center">
@@ -34,7 +33,19 @@ export function RefundSuccess({ result, onReset, onPrint }: RefundSuccessProps) 
 
       <dl className="mt-6 space-y-2 border-t border-border pt-4 text-sm">
         <Row label="Refund ID" value={result.id} />
-        <Row label="Method" value={methodLabel} />
+        <Row
+          label="Method"
+          value={PAYMENT_METHOD_LABEL[result.method] ?? result.method}
+        />
+        {result.payments.map((payment, index) => (
+          <Row
+            key={`${payment.method}-${index}`}
+            label={`${PAYMENT_METHOD_LABEL[payment.method] ?? payment.method}${
+              payment.reference ? ` · Ref: ${payment.reference}` : ""
+            }`}
+            value={formatCurrency(Number(payment.amount))}
+          />
+        ))}
         <Row label="Processed" value={new Date(result.createdAt).toLocaleString()} />
       </dl>
 

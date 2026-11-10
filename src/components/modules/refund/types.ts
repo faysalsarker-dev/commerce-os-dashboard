@@ -1,3 +1,5 @@
+import type { PaymentEntry, PaymentMethod } from "@/types/data-types/payment.types"
+
 export type SaleStatus =
   | "DRAFT"
   | "PENDING"
@@ -10,17 +12,7 @@ export type SaleStatus =
 export type PaymentStatus =
   "UNPAID" | "PAID" | "PARTIAL" | "DUE" | "REFUNDED" | "PARTIALLY_REFUNDED"
 
-export type RefundMethod =
-  "CASH" | "BKASH" | "NAGAD" | "ROCKET" | "CARD" | "BANK_TRANSFER"
-
-export const REFUND_METHODS: { value: RefundMethod; label: string }[] = [
-  { value: "CASH", label: "Cash" },
-  { value: "BKASH", label: "bKash" },
-  { value: "NAGAD", label: "Nagad" },
-  { value: "ROCKET", label: "Rocket" },
-  { value: "CARD", label: "Card" },
-  { value: "BANK_TRANSFER", label: "Bank transfer" },
-]
+export type RefundMethod = PaymentMethod
 
 export interface SaleItem {
   id: string
@@ -45,6 +37,7 @@ export interface Sale {
   paidAmount: number
   dueAmount: number
   paymentStatus: PaymentStatus
+  payments?: PaymentEntry[]
   createdAt: string
   items: SaleItem[]
 }
@@ -53,6 +46,7 @@ export interface RefundResult {
   id: string
   amount: number
   method: RefundMethod
+  payments: PaymentEntry[]
   createdAt: string
 }
 
