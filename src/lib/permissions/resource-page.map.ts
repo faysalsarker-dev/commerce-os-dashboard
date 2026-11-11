@@ -5,6 +5,7 @@ export const RESOURCE_PAGE_MAP: Record<Resource, Page> = {
   inventory: "inventory",
   orders: "orders",
   users: "users",
+  customers: "customers",
   reports: "reports",
   category: "category",
   size: "size",

@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { TicketPercent } from "lucide-react";
+import { AlertTriangle, TicketPercent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { cn } from "@/lib/utils";
 
 interface BillSummaryProps {
   subtotal: number;
+  lineDiscount?: number;
   discount: number;
   total: number;
   onDiscountChange: (value: number) => void;
@@ -17,6 +19,7 @@ interface BillSummaryProps {
 
 export function BillSummary({
   subtotal,
+  lineDiscount = 0,
   discount,
   total,
   onDiscountChange,
@@ -48,7 +51,7 @@ export function BillSummary({
 
       <div className="space-y-1.5">
         <Label htmlFor="discount-amount" className="text-xs">
-          Manual discount
+          Order discount
         </Label>
         <Input
           id="discount-amount"
@@ -57,15 +60,40 @@ export function BillSummary({
           value={discount === 0 ? "" : discount}
           placeholder="0"
           onChange={(e) => onDiscountChange(Math.max(0, Number(e.target.value) || 0))}
-          className="numeric"
+          className={cn(
+            "numeric transition-colors",
+            subtotal > 0 && discount >= subtotal
+              ? "border-amber-500/60 text-amber-700 focus-visible:ring-amber-500/40 bg-amber-500/10 dark:text-amber-300"
+              : discount > 0
+                ? "border-emerald-500/60 text-emerald-700 focus-visible:ring-emerald-500/30 bg-emerald-500/5 dark:text-emerald-300"
+                : ""
+          )}
         />
+        {subtotal > 0 && discount >= subtotal && (
+          <div className="flex items-center gap-1.5 text-[11px] text-amber-800 dark:text-amber-300 font-medium pt-0.5">
+            <AlertTriangle className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <span>Warning: 100% order discount (Sale total is ৳0.00).</span>
+          </div>
+        )}
       </div>
 
       <Separator />
 
       <dl className="space-y-2 text-sm">
-        <Row label="Subtotal" value={formatCurrency(subtotal)} />
-        <Row label="Discount" value={`− ${formatCurrency(discount)}`} muted />
+        {lineDiscount > 0 ? (
+          <>
+            <Row label="Items total" value={formatCurrency(subtotal + lineDiscount)} />
+            <Row label="Item discounts" value={`− ${formatCurrency(lineDiscount)}`} muted />
+            {discount > 0 && (
+              <Row label="Order discount" value={`− ${formatCurrency(discount)}`} muted />
+            )}
+          </>
+        ) : (
+          <>
+            <Row label="Subtotal" value={formatCurrency(subtotal)} />
+            <Row label="Discount" value={`− ${formatCurrency(discount)}`} muted />
+          </>
+        )}
         <Separator />
         <div className="flex items-center justify-between">
           <dt className="text-sm font-semibold">Total</dt>

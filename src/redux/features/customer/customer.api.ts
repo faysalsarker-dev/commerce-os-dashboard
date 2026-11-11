@@ -3,6 +3,9 @@ import type {
   CreateCustomerPayload,
   Customer,
   CustomerFilters,
+  CustomerPaymentPayload,
+  CustomerPaymentResult,
+  CustomerProfile,
   UpdateCustomerPayload,
 } from "@/types/data-types/customer/customer.types";
 import type { ApiResponse } from "@/types/shared";
@@ -54,7 +57,7 @@ export const customerApi = baseApi.injectEndpoints({
     /**
      * Get Customer By ID
      */
-    getCustomer: builder.query<ApiResponse<Customer>, string>({
+    getCustomer: builder.query<ApiResponse<CustomerProfile>, string>({
       query: (id) => ({
         url: `${BASE_URL}/${id}`,
         method: "GET",
@@ -97,6 +100,25 @@ export const customerApi = baseApi.injectEndpoints({
     }),
 
     /**
+     * Record a payment against one of a customer's outstanding sales
+     */
+    recordCustomerPayment: builder.mutation<
+      ApiResponse<CustomerPaymentResult>,
+      { customerId: string } & CustomerPaymentPayload
+    >({
+      query: ({ customerId, ...data }) => ({
+        url: `${BASE_URL}/${customerId}/payments`,
+        method: "POST",
+        data,
+      }),
+      invalidatesTags: (_, __, { customerId }) => [
+        { type: "CUSTOMER", id: customerId },
+        { type: "CUSTOMER", id: "LIST" },
+        { type: "SALES", id: "LIST" },
+      ],
+    }),
+
+    /**
      * Delete Customer By ID
      */
     deleteCustomer: builder.mutation<ApiResponse<Customer>, string>({
@@ -130,6 +152,9 @@ export const {
 
   // Update
   useUpdateCustomerMutation,
+
+  // Payments
+  useRecordCustomerPaymentMutation,
 
   // Delete
   useDeleteCustomerMutation,

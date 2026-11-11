@@ -31,6 +31,7 @@ type Action =
   | { type: "ADD_LINE"; line: CartLine }
   | { type: "INCREMENT_LINE"; id: string }
   | { type: "SET_QUANTITY"; id: string; quantity: number }
+  | { type: "SET_LINE_DISCOUNT"; id: string; discount: number; discountPercent?: number }
   | { type: "REMOVE_LINE"; id: string }
   | { type: "SET_CUSTOMER"; customer: Customer | null; notFoundPhone: string | null }
   | { type: "CLEAR_CUSTOMER" }
@@ -43,23 +44,110 @@ type Action =
 
 function sellCounterReducer(state: SellCounterState, action: Action): SellCounterState {
   switch (action.type) {
-    case "ADD_LINE":
-      return { ...state, lines: [...state.lines, action.line] };
+    case "ADD_LINE": {
+      const existing = state.lines.find((l) => l.id === action.line.id);
+      if (existing) {
+        if (existing.quantity >= existing.stockQty) return state;
+        const nextQty = Math.min(
+          existing.quantity + (action.line.quantity || 1),
+          existing.stockQty
+        );
+        return {
+          ...state,
+          lines: state.lines.map((l) => {
+            if (l.id !== action.line.id) return l;
+            const lineTotal = l.sellingPrice * nextQty;
+            let nextDiscount = l.discount ?? 0;
+            if (l.discountPercent !== undefined && l.discountPercent > 0) {
+              nextDiscount =
+                Math.round(((lineTotal * l.discountPercent) / 100) * 100) / 100;
+            } else if (nextDiscount > lineTotal) {
+              nextDiscount = lineTotal;
+            }
+            return {
+              ...l,
+              quantity: nextQty,
+              discount: nextDiscount,
+            };
+          }),
+        };
+      }
+
+      const safeQty = Math.min(
+        action.line.quantity || 1,
+        Math.max(1, action.line.stockQty)
+      );
+      return {
+        ...state,
+        lines: [
+          ...state.lines,
+          {
+            ...action.line,
+            quantity: safeQty,
+            discount: action.line.discount ?? 0,
+            discountPercent: action.line.discountPercent ?? 0,
+          },
+        ],
+      };
+    }
 
     case "INCREMENT_LINE":
       return {
         ...state,
-        lines: state.lines.map((l) =>
-          l.id === action.id ? { ...l, quantity: l.quantity + 1 } : l,
-        ),
+        lines: state.lines.map((l) => {
+          if (l.id !== action.id) return l;
+          if (l.quantity >= l.stockQty) return l;
+          const nextQty = Math.min(l.quantity + 1, l.stockQty);
+          const lineTotal = l.sellingPrice * nextQty;
+          let nextDiscount = l.discount ?? 0;
+          if (l.discountPercent !== undefined && l.discountPercent > 0) {
+            nextDiscount =
+              Math.round(((lineTotal * l.discountPercent) / 100) * 100) / 100;
+          } else if (nextDiscount > lineTotal) {
+            nextDiscount = lineTotal;
+          }
+          return {
+            ...l,
+            quantity: nextQty,
+            discount: nextDiscount,
+          };
+        }),
       };
 
     case "SET_QUANTITY":
       if (action.quantity < 1) return state;
       return {
         ...state,
+        lines: state.lines.map((l) => {
+          if (l.id !== action.id) return l;
+          const nextQty = Math.min(action.quantity, Math.max(1, l.stockQty));
+          const lineTotal = l.sellingPrice * nextQty;
+          let nextDiscount = l.discount ?? 0;
+          if (l.discountPercent !== undefined && l.discountPercent > 0) {
+            nextDiscount =
+              Math.round(((lineTotal * l.discountPercent) / 100) * 100) / 100;
+          } else if (nextDiscount > lineTotal) {
+            nextDiscount = lineTotal;
+          }
+          return {
+            ...l,
+            quantity: nextQty,
+            discount: nextDiscount,
+          };
+        }),
+      };
+
+    case "SET_LINE_DISCOUNT":
+      return {
+        ...state,
         lines: state.lines.map((l) =>
-          l.id === action.id ? { ...l, quantity: action.quantity } : l,
+          l.id === action.id
+            ? {
+                ...l,
+                discount: Math.max(0, action.discount),
+                discountPercent: action.discountPercent,
+              }
+            : l,
         ),
       };
 

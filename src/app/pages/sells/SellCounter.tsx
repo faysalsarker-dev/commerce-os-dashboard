@@ -58,10 +58,15 @@ export function SellCounter() {
     useLazyGetCustomerByPhoneQuery()
   const [createCustomer] = useCreateCustomerMutation()
 
-  const subtotal = useMemo(
+  const rawSubtotal = useMemo(
     () => lines.reduce((sum, l) => sum + l.sellingPrice * l.quantity, 0),
     [lines]
   )
+  const lineDiscountsTotal = useMemo(
+    () => lines.reduce((sum, l) => sum + (l.discount ?? 0), 0),
+    [lines]
+  )
+  const subtotal = Math.max(0, rawSubtotal - lineDiscountsTotal)
   const total = Math.max(0, subtotal - discount)
   const amountReceived = sumTenderAmounts(payments)
   const due = Math.max(0, total - amountReceived)
@@ -104,8 +109,25 @@ export function SellCounter() {
     }
   }
 
-  const handleQuantityChange = (id: string, quantity: number) =>
+  const handleQuantityChange = (id: string, quantity: number) => {
+    const line = lines.find((l) => l.id === id)
+    if (line && quantity > line.stockQty) {
+      toast.warning("Stock limit reached", {
+        description: `Only ${line.stockQty} pc available in stock for ${line.productName}.`,
+      })
+      dispatch({ type: "SET_QUANTITY", id, quantity: line.stockQty })
+      return
+    }
     dispatch({ type: "SET_QUANTITY", id, quantity })
+  }
+
+  const handleLineDiscountChange = (
+    id: string,
+    discount: number,
+    discountPercent?: number
+  ) => {
+    dispatch({ type: "SET_LINE_DISCOUNT", id, discount, discountPercent })
+  }
 
   const handleRemoveLine = (id: string) => dispatch({ type: "REMOVE_LINE", id })
 
@@ -232,7 +254,11 @@ export function SellCounter() {
     try {
       const paymentEntries = getTenderPayments(payments)
       const res = await checkout({
-        items: lines.map((l) => ({ variantId: l.id, quantity: l.quantity })),
+        items: lines.map((l) => ({
+          variantId: l.id,
+          quantity: l.quantity,
+          discount: l.discount && l.discount > 0 ? l.discount : undefined,
+        })),
         paymentMethod,
         payments: paymentEntries.length ? paymentEntries : undefined,
         discount: discount > 0 ? discount : undefined,
@@ -278,6 +304,7 @@ export function SellCounter() {
             <ProductList
               lines={lines}
               onQuantityChange={handleQuantityChange}
+              onDiscountChange={handleLineDiscountChange}
               onRemove={handleRemoveLine}
             />
           </div>
@@ -294,6 +321,7 @@ export function SellCounter() {
 
             <BillSummary
               subtotal={subtotal}
+              lineDiscount={lineDiscountsTotal}
               discount={discount}
               total={total}
               onDiscountChange={(value) =>

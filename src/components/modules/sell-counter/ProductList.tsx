@@ -9,10 +9,16 @@ import type { CartLine } from "./types";
 interface ProductListProps {
   lines: CartLine[];
   onQuantityChange: (id: string, quantity: number) => void;
+  onDiscountChange: (id: string, discount: number, discountPercent?: number) => void;
   onRemove: (id: string) => void;
 }
 
-export function ProductList({ lines, onQuantityChange, onRemove }: ProductListProps) {
+export function ProductList({
+  lines,
+  onQuantityChange,
+  onDiscountChange,
+  onRemove,
+}: ProductListProps) {
   return (
     <Card className="overflow-hidden p-0">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
@@ -40,6 +46,7 @@ export function ProductList({ lines, onQuantityChange, onRemove }: ProductListPr
                 key={line.id}
                 line={line}
                 onQuantityChange={onQuantityChange}
+                onDiscountChange={onDiscountChange}
                 onRemove={onRemove}
               />
             ))}

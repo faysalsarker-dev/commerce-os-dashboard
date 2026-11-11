@@ -16,6 +16,8 @@ import ExpenseCategoryPage from "@/app/pages/expense/ExpenseCategoryPage"
 import ExpensePage from "@/app/pages/expense/ExpensePage"
 import SalaryPage from "@/app/pages/salary/SalaryPage"
 import SocialInboxPage from "@/modules/social-inbox/pages/SocialInboxPage"
+import CustomerManagementPage from "@/app/pages/customer/CustomerManagementPage"
+import CustomerProfilePage from "@/app/pages/customer/CustomerProfilePage"
 
 export interface RouteGroup {
   label: string
@@ -38,6 +40,20 @@ export const routeGroups: RouteGroup[] = [
   {
     label: "Sells",
     items: [
+      {
+        path: "customers",
+        name: "Customers",
+        Component: CustomerManagementPage,
+        icon: UsersRound,
+        page: "customers",
+      },
+      {
+        path: "customers/:id",
+        name: "Customer Profile",
+        Component: CustomerProfilePage,
+        page: "customers",
+        isVisible: false,
+      },
       {
         path: "sell",
         name: "Sell Counter",

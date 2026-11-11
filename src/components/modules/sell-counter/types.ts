@@ -5,6 +5,8 @@ import bkash from "@/assets/system/bkash_payment.png";
 export interface CartLine extends ScannedProduct {
   id: string; // = variantId, kept as `id` since list rendering/keys expect it
   quantity: number;
+  discount?: number; // total line discount in taka
+  discountPercent?: number; // percentage discount (0-100)
 }
 
 export interface PosCustomer {
