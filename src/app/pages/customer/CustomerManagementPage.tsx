@@ -1,36 +1,23 @@
 import { useMemo, useState } from "react"
-import { createColumnHelper } from "@tanstack/react-table"
-import { ArrowUpRight, CircleDollarSign, Plus, UsersRound, Wallet } from "lucide-react"
+import { CircleDollarSign, Plus, UsersRound, Wallet } from "lucide-react"
 import { useNavigate } from "react-router"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { DataTable } from "@/components/modules/table"
 import { CustomerFormDialog } from "@/components/modules/customer/CustomerFormDialog"
-import { getDefaultValues, search, useFilter } from "@/components/modules/filter"
+import { getDefaultValues, useFilter } from "@/components/modules/filter"
 import { FilterBar, PageContainer, PageHeader } from "@/components/shared/common"
 import { useCreateCustomerMutation, useGetCustomersQuery } from "@/redux/features/customer/customer.api"
-import type { Customer, CustomerFormValues } from "@/types/data-types/customer/customer.types"
+import type { CustomerFormValues } from "@/types/data-types/customer/customer.types"
 import { formatCurrency } from "@/lib/formatCurrency"
-import { formatDate, initialsFrom } from "@/lib/format"
 import { getErrorMessage, handleAsyncMutation } from "@/utils/asyncHandler"
-
-const CUSTOMER_FILTERS = [
-  search({
-    name: "searchTerm",
-    label: "Search",
-    placeholder: "Search customers by name or phone...",
-  }),
-]
-
-const column = createColumnHelper<Customer>()
-
-function CustomerAvatar({ name }: { name: string }) {
-  return (
-    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-xs font-semibold text-primary">
-      {initialsFrom(name) || "C"}
-    </span>
-  )
-}
+import {
+  createCustomerTableColumns,
+  CUSTOMER_FILTER_CONFIG,
+  CUSTOMER_PAGE_CONFIG,
+  CUSTOMER_PAGE_SIZE,
+  CUSTOMER_SORT_OPTIONS,
+} from "./customer.config"
 
 function SummaryCard({
   label,
@@ -64,12 +51,23 @@ export default function CustomerManagementPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [createCustomer, createState] = useCreateCustomerMutation()
   const filter = useFilter({
-    defaultValues: getDefaultValues(CUSTOMER_FILTERS),
+    defaultValues: getDefaultValues(CUSTOMER_FILTER_CONFIG),
     debounceMs: { searchTerm: 300 },
     syncToUrl: true,
+    pageSize: CUSTOMER_PAGE_SIZE,
   })
+  const queryParams = useMemo(() => {
+    const selectedSort = filter.values.sort ?? CUSTOMER_SORT_OPTIONS[0].value
+    const isDescending = selectedSort.startsWith("-")
+
+    return {
+      ...filter.queryParams,
+      sortBy: isDescending ? selectedSort.slice(1) : selectedSort,
+      sortOrder: isDescending ? ("desc" as const) : ("asc" as const),
+    }
+  }, [filter.queryParams, filter.values.sort])
   const { data: response, isLoading, isFetching, error } = useGetCustomersQuery(
-    filter.queryParams,
+    queryParams,
   )
   const customers = response?.data ?? []
   const totalCustomers = response?.meta?.total ?? customers.length
@@ -77,66 +75,10 @@ export default function CustomerManagementPage() {
   const currentPageDue = customers.reduce((sum, customer) => sum + customer.totalDue, 0)
 
   const columns = useMemo(
-    () => [
-      column.display({
-        id: "customer",
-        header: "Customer",
-        cell: ({ row }) => (
-          <div className="flex min-w-52 items-center gap-3">
-            <CustomerAvatar name={row.original.name} />
-            <div className="min-w-0">
-              <p className="truncate font-medium text-foreground">{row.original.name}</p>
-              <p className="truncate text-xs text-muted-foreground">
-                Added {formatDate(row.original.createdAt)}
-              </p>
-            </div>
-          </div>
-        ),
+    () =>
+      createCustomerTableColumns({
+        onOpen: (customer) => navigate(`/app/customers/${customer.id}`),
       }),
-      column.accessor("phone", {
-        header: "Phone",
-        cell: ({ getValue }) => getValue() || <span className="text-muted-foreground">Not provided</span>,
-      }),
-      column.accessor("totalOrders", {
-        header: "Orders",
-        cell: ({ getValue }) => (
-          <span className="font-medium tabular-nums">{getValue()}</span>
-        ),
-      }),
-      column.accessor("totalSpent", {
-        header: "Lifetime spend",
-        cell: ({ getValue }) => (
-          <span className="font-medium tabular-nums">{formatCurrency(getValue())}</span>
-        ),
-      }),
-      column.accessor("totalDue", {
-        header: "Outstanding",
-        cell: ({ getValue }) => (
-          <span className={getValue() > 0 ? "font-medium text-amber-700 dark:text-amber-400" : "text-muted-foreground"}>
-            {formatCurrency(getValue())}
-          </span>
-        ),
-      }),
-      column.accessor("lastPurchaseAt", {
-        header: "Last purchase",
-        cell: ({ getValue }) => formatDate(getValue()),
-      }),
-      column.display({
-        id: "view",
-        header: "",
-        cell: ({ row }) => (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="gap-1.5 text-primary"
-            onClick={() => navigate(`/app/customers/${row.original.id}`)}
-          >
-            View profile <ArrowUpRight className="size-3.5" />
-          </Button>
-        ),
-      }),
-    ],
     [navigate],
   )
 
@@ -158,8 +100,8 @@ export default function CustomerManagementPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Customers"
-        description="A complete view of your customer relationships, orders, and account balances."
+        title={CUSTOMER_PAGE_CONFIG.title}
+        description={CUSTOMER_PAGE_CONFIG.description}
         noAction
         actions={
           <Button onClick={() => setIsCreateOpen(true)} className="h-10 gap-2 rounded-xl">
@@ -190,7 +132,7 @@ export default function CustomerManagementPage() {
         />
       </section>
 
-      <FilterBar filter={filter} filters={CUSTOMER_FILTERS} />
+      <FilterBar filter={filter} filters={CUSTOMER_FILTER_CONFIG} />
 
       {error ? (
         <div

@@ -27,7 +27,7 @@ export function PageHeader({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
       className={cn(
-        "flex flex-col gap-4 rounded-xl border border-border bg-card p-4 py-6 shadow-soft md:flex-row md:items-center md:justify-between",
+        "flex flex-col gap-4 rounded-xl  bg-card p-4 py-6 shadow-soft md:flex-row md:items-center md:justify-between",
         className,
       )}
     >

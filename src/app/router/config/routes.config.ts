@@ -1,9 +1,10 @@
-import { PackageIcon, LayoutGridIcon, ScanBarcodeIcon, Undo, UsersRound, Ruler, ReceiptText, Tag, MessageSquareMore, Wallet } from "lucide-react"
+import { PackageIcon, LayoutGridIcon, ScanBarcodeIcon, Undo, UsersRound, Ruler, ReceiptText, Tag, MessageSquareMore, Wallet, TicketPercent, Truck } from "lucide-react"
 
 import type { RouteConfig } from "@/types/routes/route.types"
 import AllProduct from "@/app/pages/products/AllProduct"
 import AllCategory from "@/app/pages/category/AllCategory"
 import SizePage from "@/app/pages/size/SizePage"
+import CouponPage from "@/app/pages/coupon/CouponPage"
 import ProductDetailPage from "@/app/pages/products/ProductDetailPage"
 import SellCounter from "@/app/pages/sells/SellCounter"
 import RefundCounter from "@/app/pages/refund/RefundCounter"
@@ -18,6 +19,7 @@ import SalaryPage from "@/app/pages/salary/SalaryPage"
 import SocialInboxPage from "@/modules/social-inbox/pages/SocialInboxPage"
 import CustomerManagementPage from "@/app/pages/customer/CustomerManagementPage"
 import CustomerProfilePage from "@/app/pages/customer/CustomerProfilePage"
+import CourierIntegrationPage from "@/app/pages/courier-integration/CourierIntegrationPage"
 
 export interface RouteGroup {
   label: string
@@ -76,6 +78,18 @@ export const routeGroups: RouteGroup[] = [
     ]
   },
   {
+    label: "Integrations",
+    items: [
+      {
+        path: "courier-integrations",
+        name: "Courier Integrations",
+        Component: CourierIntegrationPage,
+        icon: Truck,
+        page: "courier-integration",
+      },
+    ],
+  },
+  {
     label: "Data Library",
     items: [
       {
@@ -98,6 +112,13 @@ export const routeGroups: RouteGroup[] = [
         Component: SizePage,
         icon: Ruler,
         page: "size",
+      },
+      {
+        path: "coupons",
+        name: "Coupons",
+        Component: CouponPage,
+        icon: TicketPercent,
+        page: "coupon",
       },
       {
         path: "expense-categories",

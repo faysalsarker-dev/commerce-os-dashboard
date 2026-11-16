@@ -175,6 +175,7 @@ interface ActionConfig<T, TAction extends string> {
   confirm?: boolean
   confirmTitle?: string
   confirmDescription?: string
+  confirmLabel?: string
   hidden?: boolean | ((row: T) => boolean)
   disabled?: boolean | ((row: T) => boolean)
   /** Optional external loading indicator (can be `boolean` or a function `(row) => boolean`) */
@@ -286,6 +287,7 @@ interface ActionPresetOptions<T, TAction extends string> {
   confirm?: boolean
   confirmTitle?: string
   confirmDescription?: string
+  confirmLabel?: string
   hidden?: boolean | ((row: T) => boolean)
   disabled?: boolean | ((row: T) => boolean)
 }
@@ -311,6 +313,7 @@ function makeAction<TAction extends string>(
     confirm: options.confirm ?? defaults.confirm ?? false,
     confirmTitle: options.confirmTitle,
     confirmDescription: options.confirmDescription,
+    confirmLabel: options.confirmLabel,
     hidden: options.hidden,
     disabled: options.disabled,
   })
@@ -358,6 +361,7 @@ export const action = {
     confirm: options.confirm ?? false,
     confirmTitle: options.confirmTitle,
     confirmDescription: options.confirmDescription,
+    confirmLabel: options.confirmLabel,
     hidden: options.hidden,
     disabled: options.disabled,
   }),
@@ -527,6 +531,7 @@ function RowActionsMenu<T, TAction extends string, TResource extends string>({
         onOpenChange={(open) => !open && setPendingAction(null)}
         title={pendingAction?.confirmTitle}
         description={pendingAction?.confirmDescription}
+        confirmLabel={pendingAction?.confirmLabel}
         loading={
           pendingAction
             ? typeof pendingAction.loading === "function"

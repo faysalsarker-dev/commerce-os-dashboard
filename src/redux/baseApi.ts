@@ -15,6 +15,8 @@ export const baseApi = createApi({
     "EXPENSE",
     "EXPENSE_CATEGORY",
     "SALARY",
+    "COUPON",
+    "COURIER_ACCOUNT",
   ],
   keepUnusedDataFor: 60 * 60,
   refetchOnMountOrArgChange: false,

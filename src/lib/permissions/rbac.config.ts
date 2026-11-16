@@ -19,6 +19,7 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     reports: ["view"],
     users: ["view"],
     "social-inbox": ["view", "manage"],
+    coupon: ["view", "create", "edit", "delete"],
   }),
   [Role.MARKETER]: createRole({
     product: ["view"],
@@ -26,6 +27,7 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     size: ["view"],
     reports: ["view"],
     "social-inbox": ["view", "manage"],
+    coupon: ["view"],
   }),
   [Role.SALESMAN]: createRole({
     product: ["view"],
@@ -36,5 +38,6 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     refund: ["view", "refund"],
     inventory: ["view"],
     "social-inbox": ["view"],
+    coupon: ["view"],
   }),
 };

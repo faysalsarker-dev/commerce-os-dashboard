@@ -14,3 +14,5 @@ export * from "./features/refund/refund.api";
 export * from "./features/sales/sales.api";
 export * from "./features/size/size.api";
 export * from "./features/user/user.api";
+export * from "./features/coupon/coupon.api";
+export * from "./features/courier-integration/courier-integration.api";
