@@ -1,4 +1,4 @@
-import { PackageIcon, LayoutGridIcon, ScanBarcodeIcon, Undo, UsersRound, Ruler, ReceiptText, Tag, MessageSquareMore, Wallet, TicketPercent, Truck } from "lucide-react"
+import { PackageIcon, LayoutGridIcon, ScanBarcodeIcon, Undo, UsersRound, Ruler, ReceiptText, Tag, MessageSquareMore, Wallet, TicketPercent, Truck, ClipboardList } from "lucide-react"
 
 import type { RouteConfig } from "@/types/routes/route.types"
 import AllProduct from "@/app/pages/products/AllProduct"
@@ -20,6 +20,7 @@ import SocialInboxPage from "@/modules/social-inbox/pages/SocialInboxPage"
 import CustomerManagementPage from "@/app/pages/customer/CustomerManagementPage"
 import CustomerProfilePage from "@/app/pages/customer/CustomerProfilePage"
 import CourierIntegrationPage from "@/app/pages/courier-integration/CourierIntegrationPage"
+import OrderManagementPage from "@/app/pages/order/OrderManagementPage"
 
 export interface RouteGroup {
   label: string
@@ -42,6 +43,13 @@ export const routeGroups: RouteGroup[] = [
   {
     label: "Sells",
     items: [
+      {
+        path: "orders",
+        name: "Orders",
+        Component: OrderManagementPage,
+        icon: ClipboardList,
+        page: "orders",
+      },
       {
         path: "customers",
         name: "Customers",
