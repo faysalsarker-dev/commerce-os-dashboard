@@ -13,6 +13,7 @@ interface BillSummaryProps {
   lineDiscount?: number;
   discount: number;
   total: number;
+  courierCharge?: number;
   onDiscountChange: (value: number) => void;
   // onApplyCoupon: (code: string) => void;
 }
@@ -22,6 +23,7 @@ export function BillSummary({
   lineDiscount = 0,
   discount,
   total,
+  courierCharge = 0,
   onDiscountChange,
   // onApplyCoupon,
 }: BillSummaryProps) {
@@ -93,6 +95,9 @@ export function BillSummary({
             <Row label="Subtotal" value={formatCurrency(subtotal)} />
             <Row label="Discount" value={`− ${formatCurrency(discount)}`} muted />
           </>
+        )}
+        {courierCharge > 0 && (
+          <Row label="Courier charge" value={formatCurrency(courierCharge)} />
         )}
         <Separator />
         <div className="flex items-center justify-between">

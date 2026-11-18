@@ -21,7 +21,7 @@ export function InvoiceReceipt() {
   // data is gone (that's the known tradeoff of route state). Bounce back to
   // Sell Counter rather than rendering a broken/empty receipt.
   if (!invoice) {
-    return <Navigate to="/app/sell" replace />;
+    return <Navigate to="/app/sell/counter" replace />;
   }
 
   return (
@@ -53,7 +53,7 @@ export function InvoiceReceipt() {
           <Button onClick={handlePrint} className="w-full active:scale-[0.98]">
             <Printer className="size-4" aria-hidden />
             Print invoice
-          </Button> <Link to="/app/sell">
+          </Button> <Link to="/app/sell/counter">
           <Button variant="outline" className="w-full active:scale-[0.98] flex items-center justify-center gap-2">
            
               <ShoppingCart className="size-4" aria-hidden />

@@ -73,7 +73,7 @@ export function FilterBar<T extends FilterValues>({
 
   return (
     <div
-      className={`rounded-2xl border border-border/60 bg-card p-3 shadow-sm ring-1 ring-black/2 sm:p-4 ${className ?? ""}`}
+      className={`rounded-2xl  bg-card p-3  ring-1 ring-black/2 sm:p-4 ${className ?? ""}`}
     >
       <div className="flex flex-wrap items-center gap-2">
        

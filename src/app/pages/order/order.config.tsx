@@ -8,6 +8,8 @@ import type {
 } from "@/types/data-types/order/order.types"
 import { formatCurrency } from "@/lib/formatCurrency"
 import { formatDate } from "@/lib/format"
+import type { EntityFormConfig } from "@/types/form/form.types"
+import type { OrderCreateFormValues } from "@/types/validations/order/order-create.validation"
 
 export const ORDER_PAGE_CONFIG = {
   title: "Orders",
@@ -16,6 +18,36 @@ export const ORDER_PAGE_CONFIG = {
 } as const
 
 export const ORDER_PAGE_SIZE = 10
+
+export const ORDER_CREATE_FORM_CONFIG: EntityFormConfig<OrderCreateFormValues> =
+  [
+    {
+      name: "advanceAmount",
+      label: "Customer advance",
+      kind: "number",
+      min: 0,
+      step: 0.01,
+      prefix: "৳",
+      description: "Optional amount received when this order is placed.",
+      placeholder: "0.00",
+    },
+    {
+      name: "courierCharge",
+      label: "Courier charge",
+      kind: "number",
+      min: 0,
+      step: 0.01,
+      prefix: "৳",
+      description: "Added to the order total.",
+      placeholder: "0.00",
+    },
+    {
+      name: "estimatedDeliveryDate",
+      label: "Estimated delivery date",
+      kind: "date",
+      description: "Optional expected delivery date.",
+    },
+  ]
 
 export const ORDER_STATUSES: OrderStatus[] = [
   "DRAFT",

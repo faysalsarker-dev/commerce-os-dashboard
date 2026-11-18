@@ -8,14 +8,14 @@ export function RefundReceipt() {
   const refund = location.state?.refund as RefundResult | undefined
 
   if (!refund) {
-    return <Navigate to="/app/refund" replace />
+    return <Navigate to="/app/refund/process" replace />
   }
 
   return (
     <main className="min-h-screen bg-muted/40 px-4 py-10">
       <RefundSuccess
         result={refund}
-        onReset={() => navigate("/app/refund")}
+        onReset={() => navigate("/app/refund/process")}
         onPrint={() => window.print()}
       />
     </main>

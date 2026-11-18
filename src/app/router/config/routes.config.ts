@@ -1,4 +1,4 @@
-import { PackageIcon, LayoutGridIcon, ScanBarcodeIcon, Undo, UsersRound, Ruler, ReceiptText, Tag, MessageSquareMore, Wallet, TicketPercent, Truck, ClipboardList } from "lucide-react"
+import { PackageIcon, LayoutGridIcon, Undo, UsersRound, Ruler, ReceiptText, Tag, MessageSquareMore, Wallet, TicketPercent, Truck, ClipboardList } from "lucide-react"
 
 import type { RouteConfig } from "@/types/routes/route.types"
 import AllProduct from "@/app/pages/products/AllProduct"
@@ -7,7 +7,9 @@ import SizePage from "@/app/pages/size/SizePage"
 import CouponPage from "@/app/pages/coupon/CouponPage"
 import ProductDetailPage from "@/app/pages/products/ProductDetailPage"
 import SellCounter from "@/app/pages/sells/SellCounter"
+import SalesManagementPage from "@/app/pages/sells/SalesManagementPage"
 import RefundCounter from "@/app/pages/refund/RefundCounter"
+import RefundManagementPage from "@/app/pages/refund/RefundManagementPage"
 import ProfilePage from "@/app/pages/profile/ProfilePage"
 import AllUser from "@/app/pages/user/AllUser"
 import CreateUser from "@/app/pages/user/CreateUser"
@@ -21,6 +23,7 @@ import CustomerManagementPage from "@/app/pages/customer/CustomerManagementPage"
 import CustomerProfilePage from "@/app/pages/customer/CustomerProfilePage"
 import CourierIntegrationPage from "@/app/pages/courier-integration/CourierIntegrationPage"
 import OrderManagementPage from "@/app/pages/order/OrderManagementPage"
+import OrderCreatePage from "@/app/pages/order/OrderCreatePage"
 
 export interface RouteGroup {
   label: string
@@ -51,6 +54,13 @@ export const routeGroups: RouteGroup[] = [
         page: "orders",
       },
       {
+        path: "orders/create",
+        name: "Create Order",
+        Component: OrderCreatePage,
+        page: "orders",
+        isVisible: false,
+      },
+      {
         path: "customers",
         name: "Customers",
         Component: CustomerManagementPage,
@@ -66,10 +76,17 @@ export const routeGroups: RouteGroup[] = [
       },
       {
         path: "sell",
+        name: "Sales Management",
+        Component: SalesManagementPage,
+        icon: ClipboardList,
+        page: "sell",
+      },
+      {
+        path: "sell/counter",
         name: "Sell Counter",
         Component: SellCounter,
-        icon: ScanBarcodeIcon,
         page: "sell",
+        isVisible: false,
       },
     ]
   },
@@ -78,11 +95,18 @@ export const routeGroups: RouteGroup[] = [
     items: [
       {
         path: "refund",
-        name: "Refund Counter",
-        Component: RefundCounter,
+        name: "Refund Management",
+        Component: RefundManagementPage,
         icon: Undo,
         page: "refund",
-      }
+      },
+      {
+        path: "refund/process",
+        name: "Refund Counter",
+        Component: RefundCounter,
+        page: "refund",
+        isVisible: false,
+      },
     ]
   },
   {

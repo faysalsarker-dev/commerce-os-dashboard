@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
-import type { FormEvent } from "react"
 import type { ColumnDef } from "@tanstack/react-table"
+import { Link } from "react-router"
 import { ClipboardList, PackageCheck, Plus, ShoppingBag } from "lucide-react"
 import { DataTable } from "@/components/modules/table"
 import { getDefaultValues, useFilter } from "@/components/modules/filter"
@@ -13,15 +13,6 @@ import { Can } from "@/components/shared/permissions/Can"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -29,22 +20,15 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import {
-  useCreateOrderMutation,
   useDeleteOrderMutation,
   useGetOrderQuery,
   useGetOrdersQuery,
   useUpdateOrderMutation,
 } from "@/redux/features/order/order.api"
-import {
-  useGetCustomerQuery,
-  useGetCustomersQuery,
-} from "@/redux/features/customer/customer.api"
 import type {
-  OrderDetail,
   OrderListItem,
   OrderStatus,
 } from "@/types/data-types/order/order.types"
-import type { ApiResponse } from "@/types/shared"
 import { formatCurrency } from "@/lib/formatCurrency"
 import { formatDate } from "@/lib/format"
 import { getErrorMessage, handleAsyncMutation } from "@/utils/asyncHandler"
@@ -94,10 +78,6 @@ export default function OrderManagementPage() {
   const [selectedOrder, setSelectedOrder] = useState<OrderSelection | null>(
     null
   )
-  const [createOpen, setCreateOpen] = useState(false)
-  const [customerSearch, setCustomerSearch] = useState("")
-  const [customerId, setCustomerId] = useState("")
-  const [saleId, setSaleId] = useState("")
   const filter = useFilter({
     defaultValues: getDefaultValues(ORDER_FILTER_CONFIG),
     debounceMs: { searchTerm: 300 },
@@ -120,21 +100,6 @@ export default function OrderManagementPage() {
     isFetching,
     error,
   } = useGetOrdersQuery(queryParams)
-  const [createOrder, createState] = useCreateOrderMutation()
-  const {
-    currentData: customersResponse,
-    isLoading: isLoadingCustomers,
-    error: customersError,
-  } = useGetCustomersQuery(
-    { searchTerm: customerSearch.trim() || undefined, page: 1, limit: 50 },
-    { skip: !createOpen }
-  )
-  const {
-    currentData: customerProfileResponse,
-    isLoading: isLoadingCustomerProfile,
-    error: customerProfileError,
-  } = useGetCustomerQuery(customerId, { skip: !createOpen || !customerId })
-  const customerSales = customerProfileResponse?.data.sales ?? []
   const orders = response?.data ?? []
   const totalOrders = response?.meta?.total ?? orders.length
   const activeOrders = orders.filter(
@@ -153,44 +118,6 @@ export default function OrderManagementPage() {
     []
   )
 
-  const handleCreate = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (
-      !customerId ||
-      !saleId ||
-      !customerSales.some((sale) => sale.id === saleId)
-    )
-      return
-
-    await handleAsyncMutation<ApiResponse<OrderDetail>>(
-      () =>
-        createOrder({
-          customerId: customerId.trim(),
-          saleId: saleId.trim(),
-        }).unwrap(),
-      {
-        successMessage: "Order created",
-        errorMessage: "Unable to create order",
-        onSuccess: (result) => {
-          setCreateOpen(false)
-          setCustomerSearch("")
-          setCustomerId("")
-          setSaleId("")
-          setSelectedOrder(result.data)
-        },
-      }
-    )
-  }
-
-  const handleCreateOpenChange = (open: boolean) => {
-    setCreateOpen(open)
-    if (!open) {
-      setCustomerSearch("")
-      setCustomerId("")
-      setSaleId("")
-    }
-  }
-
   return (
     <PageContainer>
       <PageHeader
@@ -200,11 +127,13 @@ export default function OrderManagementPage() {
         actions={
           <Can I="create" a="orders">
             <Button
-              onClick={() => setCreateOpen(true)}
+              asChild
               className="h-10 gap-2 rounded-xl"
             >
-              <Plus className="size-4" />
-              Create order
+              <Link to="/app/orders/create">
+                <Plus className="size-4" />
+                Create order
+              </Link>
             </Button>
           </Can>
         }
@@ -252,130 +181,6 @@ export default function OrderManagementPage() {
           meta={response?.meta}
         />
       )}
-
-      <Dialog open={createOpen} onOpenChange={handleCreateOpenChange}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create order</DialogTitle>
-            <DialogDescription>
-              Select a customer and one of their existing sales to create an
-              order record.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleCreate} className="space-y-4">
-            <label className="block space-y-1.5 text-sm font-medium">
-              Find customer
-              <Input
-                value={customerSearch}
-                onChange={(event) => {
-                  setCustomerSearch(event.target.value)
-                  setCustomerId("")
-                  setSaleId("")
-                }}
-                placeholder="Search by name or phone"
-              />
-            </label>
-            {customersError ? (
-              <p role="alert" className="text-sm text-destructive">
-                {getErrorMessage(
-                  customersError,
-                  "Customers could not be loaded."
-                )}
-              </p>
-            ) : (
-              <label className="block space-y-1.5 text-sm font-medium">
-                Customer
-                <select
-                  required
-                  value={customerId}
-                  onChange={(event) => {
-                    setCustomerId(event.target.value)
-                    setSaleId("")
-                  }}
-                  disabled={
-                    isLoadingCustomers || !customersResponse?.data.length
-                  }
-                  className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm"
-                >
-                  <option value="">
-                    {isLoadingCustomers
-                      ? "Loading customers…"
-                      : "Select a customer"}
-                  </option>
-                  {customersResponse?.data.map((customer) => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.name}
-                      {customer.phone ? ` · ${customer.phone}` : ""}
-                    </option>
-                  ))}
-                </select>
-                {!isLoadingCustomers && !customersResponse?.data.length && (
-                  <span className="block text-xs font-normal text-muted-foreground">
-                    No matching customers found.
-                  </span>
-                )}
-              </label>
-            )}
-            {customerId && Boolean(customerProfileError) && (
-              <p role="alert" className="text-sm text-destructive">
-                {getErrorMessage(
-                  customerProfileError,
-                  "The customer's sales could not be loaded."
-                )}
-              </p>
-            )}
-            {customerId && !customerProfileError && (
-              <label className="block space-y-1.5 text-sm font-medium">
-                Sale
-                <select
-                  required
-                  value={saleId}
-                  onChange={(event) => setSaleId(event.target.value)}
-                  disabled={isLoadingCustomerProfile || !customerSales.length}
-                  className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm"
-                >
-                  <option value="">
-                    {isLoadingCustomerProfile
-                      ? "Loading sales…"
-                      : "Select a sale"}
-                  </option>
-                  {customerSales.map((sale) => (
-                    <option key={sale.id} value={sale.id}>
-                      {sale.invoiceNo} · {sale.status.replaceAll("_", " ")} ·{" "}
-                      {formatCurrency(Number(sale.total))}
-                    </option>
-                  ))}
-                </select>
-                {!isLoadingCustomerProfile && !customerSales.length && (
-                  <span className="block text-xs font-normal text-muted-foreground">
-                    This customer has no sales available to link.
-                  </span>
-                )}
-              </label>
-            )}
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleCreateOpenChange(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={
-                  createState.isLoading ||
-                  !customerId ||
-                  !saleId ||
-                  !customerSales.some((sale) => sale.id === saleId)
-                }
-              >
-                {createState.isLoading ? "Creating…" : "Create order"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       <OrderDetailSheet
         key={selectedOrder?.id ?? "closed"}

@@ -32,6 +32,8 @@ export type CourierProvider = "PATHAO" | "STEADFAST";
 export interface CreateOrderPayload {
   customerId: string;
   saleId: string;
+  estimatedDeliveryDate?: string;
+  courierAccountId?: string;
 }
 
 export interface UpdateOrderPayload {
