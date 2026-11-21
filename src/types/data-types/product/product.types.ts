@@ -108,6 +108,7 @@ export interface ProductQueryParams {
   page?: number
   limit?: number
   search?: string
+  searchTerm?: string
   status?: "active" | "draft" | "archived"
   categoryId?: string
   sortBy?: string

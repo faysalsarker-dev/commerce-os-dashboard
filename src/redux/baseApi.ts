@@ -18,6 +18,8 @@ export const baseApi = createApi({
     "COUPON",
     "COURIER_ACCOUNT",
     "ORDER",
+    "EXCHANGE",
+    "CAMPAIGN",
   ],
   keepUnusedDataFor: 60 * 60,
   refetchOnMountOrArgChange: false,

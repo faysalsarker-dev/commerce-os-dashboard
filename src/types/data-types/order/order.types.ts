@@ -4,6 +4,7 @@ import type {
   SaleChannel,
   SaleStatus,
 } from "@/types/data-types/sales/sales.types";
+import type { CampaignPlatform } from "@/types/data-types/campaign.types";
 
 type DecimalValue = number | string;
 
@@ -12,6 +13,8 @@ export type OrderStatus =
   | "PENDING"
   | "CONFIRMED"
   | "PROCESSING"
+  | "PACKED"
+  | "SHIPPED"
   | "COMPLETED"
   | "CANCELLED"
   | "RETURNED";
@@ -45,6 +48,7 @@ export interface OrderFilters {
   limit?: number;
   status?: OrderStatus;
   channel?: SaleChannel;
+  campaignId?: string;
   customerId?: string;
   saleId?: string;
   searchTerm?: string;
@@ -62,6 +66,11 @@ export interface OrderSaleSummary {
   id: string;
   invoiceNo: string;
   channel: SaleChannel;
+  campaign: {
+    id: string;
+    name: string;
+    platform: CampaignPlatform;
+  } | null;
   status: SaleStatus;
   total: DecimalValue;
   paymentStatus: PaymentStatus;
@@ -179,6 +188,35 @@ export interface OrderShipment {
   events: OrderShipmentEvent[];
 }
 
+export interface OrderStatusHistory {
+  id: string;
+  orderId: string;
+  status: OrderStatus;
+  changedById: string | null;
+  note: string | null;
+  createdAt: string;
+  changedBy?: { id: string; name: string } | null;
+}
+
+export interface OrderExchange {
+  id: string;
+  saleId: string;
+  status: "COMPLETED" | "CANCELLED";
+  reason: string | null;
+  processedById: string | null;
+  createdAt: string;
+  items: Array<{
+    id: string;
+    exchangeId: string;
+    originalSaleItemId: string;
+    originalVariantId: string;
+    replacementVariantId: string;
+    quantity: number;
+    unitPriceDifference: DecimalValue;
+  }>;
+  processedBy?: { id: string; name: string } | null;
+}
+
 export interface OrderDetail extends Omit<OrderListItem, "_count" | "sale"> {
   sale: OrderSaleSummary & {
     customerId: string | null;
@@ -194,8 +232,10 @@ export interface OrderDetail extends Omit<OrderListItem, "_count" | "sale"> {
     items: OrderSaleItem[];
     payments: OrderPayment[];
     refunds: OrderRefund[];
+    exchanges: OrderExchange[];
   };
   shipments: OrderShipment[];
+  statusHistory: OrderStatusHistory[];
 }
 
 export interface OrderListMeta {

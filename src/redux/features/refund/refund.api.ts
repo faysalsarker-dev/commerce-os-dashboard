@@ -2,6 +2,8 @@ import { baseApi } from "@/redux/baseApi";
 import type {
   CreateRefundPayload,
   CreateRefundResponse,
+  CreateExchangePayload,
+  Exchange,
   Refund,
   RefundFilters,
 } from "@/types/data-types/refund/refund.types";
@@ -27,6 +29,25 @@ export const refundApi = baseApi.injectEndpoints({
         { type: "REFUND", id: "LIST" },
         { type: "SALES", id: "LIST" },
         { type: "PRODUCT", id: "LIST" },
+        { type: "ORDER" },
+        { type: "EXCHANGE" },
+        { type: "CAMPAIGN", id: "REPORT" },
+      ],
+    }),
+
+    createExchange: builder.mutation<ApiResponse<Exchange>, CreateExchangePayload>({
+      query: (data) => ({
+        url: `${BASE_URL}/exchange`,
+        method: "POST",
+        data,
+      }),
+      invalidatesTags: (_result, error, { saleId }) => error ? [] : [
+        { type: "REFUND", id: "LIST" },
+        { type: "SALES", id: saleId },
+        { type: "SALES", id: "LIST" },
+        { type: "PRODUCT", id: "LIST" },
+        { type: "ORDER" },
+        { type: "EXCHANGE" },
       ],
     }),
 
@@ -76,6 +97,21 @@ export const refundApi = baseApi.injectEndpoints({
       keepUnusedDataFor: 60 * 5,
     }),
 
+    getExchangesBySale: builder.query<ApiResponse<Exchange[]>, string>({
+      query: (saleId) => ({
+        url: `${BASE_URL}/sale/${saleId}/exchanges`,
+        method: "GET",
+      }),
+      providesTags: (result, _error, saleId) => [
+        ...(result?.data ?? []).map((exchange) => ({
+          type: "EXCHANGE" as const,
+          id: exchange.id,
+        })),
+        { type: "EXCHANGE" as const, id: `SALE-${saleId}-EXCHANGES` },
+      ],
+      keepUnusedDataFor: 60 * 5,
+    }),
+
     /**
      * Get Refund details by ID
      */
@@ -88,27 +124,13 @@ export const refundApi = baseApi.injectEndpoints({
       keepUnusedDataFor: 60 * 5,
     }),
 
-    /**
-     * Delete Refund record by ID
-     */
-    deleteRefund: builder.mutation<ApiResponse<Refund>, string>({
-      query: (id) => ({
-        url: `${BASE_URL}/${id}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: (_, __, id) => [
-        { type: "REFUND", id },
-        { type: "REFUND", id: "LIST" },
-        { type: "SALES", id: "LIST" },
-        { type: "PRODUCT", id: "LIST" },
-      ],
-    }),
   }),
 });
 
 export const {
   // Create / Process
   useCreateRefundMutation,
+  useCreateExchangeMutation,
 
   // Get List
   useGetRefundsQuery,
@@ -117,11 +139,11 @@ export const {
   // Get By Sale
   useGetRefundsBySaleQuery,
   useLazyGetRefundsBySaleQuery,
+  useGetExchangesBySaleQuery,
+  useLazyGetExchangesBySaleQuery,
 
   // Get One
   useGetRefundQuery,
   useLazyGetRefundQuery,
 
-  // Delete
-  useDeleteRefundMutation,
 } = refundApi;

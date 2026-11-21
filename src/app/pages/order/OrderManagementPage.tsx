@@ -25,6 +25,9 @@ import {
   useGetOrdersQuery,
   useUpdateOrderMutation,
 } from "@/redux/features/order/order.api"
+import { useGetCampaignsQuery } from "@/redux/features/campaign.api"
+import type { FilterConfig } from "@/types/filter/filter.types"
+import { SALE_CHANNEL_LABELS } from "@/types/data-types/sales/sales.types"
 import type {
   OrderListItem,
   OrderStatus,
@@ -77,6 +80,33 @@ function SummaryCard({
 export default function OrderManagementPage() {
   const [selectedOrder, setSelectedOrder] = useState<OrderSelection | null>(
     null
+  )
+  const {
+    data: campaignResponse,
+    error: campaignFilterError,
+  } = useGetCampaignsQuery({ page: 1, limit: 100 })
+  const campaignOptions = useMemo(
+    () =>
+      campaignResponse?.data.map((campaign) => ({
+        label: `${campaign.name} · ${campaign.platform}`,
+        value: campaign.id,
+      })) ?? [],
+    [campaignResponse?.data]
+  )
+  const orderFilters = useMemo<FilterConfig[]>(
+    () =>
+      ORDER_FILTER_CONFIG.map((config) =>
+        config.name === "campaignId" && config.type === "select"
+          ? {
+              ...config,
+              options: [
+                { label: "All campaigns", value: "" },
+                ...campaignOptions,
+              ],
+            }
+          : config
+      ),
+    [campaignOptions]
   )
   const filter = useFilter({
     defaultValues: getDefaultValues(ORDER_FILTER_CONFIG),
@@ -160,7 +190,20 @@ export default function OrderManagementPage() {
         />
       </section>
 
-      <FilterBar filter={filter} filters={ORDER_FILTER_CONFIG} />
+      <FilterBar filter={filter} filters={orderFilters} />
+
+      {campaignFilterError ? (
+        <div
+          role="alert"
+          className="rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-4 text-sm text-destructive"
+        >
+          Campaign filters could not be loaded:{" "}
+          {getErrorMessage(
+            campaignFilterError,
+            "Please refresh the page and try again."
+          )}
+        </div>
+      ) : null}
 
       {error ? (
         <div
@@ -280,8 +323,16 @@ function OrderDetailSheet({
               />
               <DetailStat
                 label="Channel"
-                value={detail.sale.channel === "ONLINE" ? "Online" : "In store"}
+                value={SALE_CHANNEL_LABELS[detail.sale.channel]}
                 hint={`${detail.shipments.length} shipment(s)`}
+              />
+              <DetailStat
+                label="Campaign"
+                value={detail.sale.campaign?.name ?? "No campaign"}
+                hint={
+                  detail.sale.campaign?.platform ??
+                  "No campaign attributed to this sale"
+                }
               />
             </section>
 

@@ -6,3 +6,4 @@ export * from "./BillSummary";
 export * from "./PaymentMethodSelector";
 export * from "./DueDatePicker";
 export * from "./CompleteSaleButton";
+export * from "./SaleAttributionFields";

@@ -19,5 +19,6 @@ export const RESOURCE_PAGE_MAP: Record<Resource, Page> = {
   dashboard: "dashboard",
   "social-inbox": "social-inbox",
   coupon: "coupon",
+  campaign: "campaign",
   all: "all",
 };

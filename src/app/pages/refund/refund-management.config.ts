@@ -22,26 +22,24 @@ export const REFUND_FILTER_CONFIG = [
 
 export const createRefundTableColumns = ({
   onOpen,
-  onDelete,
 }: {
   onOpen: (refund: Refund) => void
-  onDelete: (refund: Refund) => void
 }) =>
   createColumns<Refund>({
     resource: "refund",
     columns: [
-      column("refundNumber", { label: "Refund" }),
-      column("sale.invoiceNumber", { label: "Invoice" }),
+      column("id", { label: "Refund", formatter: (value) => String(value ?? "").slice(-8) }),
+      column("sale.invoiceNo", { label: "Invoice" }),
       column("sale.customer.name", {
         label: "Customer",
         formatter: (value) => value ?? "Walk-in customer",
       }),
-      column("totalAmount", {
+      column("amount", {
         label: "Amount",
         align: "right",
         formatter: (value) => formatCurrency(Number(value ?? 0)),
       }),
-      column("refundMethod", {
+      column("method", {
         label: "Method",
         formatter: (value) =>
           typeof value === "string" ? value.replaceAll("_", " ") : "—",
@@ -57,14 +55,6 @@ export const createRefundTableColumns = ({
         formatter: (value) => value ?? "—",
       }),
       column.date("createdAt", { label: "Date" }),
-      column.actions([
-        action.view<Refund>({ onClick: onOpen }),
-        action.delete<Refund>({
-          confirmTitle: "Delete refund record",
-          confirmDescription:
-            "This permanently removes the refund record and cannot be undone.",
-          onClick: onDelete,
-        }),
-      ]),
+      column.actions([action.view<Refund>({ onClick: onOpen })]),
     ],
   })

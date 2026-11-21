@@ -2,11 +2,9 @@ import { baseApi } from "@/redux/baseApi"
 import type {
   CheckoutPayload,
   CheckoutResponse,
-  ReturnSalePayload,
-  ReturnSaleResponse,
   SalesHistoryParams,
   SaleByInvoice,
-  SaleRecord,
+  SalesHistoryItem,
   ScannedProduct,
   ScanProductPayload,
 } from "@/types/data-types/sales/sales.types"
@@ -44,25 +42,7 @@ export const salesApi = baseApi.injectEndpoints({
       invalidatesTags: [
         { type: "SALES", id: "LIST" },
         { type: "PRODUCT", id: "LIST" },
-      ],
-    }),
-
-    /**
-     * Process Return
-     * Process a product return and update stock & sales records
-     */
-    returnSale: builder.mutation<
-      ApiResponse<ReturnSaleResponse>,
-      ReturnSalePayload
-    >({
-      query: (data) => ({
-        url: `${BASE_URL}/return`,
-        method: "POST",
-        data,
-      }),
-      invalidatesTags: [
-        { type: "SALES", id: "LIST" },
-        { type: "PRODUCT", id: "LIST" },
+        { type: "CAMPAIGN", id: "REPORT" },
       ],
     }),
 
@@ -78,7 +58,7 @@ export const salesApi = baseApi.injectEndpoints({
      * View sales history for reporting or reconciliation
      */
     getSalesHistory: builder.query<
-      ApiResponse<SaleRecord[]>,
+      ApiResponse<SalesHistoryItem[]>,
       SalesHistoryParams | void
     >({
       query: (params) => ({
@@ -91,7 +71,7 @@ export const salesApi = baseApi.injectEndpoints({
           ? [
               ...result.data.map((sale) => ({
                 type: "SALES" as const,
-                id: sale.id,
+                id: sale.saleId,
               })),
               { type: "SALES" as const, id: "LIST" },
             ]
@@ -104,7 +84,6 @@ export const salesApi = baseApi.injectEndpoints({
 export const {
   useScanProductMutation,
   useCheckoutMutation,
-  useReturnSaleMutation,
   useGetSalesHistoryQuery,
   useLazyGetSalesHistoryQuery,
   useGetSaleByInvoiceQuery,

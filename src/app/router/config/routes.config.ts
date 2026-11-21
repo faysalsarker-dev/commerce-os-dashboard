@@ -1,4 +1,4 @@
-import { PackageIcon, LayoutGridIcon, Undo, UsersRound, Ruler, ReceiptText, Tag, MessageSquareMore, Wallet, TicketPercent, Truck, ClipboardList } from "lucide-react"
+import { PackageIcon, LayoutGridIcon, Undo, UsersRound, Ruler, ReceiptText, Tag, MessageSquareMore, Wallet, TicketPercent, Truck, ClipboardList, Megaphone } from "lucide-react"
 
 import type { RouteConfig } from "@/types/routes/route.types"
 import AllProduct from "@/app/pages/products/AllProduct"
@@ -24,6 +24,8 @@ import CustomerProfilePage from "@/app/pages/customer/CustomerProfilePage"
 import CourierIntegrationPage from "@/app/pages/courier-integration/CourierIntegrationPage"
 import OrderManagementPage from "@/app/pages/order/OrderManagementPage"
 import OrderCreatePage from "@/app/pages/order/OrderCreatePage"
+import CampaignPage from "@/app/pages/campaign/CampaignPage"
+import ExchangeCounter from "@/app/pages/refund/ExchangeCounter"
 
 export interface RouteGroup {
   label: string
@@ -40,6 +42,13 @@ export const routeGroups: RouteGroup[] = [
         Component: SocialInboxPage,
         icon: MessageSquareMore,
         page: "social-inbox",
+      },
+      {
+        path: "campaigns",
+        name: "Campaigns",
+        Component: CampaignPage,
+        icon: Megaphone,
+        page: "campaign",
       },
     ],
   },
@@ -104,6 +113,13 @@ export const routeGroups: RouteGroup[] = [
         path: "refund/process",
         name: "Refund Counter",
         Component: RefundCounter,
+        page: "refund",
+        isVisible: false,
+      },
+      {
+        path: "refund/exchange",
+        name: "Exchange Products",
+        Component: ExchangeCounter,
         page: "refund",
         isVisible: false,
       },

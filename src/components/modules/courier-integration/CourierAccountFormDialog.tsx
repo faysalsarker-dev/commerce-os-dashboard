@@ -3,6 +3,7 @@ import { EntityFormDialog } from "@/components/modules/form/EntityFormDialog";
 import { createCourierAccountFormConfig } from "./courier-account-form.config";
 import type {
   CourierAccount,
+  CourierProvider,
   CreateCourierAccountPayload,
   PathaoConfig,
   PathaoCredentials,
@@ -152,7 +153,6 @@ export function CourierAccountFormDialog({
     }
 
     let payload: CreateCourierAccountPayload;
-    let testPayload: TestCourierConnectionPayload;
 
     if (values.provider === "PATHAO") {
       const credentials = getPathaoCredentials(values);
@@ -167,7 +167,6 @@ export function CourierAccountFormDialog({
         config,
         isDefault: values.isDefault,
       };
-      testPayload = { provider: "PATHAO", credentials, config };
     } else {
       const credentials = getSteadfastCredentials(values);
       payload = {
@@ -179,10 +178,8 @@ export function CourierAccountFormDialog({
         }),
         isDefault: values.isDefault,
       };
-      testPayload = { provider: "STEADFAST", credentials };
     }
 
-    await testCourierConnection(testPayload).unwrap();
     const response = await createCourierAccount(payload).unwrap();
     if (response.data.oneTimeWebhookSecret) {
       onSecretGenerated(response.data.oneTimeWebhookSecret);

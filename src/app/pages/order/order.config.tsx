@@ -6,6 +6,10 @@ import type {
   OrderListItem,
   OrderStatus,
 } from "@/types/data-types/order/order.types"
+import {
+  SALE_CHANNEL_LABELS,
+} from "@/types/data-types/sales/sales.types"
+import { SELECTABLE_SALE_CHANNELS } from "@/lib/config/sales"
 import { formatCurrency } from "@/lib/formatCurrency"
 import { formatDate } from "@/lib/format"
 import type { EntityFormConfig } from "@/types/form/form.types"
@@ -54,6 +58,8 @@ export const ORDER_STATUSES: OrderStatus[] = [
   "PENDING",
   "CONFIRMED",
   "PROCESSING",
+  "PACKED",
+  "SHIPPED",
   "COMPLETED",
   "CANCELLED",
   "RETURNED",
@@ -82,10 +88,16 @@ export const ORDER_FILTER_CONFIG = [
     name: "channel",
     label: "Channel",
     placeholder: "All channels",
-    options: [
-      { label: "Online", value: "ONLINE" },
-      { label: "In store", value: "OFFLINE" },
-    ],
+    options: SELECTABLE_SALE_CHANNELS.map((channel) => ({
+      label: SALE_CHANNEL_LABELS[channel],
+      value: channel,
+    })),
+  }),
+  select({
+    name: "campaignId",
+    label: "Campaign",
+    placeholder: "All campaigns",
+    options: [{ label: "All campaigns", value: "" }],
   }),
   select({
     name: "sort",
@@ -130,7 +142,24 @@ export function createOrderTableColumns({
     column.accessor((order) => order.sale.channel, {
       id: "channel",
       header: "Channel",
-      cell: ({ getValue }) => (getValue() === "ONLINE" ? "Online" : "In store"),
+      cell: ({ getValue }) => SALE_CHANNEL_LABELS[getValue()],
+    }),
+    column.display({
+      id: "campaign",
+      header: "Campaign",
+      cell: ({ row }) => {
+        const campaign = row.original.sale.campaign
+        return campaign ? (
+          <div className="min-w-32">
+            <p className="font-medium">{campaign.name}</p>
+            <p className="text-xs text-muted-foreground">
+              {campaign.platform}
+            </p>
+          </div>
+        ) : (
+          <span className="text-sm text-muted-foreground">No campaign</span>
+        )
+      },
     }),
     column.accessor((order) => Number(order.sale.total), {
       id: "total",

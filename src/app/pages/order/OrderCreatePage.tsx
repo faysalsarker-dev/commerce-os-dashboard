@@ -4,7 +4,13 @@ import { useForm, useWatch, type Resolver } from "react-hook-form"
 import { Link, useNavigate } from "react-router"
 import { toast } from "sonner"
 import { ArrowLeft, Loader2, UserRound } from "lucide-react"
-import { BillSummary, CustomerLookup, ProductList, ProductScanner } from "@/components/modules/sell-counter"
+import {
+  BillSummary,
+  CustomerLookup,
+  ProductList,
+  ProductScanner,
+  SaleAttributionFields,
+} from "@/components/modules/sell-counter"
 import { EntityFormField } from "@/components/modules/form/EntityFormField"
 import { PageContainer, PageHeader } from "@/components/shared/common"
 import { Button } from "@/components/ui/button"
@@ -25,6 +31,7 @@ import { useCheckoutMutation, useScanProductMutation } from "@/redux/features/sa
 import { formatCurrency } from "@/lib/formatCurrency"
 import { sellCounterReducer, initialState } from "@/logics/sellCounterReducer"
 import { getErrorMessage } from "@/utils/asyncHandler"
+import type { SaleChannel } from "@/types/data-types/sales/sales.types"
 import { ORDER_CREATE_FORM_CONFIG } from "./order.config"
 import {
   orderCreateSchema,
@@ -34,6 +41,8 @@ import {
 export default function OrderCreatePage() {
   const [state, dispatch] = useReducer(sellCounterReducer, initialState)
   const [selectedCourierId, setSelectedCourierId] = useState("")
+  const [channel, setChannel] = useState<SaleChannel>("ONLINE")
+  const [campaignId, setCampaignId] = useState("")
   const navigate = useNavigate()
   const [scanProduct, { isLoading: isScanning }] = useScanProductMutation()
   const [checkout, { isLoading: isCheckingOut }] = useCheckoutMutation()
@@ -212,7 +221,8 @@ export default function OrderCreatePage() {
         })),
         discount: state.discount > 0 ? state.discount : undefined,
         shippingFee: enteredCourierCharge > 0 ? enteredCourierCharge : undefined,
-        channel: "ONLINE",
+        channel,
+        campaignId: campaignId || undefined,
         paymentMethod: "CASH",
         payments:
           enteredAdvance > 0
@@ -386,6 +396,13 @@ export default function OrderCreatePage() {
               onDiscountChange={(discount) =>
                 dispatch({ type: "SET_DISCOUNT", discount })
               }
+            />
+
+            <SaleAttributionFields
+              channel={channel}
+              campaignId={campaignId}
+              onChannelChange={setChannel}
+              onCampaignChange={setCampaignId}
             />
 
             <Card className="p-4">

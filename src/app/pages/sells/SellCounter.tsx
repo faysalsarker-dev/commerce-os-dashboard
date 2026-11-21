@@ -1,4 +1,4 @@
-import { useMemo, useReducer } from "react"
+import { useMemo, useReducer, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { toast } from "sonner"
 import { PageHeader } from "@/components/modules/Products/PageHeader"
@@ -22,7 +22,9 @@ import {
   BillSummary,
   DueDatePicker,
   CompleteSaleButton,
+  SaleAttributionFields,
 } from "@/components/modules/sell-counter"
+import type { SaleChannel } from "@/types/data-types/sales/sales.types"
 import {
   getTenderPayments,
   sumTenderAmounts,
@@ -42,6 +44,8 @@ import { useNavigate } from "react-router"
 
 export function SellCounter() {
   const [state, dispatch] = useReducer(sellCounterReducer, initialState)
+  const [channel, setChannel] = useState<SaleChannel>("OFFLINE")
+  const [campaignId, setCampaignId] = useState("")
   const {
     lines,
     customer,
@@ -266,6 +270,8 @@ export function SellCounter() {
         isFullPayment,
         paidAmount: isFullPayment ? undefined : amountReceived,
         dueDate: !isFullPayment && dueDate ? dueDate.toISOString() : undefined,
+        channel,
+        campaignId: campaignId || undefined,
       }).unwrap()
 
       toast.success("Sale completed!", {
@@ -273,6 +279,8 @@ export function SellCounter() {
       })
 
       dispatch({ type: "RESET_SALE" })
+      setChannel("OFFLINE")
+      setCampaignId("")
       navigate("/invoice", { state: { invoice: res.data.invoice } })
     } catch {
       toast.error("Checkout failed", {
@@ -327,6 +335,13 @@ export function SellCounter() {
               onDiscountChange={(value) =>
                 dispatch({ type: "SET_DISCOUNT", discount: value })
               }
+            />
+
+            <SaleAttributionFields
+              channel={channel}
+              campaignId={campaignId}
+              onChannelChange={setChannel}
+              onCampaignChange={setCampaignId}
             />
 
             <Card className="space-y-4 p-4">

@@ -33,41 +33,36 @@ export interface RefundItem {
   id: string;
   refundId: string;
   saleItemId: string;
+  variantId: string;
   quantity: number;
   amount: number;
   createdAt: string;
   saleItem?: {
     id: string;
     saleId: string;
+    productName: string;
+    sku: string;
     quantity: number;
     unitPrice: number;
-    totalPrice: number;
-    productVariant?: {
-      id: string;
-      sku: string;
-      product?: {
-        name: string;
-      };
-    };
+    subtotal: number;
   };
 }
 
 export interface Refund {
   id: string;
-  refundNumber: string;
   saleId: string;
-  totalAmount: number;
-  refundMethod: PaymentMethod | string;
+  amount: number | string;
+  method: PaymentMethod | string;
   payments?: PaymentEntry[];
   reason: string | null;
-  processedById: string | null;
+  processedById: string;
+  refundedAt: string;
   createdAt: string;
-  updatedAt: string;
   items?: RefundItem[];
   sale?: {
     id: string;
-    invoiceNumber: string;
-    totalAmount: number;
+    invoiceNo: string;
+    total: number | string;
     customer?: {
       id: string;
       name: string;
@@ -86,12 +81,48 @@ export interface CreatedRefund {
   amount: number | string;
   method: PaymentMethod;
   payments?: PaymentEntry[];
+  items?: RefundItem[];
+  refundedAt?: string;
   createdAt: string;
 }
 
 export interface CreateRefundResponse {
   refund: CreatedRefund;
-  sale: { id: string };
+  sale: { id: string; invoiceNo?: string };
+}
+
+export interface CreateExchangePayload {
+  saleId: string;
+  items: Array<{
+    saleItemId: string;
+    replacementVariantId: string;
+    quantity: number;
+  }>;
+  reason?: string;
+}
+
+export interface ExchangeItem {
+  id: string;
+  exchangeId: string;
+  originalSaleItemId: string;
+  originalVariantId: string;
+  replacementVariantId: string;
+  quantity: number;
+  unitPriceDifference: number | string;
+  originalSaleItem?: { id: string; productName: string; sku: string };
+  originalVariant?: { id: string; sku: string };
+  replacementVariant?: { id: string; sku: string };
+}
+
+export interface Exchange {
+  id: string;
+  saleId: string;
+  status: "COMPLETED" | "CANCELLED";
+  reason: string | null;
+  processedById: string | null;
+  createdAt: string;
+  items: ExchangeItem[];
+  processedBy?: { id: string; name: string } | null;
 }
 
 export interface RefundFilters {

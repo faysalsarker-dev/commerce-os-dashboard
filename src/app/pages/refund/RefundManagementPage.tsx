@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react"
-import { Link } from "react-router"
+import { useNavigate } from "react-router"
 import {
-  ClipboardList,
-  PackageCheck,
+  ArrowLeftRight,
+
   Plus,
-  RotateCcw,
+
 } from "lucide-react"
 import { DataTable } from "@/components/modules/table"
 import { getDefaultValues } from "@/components/modules/filter"
@@ -14,7 +14,6 @@ import {
   PageHeader,
 } from "@/components/shared/common"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import {
   Sheet,
   SheetContent,
@@ -26,7 +25,6 @@ import { useFilter } from "@/hooks/useFilter"
 import { formatCurrency } from "@/lib/formatCurrency"
 import { formatDate } from "@/lib/format"
 import {
-  useDeleteRefundMutation,
   useGetRefundQuery,
   useGetRefundsQuery,
 } from "@/redux/features/refund/refund.api"
@@ -34,44 +32,17 @@ import type {
   Refund,
   RefundFilters,
 } from "@/types/data-types/refund/refund.types"
-import { getErrorMessage, handleAsyncMutation } from "@/utils/asyncHandler"
+import { getErrorMessage } from "@/utils/asyncHandler"
 import {
   createRefundTableColumns,
   REFUND_FILTER_CONFIG,
   REFUND_PAGE_CONFIG,
 } from "./refund-management.config"
 
-function SummaryCard({
-  label,
-  value,
-  detail,
-  icon: Icon,
-}: {
-  label: string
-  value: string
-  detail: string
-  icon: typeof RotateCcw
-}) {
-  return (
-    <Card className="rounded-2xl border border-border/60 shadow-sm">
-      <CardContent className="flex items-start justify-between gap-3 p-4 sm:p-5">
-        <div className="min-w-0">
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="mt-2 truncate text-2xl font-semibold tracking-tight">
-            {value}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
-        </div>
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-          <Icon className="size-5" />
-        </span>
-      </CardContent>
-    </Card>
-  )
-}
 
 export default function RefundManagementPage() {
   const [selectedRefund, setSelectedRefund] = useState<Refund | null>(null)
+  const navigate = useNavigate()
   const filter = useFilter({
     defaultValues: getDefaultValues(REFUND_FILTER_CONFIG),
     debounceMs: { searchTerm: 300 },
@@ -84,31 +55,14 @@ export default function RefundManagementPage() {
     isFetching,
     error,
   } = useGetRefundsQuery(queryParams)
-  const [deleteRefund] = useDeleteRefundMutation()
   const refunds = response?.data ?? []
-  const totalRefunds = response?.meta?.total ?? refunds.length
-  const pageAmount = refunds.reduce(
-    (total, refund) => total + Number(refund.totalAmount),
-    0
-  )
-  const pageItems = refunds.reduce(
-    (total, refund) =>
-      total +
-      (refund.items?.reduce((itemTotal, item) => itemTotal + item.quantity, 0) ??
-        0),
-    0
-  )
+
   const columns = useMemo(
     () =>
       createRefundTableColumns({
         onOpen: setSelectedRefund,
-        onDelete: (refund) =>
-          handleAsyncMutation(() => deleteRefund(refund.id).unwrap(), {
-            successMessage: "Refund record deleted",
-            errorMessage: "Unable to delete refund record",
-          }),
       }),
-    [deleteRefund]
+    []
   )
 
   return (
@@ -118,35 +72,29 @@ export default function RefundManagementPage() {
         description={REFUND_PAGE_CONFIG.description}
         noAction
         actions={
-          <Button asChild className="h-10 gap-2 rounded-xl">
-            <Link to="/app/refund/process">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 gap-2 rounded-xl"
+              onClick={() => navigate("/app/refund/exchange")}
+            >
+              <ArrowLeftRight className="size-4" />
+              Exchange product
+            </Button>
+            <Button
+              type="button"
+              className="h-10 gap-2 rounded-xl"
+              onClick={() => navigate("/app/refund/process")}
+            >
               <Plus className="size-4" />
               Process refund
-            </Link>
-          </Button>
+            </Button>
+          </div>
         }
       />
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <SummaryCard
-          label="Refunds found"
-          value={totalRefunds.toLocaleString()}
-          detail="Matching your current search"
-          icon={RotateCcw}
-        />
-        <SummaryCard
-          label="Refund amount"
-          value={formatCurrency(pageAmount)}
-          detail="Total on this page"
-          icon={ClipboardList}
-        />
-        <SummaryCard
-          label="Items refunded"
-          value={pageItems.toLocaleString()}
-          detail="Total on this page"
-          icon={PackageCheck}
-        />
-      </section>
+     
 
       <FilterBar filter={filter} filters={REFUND_FILTER_CONFIG} />
 
@@ -199,7 +147,7 @@ function RefundDetailsSheet({
     <Sheet open={!!refund} onOpenChange={onOpenChange}>
       <SheetContent className="overflow-y-auto sm:max-w-xl">
         <SheetHeader className="border-b border-border/60 px-5 pb-4">
-          <SheetTitle>{detail?.refundNumber ?? "Refund details"}</SheetTitle>
+          <SheetTitle>{detail ? `Refund ${detail.id.slice(-8)}` : "Refund details"}</SheetTitle>
           <SheetDescription>
             Refund record and settlement information.
           </SheetDescription>
@@ -226,7 +174,7 @@ function RefundDetailsSheet({
               <dl className="grid grid-cols-2 gap-4">
                 <DetailValue
                   label="Invoice"
-                  value={detail.sale?.invoiceNumber ?? "—"}
+                  value={detail.sale?.invoiceNo ?? "—"}
                 />
                 <DetailValue
                   label="Customer"
@@ -234,17 +182,17 @@ function RefundDetailsSheet({
                 />
                 <DetailValue
                   label="Refund amount"
-                  value={formatCurrency(Number(detail.totalAmount))}
+                  value={formatCurrency(Number(detail.amount))}
                 />
                 <DetailValue
                   label="Payment method"
-                  value={detail.refundMethod.replaceAll("_", " ")}
+                  value={detail.method.replaceAll("_", " ")}
                 />
                 <DetailValue
                   label="Processed by"
                   value={detail.processedBy?.name ?? "—"}
                 />
-                <DetailValue label="Date" value={formatDate(detail.createdAt)} />
+                <DetailValue label="Date" value={formatDate(detail.refundedAt)} />
               </dl>
 
               {detail.reason ? (
@@ -267,8 +215,7 @@ function RefundDetailsSheet({
                       >
                         <div className="min-w-0">
                           <p className="truncate font-medium">
-                            {item.saleItem?.productVariant?.product?.name ??
-                              "Product"}
+                            {item.saleItem?.productName ?? item.saleItem?.sku ?? "Product"}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             Qty: {item.quantity}

@@ -22,42 +22,35 @@ export interface ScannedProduct {
   inStock: boolean
 }
 
-export interface ReturnItemPayload {
-  variantId?: string
-  productId?: string
-  quantity: number
-  reason?: string
-}
-
-export interface ReturnSalePayload {
-  saleId: string
-  items: ReturnItemPayload[]
-  note?: string
-}
-
-export interface ReturnSaleResponse {
-  id: string
-  saleId: string
-  refundAmount: number
-  createdAt: string
-}
-
 export interface SalesHistoryParams {
   page?: number
   limit?: number
   startDate?: string
   endDate?: string
   search?: string
+  sortBy?: string
+  sortOrder?: "asc" | "desc"
 }
 
-export interface SaleRecord {
-  id: string
-  invoiceNumber: string
-  totalAmount: number
-  paymentMethod: string
-  itemsCount: number
-  createdAt: string
+export interface SalesHistoryItem {
+  saleId: string
+  invoiceNo: string
+  customerName: string
+  customerPhone: string | null
+  totalProducts: number
+  date: string
+  channel: SaleChannel
+  status: SaleStatus
+  subtotal: number
+  discount: number
+  shippingFee: number
+  total: number
+  paidAmount: number
+  dueAmount: number
+  paymentStatus: PaymentStatus
 }
+
+export type SaleRecord = SalesHistoryItem
 
 export interface SaleByInvoiceItem {
   id: string
@@ -77,6 +70,9 @@ export interface SaleByInvoice {
   invoiceNo: string
   customerId: string | null
   status: SaleStatus
+  subtotal: number | string
+  discount: number | string
+  shippingFee: number | string
   total: string | number
   paidAmount: string | number
   dueAmount: string | number
@@ -90,7 +86,33 @@ export interface SaleByInvoice {
 // ---- Payment method must match your Prisma enum exactly — no free-form string escape hatch ----
 export type { PaymentMethod };
 
-export type SaleChannel = "OFFLINE" | "ONLINE"
+export const SALE_CHANNELS = [
+  "ONLINE",
+  "OFFLINE",
+  "SOCIAL",
+  "FACEBOOK",
+  "INSTAGRAM",
+  "TIKTOK",
+  "WHATSAPP",
+  "GOOGLE",
+  "YOUTUBE",
+  "OTHER",
+] as const
+
+export type SaleChannel = (typeof SALE_CHANNELS)[number]
+
+export const SALE_CHANNEL_LABELS: Record<SaleChannel, string> = {
+  ONLINE: "Online",
+  OFFLINE: "Offline",
+  SOCIAL: "Social",
+  FACEBOOK: "Facebook",
+  INSTAGRAM: "Instagram",
+  TIKTOK: "TikTok",
+  WHATSAPP: "WhatsApp",
+  GOOGLE: "Google",
+  YOUTUBE: "YouTube",
+  OTHER: "Other",
+}
 export type SaleStatus =
   | "DRAFT"
   | "PENDING"
@@ -100,7 +122,7 @@ export type SaleStatus =
   | "PARTIALLY_RETURNED"
   | "RETURNED"
 export type PaymentStatus =
-  "UNPAID" | "PARTIAL" | "PAID" | "REFUNDED" | "PARTIALLY_REFUNDED"
+  "UNPAID" | "PARTIAL" | "PAID" | "REFUNDED" | "PARTIALLY_REFUND"
 
 export interface CheckoutItemPayload {
   variantId: string // required, not optional — backend has no productId fallback path
@@ -112,6 +134,12 @@ export interface CheckoutItemPayload {
 
 export interface CheckoutPayload {
   customerId?: string // omit for guest sale
+  campaignId?: string
+  utmSource?: string
+  utmMedium?: string
+  utmCampaign?: string
+  utmContent?: string
+  utmTerm?: string
   items: CheckoutItemPayload[]
   discount?: number // order-level discount in taka
   shippingFee?: number

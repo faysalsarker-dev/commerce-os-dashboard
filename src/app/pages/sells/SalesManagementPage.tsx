@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { Link } from "react-router"
-import { ClipboardList, CreditCard, PackageCheck, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 import { DataTable } from "@/components/modules/table"
 import { getDefaultValues } from "@/components/modules/filter"
 import {
@@ -9,7 +9,6 @@ import {
   PageHeader,
 } from "@/components/shared/common"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
   Sheet,
@@ -20,14 +19,13 @@ import {
 } from "@/components/ui/sheet"
 import { useFilter } from "@/hooks/useFilter"
 import { formatCurrency } from "@/lib/formatCurrency"
-import { formatDate } from "@/lib/format"
 import {
   useGetSaleByInvoiceQuery,
   useGetSalesHistoryQuery,
 } from "@/redux/features/sales/sales.api"
 import type {
   SaleByInvoice,
-  SaleRecord,
+  SalesHistoryItem,
   SalesHistoryParams,
 } from "@/types/data-types/sales/sales.types"
 import { getErrorMessage } from "@/utils/asyncHandler"
@@ -37,37 +35,8 @@ import {
   SALES_PAGE_CONFIG,
 } from "./sales-management.config"
 
-function SummaryCard({
-  label,
-  value,
-  detail,
-  icon: Icon,
-}: {
-  label: string
-  value: string
-  detail: string
-  icon: typeof ClipboardList
-}) {
-  return (
-    <Card className="rounded-2xl border border-border/60 shadow-sm">
-      <CardContent className="flex items-start justify-between gap-3 p-4 sm:p-5">
-        <div className="min-w-0">
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="mt-2 truncate text-2xl font-semibold tracking-tight">
-            {value}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
-        </div>
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-          <Icon className="size-5" />
-        </span>
-      </CardContent>
-    </Card>
-  )
-}
-
 export default function SalesManagementPage() {
-  const [selectedSale, setSelectedSale] = useState<SaleRecord | null>(null)
+  const [selectedSale, setSelectedSale] = useState<SalesHistoryItem | null>(null)
   const filter = useFilter({
     defaultValues: getDefaultValues(SALES_FILTER_CONFIG),
     debounceMs: { search: 300 },
@@ -86,16 +55,7 @@ export default function SalesManagementPage() {
     error,
   } = useGetSalesHistoryQuery(queryParams)
   const sales = response?.data ?? []
-  const totalSales = response?.meta?.total ?? sales.length
-  const pageRevenue = sales.reduce(
-    (total, sale) => total + Number(sale.totalAmount),
-    0
-  )
-  const pageItems = sales.reduce((total, sale) => total + sale.itemsCount, 0)
-  const columns = useMemo(
-    () => createSalesTableColumns({ onOpen: setSelectedSale }),
-    []
-  )
+  const columns = useMemo(() => createSalesTableColumns(), [])
 
   return (
     <PageContainer>
@@ -113,27 +73,6 @@ export default function SalesManagementPage() {
         }
       />
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <SummaryCard
-          label="Sales found"
-          value={totalSales.toLocaleString()}
-          detail="Matching current filters"
-          icon={ClipboardList}
-        />
-        <SummaryCard
-          label="Sales total"
-          value={formatCurrency(pageRevenue)}
-          detail="Total on this page"
-          icon={CreditCard}
-        />
-        <SummaryCard
-          label="Items sold"
-          value={pageItems.toLocaleString()}
-          detail="Total on this page"
-          icon={PackageCheck}
-        />
-      </section>
-
       <FilterBar filter={filter} filters={SALES_FILTER_CONFIG} />
 
       {error ? (
@@ -149,7 +88,7 @@ export default function SalesManagementPage() {
           columns={columns}
           data={sales}
           isLoading={isLoading || isFetching}
-          getRowId={(sale) => sale.id}
+          getRowId={(sale) => sale.saleId}
           onRowClick={setSelectedSale}
           pagination={filter.tableState}
           onPaginationChange={filter.onTableStateChange}
@@ -171,14 +110,14 @@ function SaleDetailsSheet({
   sale,
   onOpenChange,
 }: {
-  sale: SaleRecord | null
+  sale: SalesHistoryItem | null
   onOpenChange: (open: boolean) => void
 }) {
   const {
     data: response,
     isLoading,
     error,
-  } = useGetSaleByInvoiceQuery(sale?.invoiceNumber ?? "", { skip: !sale })
+  } = useGetSaleByInvoiceQuery(sale?.invoiceNo ?? "", { skip: !sale })
   const detail = response?.data
 
   return (
@@ -186,7 +125,7 @@ function SaleDetailsSheet({
       <SheetContent className="overflow-y-auto sm:max-w-xl">
         <SheetHeader className="border-b border-border/60 px-5 pb-4">
           <SheetTitle>
-            {detail?.invoiceNo ?? sale?.invoiceNumber ?? "Sale details"}
+            {detail?.invoiceNo ?? sale?.invoiceNo ?? "Sale details"}
           </SheetTitle>
           <SheetDescription>
             Invoice, items, and payment information.
@@ -228,7 +167,16 @@ function SaleDetails({ detail }: { detail: SaleByInvoice }) {
           label="Phone"
           value={detail.customer?.phone ?? "—"}
         />
-        <DetailValue label="Sale date" value={formatDate(detail.createdAt)} />
+        <DetailValue
+          label="Sale date"
+          value={
+            new Intl.DateTimeFormat(undefined, {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            }).format(new Date(detail.createdAt))
+          }
+        />
         <DetailValue label="Status" value={humanize(detail.status)} />
       </dl>
 
@@ -240,7 +188,23 @@ function SaleDetails({ detail }: { detail: SaleByInvoice }) {
       </div>
 
       <section className="space-y-2 rounded-xl border border-border/60 p-4 text-sm">
-        <AmountRow label="Total" value={formatCurrency(Number(detail.total))} />
+        <AmountRow
+          label="Subtotal"
+          value={formatCurrency(Number(detail.subtotal))}
+        />
+        <AmountRow
+          label="Discount"
+          value={formatCurrency(Number(detail.discount))}
+        />
+        <AmountRow
+          label="Shipping"
+          value={formatCurrency(Number(detail.shippingFee))}
+        />
+        <AmountRow
+          label="Total"
+          value={formatCurrency(Number(detail.total))}
+          emphasized
+        />
         <AmountRow
           label="Paid"
           value={formatCurrency(Number(detail.paidAmount))}

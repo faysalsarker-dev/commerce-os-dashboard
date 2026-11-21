@@ -22,7 +22,10 @@ export const expenseApi = baseApi.injectEndpoints({
         method: "POST",
         data,
       }),
-      invalidatesTags: [{ type: "EXPENSE", id: "LIST" }],
+      invalidatesTags: [
+        { type: "EXPENSE", id: "LIST" },
+        { type: "CAMPAIGN", id: "REPORT" },
+      ],
     }),
 
     getExpenses: builder.query<
@@ -90,6 +93,7 @@ export const expenseApi = baseApi.injectEndpoints({
           type: "EXPENSE",
           id: "LIST",
         },
+        { type: "CAMPAIGN", id: "REPORT" },
       ],
     }),
 
@@ -107,6 +111,7 @@ export const expenseApi = baseApi.injectEndpoints({
           type: "EXPENSE",
           id: "LIST",
         },
+        { type: "CAMPAIGN", id: "REPORT" },
       ],
     }),
   }),

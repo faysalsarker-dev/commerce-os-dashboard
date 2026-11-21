@@ -102,6 +102,7 @@ export interface Expense {
   id: string;
   categoryId: string;
   scheduleId: string | null;
+  campaignId: string | null;
   amount: number | string;
   expenseDate: string;
   description: string | null;
@@ -110,11 +111,13 @@ export interface Expense {
   updatedAt: string;
   category?: ExpenseCategory;
   schedule?: ExpenseSchedule | null;
+  campaign?: { id: string; name: string; platform: string } | null;
 }
 
 export interface CreateExpensePayload {
   categoryId: string;
   scheduleId?: string | null;
+  campaignId?: string | null;
   amount: number;
   expenseDate?: string | Date;
   description?: string | null;
@@ -124,6 +127,7 @@ export interface CreateExpensePayload {
 export interface UpdateExpensePayload {
   categoryId?: string;
   scheduleId?: string | null;
+  campaignId?: string | null;
   amount?: number;
   expenseDate?: string | Date;
   description?: string | null;
@@ -135,6 +139,7 @@ export interface ExpenseFilters {
   search?: string;
   categoryId?: string;
   scheduleId?: string;
+  campaignId?: string;
   startDate?: string;
   endDate?: string;
   sortBy?: "amount" | "expenseDate" | "createdAt" | "updatedAt" | string;
